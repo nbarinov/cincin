@@ -1,0 +1,38 @@
+{
+  "name": "cincin",
+  "version": "0.0.1",
+  "description": "🥂 Framework-agnostic toast library: observable core, thin adapters, polished UX",
+  "license": "MIT",
+  "author": "Nikita Barinov",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbarinov/cincin.git",
+    "directory": "packages/cincin"
+  },
+  "keywords": [
+    "toast",
+    "notifications",
+    "framework-agnostic",
+    "headless"
+  ],
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./dom": {
+      "types": "./dist/dom/index.d.mts",
+      "import": "./dist/dom/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.dom.json"
+  }
+}
