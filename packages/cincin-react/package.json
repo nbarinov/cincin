@@ -1,0 +1,36 @@
+{
+  "name": "cincin-react",
+  "version": "0.0.1",
+  "description": "🥂 React bindings for cincin: headless hook, primitives, ready-to-use skin",
+  "license": "MIT",
+  "author": "Nikita Barinov",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbarinov/cincin.git",
+    "directory": "packages/cincin-react"
+  },
+  "keywords": ["toast", "notifications", "react", "headless"],
+  "type": "module",
+  "files": ["dist"],
+  "sideEffects": [],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "cincin": "workspace:*",
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "cincin": "workspace:*",
+    "react": "^19.2.0",
+    "@types/react": "^19.2.0"
+  }
+}

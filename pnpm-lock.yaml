@@ -23,6 +23,18 @@ importers:
 
   packages/cincin: {}
 
+  packages/cincin-react:
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.0
+        version: 19.2.18
+      cincin:
+        specifier: workspace:*
+        version: link:../cincin
+      react:
+        specifier: ^19.2.0
+        version: 19.2.8
+
 packages:
 
   '@oxc-project/types@0.143.0':
@@ -123,6 +135,9 @@ packages:
 
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+
+  '@types/react@19.2.18':
+    resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
@@ -387,6 +402,9 @@ packages:
     resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
     engines: {node: '>=20.19.0'}
 
+  csstype@3.2.3:
+    resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
   defu@6.1.7:
     resolution: {integrity: sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ==}
 
@@ -438,6 +456,10 @@ packages:
 
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
+
+  react@19.2.8:
+    resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
+    engines: {node: '>=0.10.0'}
 
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
@@ -595,6 +617,10 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
+  '@types/react@19.2.18':
+    dependencies:
+      csstype: 3.2.3
+
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
 
@@ -733,6 +759,8 @@ snapshots:
 
   cac@7.0.0: {}
 
+  csstype@3.2.3: {}
+
   defu@6.1.7: {}
 
   dts-resolver@3.0.0: {}
@@ -758,6 +786,8 @@ snapshots:
   prettier@3.9.6: {}
 
   quansync@1.0.0: {}
+
+  react@19.2.8: {}
 
   resolve-pkg-maps@1.0.0: {}
 
