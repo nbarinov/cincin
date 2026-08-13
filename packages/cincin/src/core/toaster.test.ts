@@ -272,6 +272,21 @@ describe('store', () => {
       warn.mockRestore();
     });
 
+    it('should warn when config.max cannot show any toast', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      createToaster({ max: 0 });
+      expect(warn).toHaveBeenCalledTimes(1);
+
+      createToaster({ max: Number.NaN });
+      expect(warn).toHaveBeenCalledTimes(2);
+
+      createToaster({ max: 3 });
+      expect(warn).toHaveBeenCalledTimes(2); // valid max stays silent
+
+      warn.mockRestore();
+    });
+
     it('should warn and generate an id when an empty string id is passed', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const t = createToaster();

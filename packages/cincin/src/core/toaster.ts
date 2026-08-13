@@ -23,6 +23,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   #durationTimers = new TimerManager<ToastId>();
   #removeTimers = new TimerManager<ToastId>();
   #toastCounter = counter();
+  #idSalt = Math.random().toString(36).slice(2, 6);
 
   // Delegates are pre-bound by their owners (Subscribable/ToastStore constructors).
   readonly subscribe: ToasterContract<Content>['subscribe'];
@@ -34,6 +35,14 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       duration: config?.duration ?? 4000,
       removeTimeout: config?.removeTimeout ?? 2000,
     };
+
+    if (!(this.config.max >= 1)) {
+      // NaN fails this comparison too. Not an error: a frozen toaster may be
+      // intentional, but silently showing nothing is the classic typo symptom.
+      devWarn(
+        `config.max is ${this.config.max}: every toast will stay queued and nothing will ever show`
+      );
+    }
 
     this.subscribe = this.#store.subscribe;
     this.getSnapshot = this.#store.getSnapshot;
@@ -502,7 +511,10 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   }
 
   #createToastId(): Extract<ToastId, string> {
-    return `t-${this.#toastCounter()}`;
+    // The per-instance salt keeps generated ids out of any user id namespace:
+    // an accidental collision would require guessing both format and salt.
+    // The counter stays for readability and creation order in devtools.
+    return `t-${this.#idSalt}-${this.#toastCounter()}`;
   }
 
   #resolveToastDuration(type: ToastType, duration?: number): number {
