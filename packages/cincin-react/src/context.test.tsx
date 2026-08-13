@@ -14,6 +14,21 @@ describe('createToasterContext', () => {
       );
     });
 
+    it('should throw the designed error for a provider with an undefined toaster', () => {
+      const { ToasterProvider, useToaster } = createToasterContext();
+
+      expect(() =>
+        renderHook(() => useToaster(), {
+          wrapper: ({ children }: { children: ReactNode }) => (
+            // A plain-JS consumer can mount the provider with a missing prop.
+            <ToasterProvider toaster={undefined as never}>
+              {children}
+            </ToasterProvider>
+          ),
+        })
+      ).toThrow('no toaster available');
+    });
+
     it('should fall back to the factory default without a provider', () => {
       const toaster = createToaster();
       const { useToaster } = createToasterContext(toaster);

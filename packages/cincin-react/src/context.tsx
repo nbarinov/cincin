@@ -22,7 +22,7 @@ function createToasterContext<Content extends {} = string>(
 
   function useToaster(toaster?: Toaster<Content>): Toaster<Content> {
     const fromContext = useContext(Context);
-    const resolved = toaster ?? fromContext;
+    const resolved = toaster ?? fromContext ?? null; // Normalize both nullish values: a JS consumer can mount the provider with an undefined toaster.
 
     if (resolved === null) {
       throw new Error(
