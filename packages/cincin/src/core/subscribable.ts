@@ -20,6 +20,10 @@ class Subscribable<TListener extends (...args: any[]) => void> {
     return this.listeners.size > 0;
   }
 
+  clearListeners(): void {
+    this.listeners.clear();
+  }
+
   protected onSubscribe(): void {
     // Do nothing
   }

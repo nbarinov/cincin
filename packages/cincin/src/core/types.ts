@@ -111,6 +111,8 @@ interface Toaster<Content extends {} = string> {
   getSnapshot(): ReadonlyArray<Toast<Content>>;
   subscribe(listener: (event: ToastNotifyEvent<Content>) => void): () => void;
   getRemainingMs(id: ToastId): number;
+
+  destroy(): void;
 }
 
 export type {

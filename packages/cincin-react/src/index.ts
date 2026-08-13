@@ -1,1 +1,1 @@
-export { version } from 'cincin';
+export type { Toaster, Toast, ToastNotifyEvent } from 'cincin';
