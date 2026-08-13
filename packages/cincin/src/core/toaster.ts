@@ -83,7 +83,9 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     const { id, type, duration, dismissible = true } = options;
     const toastId = this.#resolveToastId(id);
 
-    if (this.#store.has(toastId)) {
+    const existing = this.#store.get(toastId);
+
+    if (existing !== undefined && existing.status !== 'dismissing') {
       // Upsert: only explicitly provided fields make it into the patch.
       this.update(toastId, {
         content,
@@ -92,6 +94,14 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       });
 
       return toastId;
+    }
+
+    if (existing !== undefined) {
+      // Dead means dead: a dismissing toast is on its way out. Bury it now
+      // and fall through to a fresh create under the same id, so the caller
+      // gets a live toast instead of patching a corpse the safety net is
+      // about to delete. The renderer sees familiar removed + added events.
+      this.remove(toastId);
     }
 
     const toastType = type ?? 'message';

@@ -81,6 +81,34 @@ describe('store', () => {
 
       expect(t.getSnapshot().at(0)!.duration).toBe(2000);
     });
+
+    it('should replace a dismissing toast with a fresh one on create with the same id', () => {
+      const t = createToaster();
+      const events: string[] = [];
+      const id = t.create('old');
+      t.dismiss(id);
+
+      t.subscribe((e) => events.push(e.type));
+      const returned = t.create('new', { id });
+
+      expect(returned).toBe(id);
+      expect(events).toEqual(['removed', 'added']); // dead means dead: bury, then fresh create
+      expect(t.getSnapshot().at(0)!).toMatchObject({
+        id,
+        content: 'new',
+        status: 'active',
+      });
+    });
+
+    it('should apply dismissible when re-creating over a dismissing toast', () => {
+      const t = createToaster();
+      const id = t.create('old');
+      t.dismiss(id);
+
+      t.create('new', { id, dismissible: false });
+
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
+    });
   });
 
   describe('dismiss & remove', () => {
