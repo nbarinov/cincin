@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "react-jsx",
-    "types": ["vitest/globals"]
+    "noEmit": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
 }

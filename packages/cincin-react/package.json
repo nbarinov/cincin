@@ -9,9 +9,16 @@
     "url": "git+https://github.com/nbarinov/cincin.git",
     "directory": "packages/cincin-react"
   },
-  "keywords": ["toast", "notifications", "react", "headless"],
+  "keywords": [
+    "toast",
+    "notifications",
+    "react",
+    "headless"
+  ],
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": [],
   "exports": {
     ".": {
@@ -29,8 +36,11 @@
     "react": ">=18"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.4",
     "cincin": "workspace:*",
     "react": "^19.2.0",
-    "@types/react": "^19.2.0"
+    "react-dom": "^19.2.8"
   }
 }

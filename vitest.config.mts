@@ -11,6 +11,14 @@ export default defineConfig({
           include: ['packages/cincin/src/**/*.test.ts'],
         },
       },
+      {
+        test: {
+          name: 'react',
+          environment: 'jsdom',
+          globals: true,
+          include: ['packages/cincin-react/src/**/*.test.{ts,tsx}'],
+        },
+      },
     ],
   },
 });
