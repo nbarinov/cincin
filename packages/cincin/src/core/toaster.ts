@@ -80,7 +80,9 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   }
 
   create(content: Content, options: CreateOptions = {}): ToastId {
-    const { id, type, duration, dismissible = true } = options;
+    // No destructuring defaults here: the upsert path must still see the
+    // difference between an omitted option and an explicitly provided one.
+    const { id, type, duration, dismissible } = options;
     const toastId = this.#resolveToastId(id);
 
     const existing = this.#store.get(toastId);
@@ -91,6 +93,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
         content,
         ...(type !== undefined && { type }),
         ...(duration !== undefined && { duration }),
+        ...(dismissible !== undefined && { dismissible }),
       });
 
       return toastId;
@@ -113,7 +116,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       duration: this.#resolveToastDuration(toastType, duration),
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      dismissible,
+      dismissible: dismissible ?? true,
       paused: false,
     };
 

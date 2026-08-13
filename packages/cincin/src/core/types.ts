@@ -27,6 +27,7 @@ type UpdatePatch<Content extends {} = string> = Partial<{
   content: Content;
   type: ToastType;
   duration: number;
+  dismissible: boolean;
 }>;
 
 interface NotifyEvent {

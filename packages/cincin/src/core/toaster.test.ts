@@ -100,6 +100,24 @@ describe('store', () => {
       });
     });
 
+    it('should update dismissible on upsert of a live toast', () => {
+      const t = createToaster();
+      const id = t.create('a', { dismissible: true });
+
+      t.create('b', { id, dismissible: false });
+
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
+    });
+
+    it('should keep dismissible untouched when the upsert omits it', () => {
+      const t = createToaster();
+      const id = t.create('a', { dismissible: false });
+
+      t.create('b', { id });
+
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
+    });
+
     it('should apply dismissible when re-creating over a dismissing toast', () => {
       const t = createToaster();
       const id = t.create('old');
