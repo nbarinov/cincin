@@ -56,7 +56,12 @@ class TimerManager<Key> {
 
     clearTimeout(entry.handle);
     entry.handle = null;
-    entry.remaining -= performance.now() - entry.startedAt;
+    // Clamp at zero: a blocked event loop can delay the timeout callback,
+    // so the elapsed time may exceed the interval at pause time.
+    entry.remaining = Math.max(
+      0,
+      entry.remaining - (performance.now() - entry.startedAt)
+    );
   }
 
   /** Idempotent: no entry, already ticking, or `Infinity`. Nothing to do. */

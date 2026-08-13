@@ -228,6 +228,17 @@ describe('store', () => {
       expect(statuses).toEqual(['dismissing', 'dismissing', 'active']);
     });
 
+    it('should deduplicate ids within one command call', () => {
+      const t = createToaster();
+      const events: string[] = [];
+      const id = t.create('hi');
+
+      t.subscribe((e) => events.push(e.type));
+      t.dismiss([id, id]);
+
+      expect(events).toEqual(['dismissed']); // one event per phase, even with duplicates
+    });
+
     it('should do nothing when dismiss receives an empty array', () => {
       const t = createToaster();
       t.create('a');

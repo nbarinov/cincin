@@ -310,8 +310,10 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     };
     this.#store.set(next);
     // Safety net: if the renderer never calls remove(), we do.
-    this.#removeTimers.start(next.id, this.config.removeTimeout, () =>
-      this.remove(next.id)
+    // Capture only the id to avoid pinning the toast in the closure.
+    const id = next.id;
+    this.#removeTimers.start(id, this.config.removeTimeout, () =>
+      this.remove(id)
     );
 
     return { type: 'dismissed', toast: next };
@@ -395,9 +397,18 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     }
 
     const ids = Array.isArray(target) ? target : [target];
+    const seen = new Set<ToastId>();
     const found: Toast<Content>[] = [];
 
     for (const id of ids) {
+      if (seen.has(id)) {
+        // Duplicates are routine when ids come from several sources; the
+        // planners would otherwise act on stale prefetched objects and
+        // emit duplicate events for one toast.
+        continue;
+      }
+      seen.add(id);
+
       const toast = this.#store.get(id);
       if (toast === undefined) {
         devWarn(`${name}: toast not found`, id);
@@ -459,13 +470,15 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   }
 
   #startDuration(toast: Toast<Content>): void {
+    // Capture only the id: the closure outlives the toast object and must
+    // not pin its content payload for the timer's lifetime.
+    const id = toast.id;
+
     // Expiry goes through the public command: no second path to death.
-    this.#durationTimers.start(toast.id, toast.duration, () =>
-      this.dismiss(toast.id)
-    );
+    this.#durationTimers.start(id, toast.duration, () => this.dismiss(id));
 
     if (toast.paused) {
-      this.#durationTimers.pause(toast.id);
+      this.#durationTimers.pause(id);
     }
   }
 
