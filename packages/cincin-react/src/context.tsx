@@ -43,7 +43,7 @@ function createToasterContext<Content extends {} = string>(
     return useSyncExternalStore(
       instance.subscribe,
       instance.getSnapshot,
-      instance.getSnapshot // SSR: the core lives in node, the snapshot is honest there too
+      getServerSnapshot
     );
   }
 
@@ -51,3 +51,7 @@ function createToasterContext<Content extends {} = string>(
 }
 
 export { createToasterContext };
+
+const EMPTY_SNAPSHOT: ReadonlyArray<never> = Object.freeze([]);
+
+const getServerSnapshot = (): ReadonlyArray<never> => EMPTY_SNAPSHOT;
