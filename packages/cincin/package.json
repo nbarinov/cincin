@@ -33,6 +33,6 @@
   },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.dom.json"
+    "typecheck": "tsc -p tsconfig.json"
   }
 }

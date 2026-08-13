@@ -4,5 +4,6 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "noEmit": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["**/*.test.ts"]
 }
