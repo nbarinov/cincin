@@ -390,6 +390,28 @@ describe('store', () => {
       expect(t.getSnapshot().at(1)!.status).toBe('dismissing');
     });
 
+    it('should pause queued toasts so promotion starts them frozen', () => {
+      const t = createToaster({ max: 1 });
+      const first = t.create('a', { duration: 1000 });
+      const second = t.create('b', { duration: 1000 });
+
+      const byId = (id: ReturnType<typeof t.create>) =>
+        t.getSnapshot().find((toast) => toast.id === id)!;
+
+      t.pause(); // covers the queued toast too
+      t.dismiss(first);
+
+      // Promoted while paused: active, but the clock stands still.
+      expect(byId(second).status).toBe('active');
+      expect(byId(second).paused).toBe(true);
+      vi.advanceTimersByTime(60_000);
+      expect(byId(second).status).toBe('active');
+
+      t.resume(second);
+      vi.advanceTimersByTime(1000);
+      expect(byId(second).status).toBe('dismissing');
+    });
+
     it('should not pause dismissing toasts so the safety net keeps ticking', () => {
       const t = createToaster({ removeTimeout: 2000 });
       const id = t.create('hi');

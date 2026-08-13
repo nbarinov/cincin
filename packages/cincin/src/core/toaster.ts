@@ -340,9 +340,11 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   }
 
   #pauseOne(toast: Toast<Content>): UpdatedNotifyEvent<Content> | null {
-    // Pause targets active toasts only: queued has no timer yet,
-    // dismissing must keep its safety net ticking.
-    if (toast.status !== 'active' || toast.paused) {
+    // Active and queued toasts are pausable: a paused queued toast gets
+    // promoted frozen (#startDuration honors the flag), so pause() honestly
+    // covers the whole stack. Dismissing is excluded: the safety net must
+    // keep ticking.
+    if (toast.status === 'dismissing' || toast.paused) {
       return null;
     }
 
