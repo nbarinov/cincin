@@ -45,7 +45,7 @@ describe('store', () => {
       expect(toast).toMatchObject({
         id,
         content: 'hi',
-        type: 'default',
+        type: 'message',
         status: 'active',
         duration: 4000,
         dismissible: true,

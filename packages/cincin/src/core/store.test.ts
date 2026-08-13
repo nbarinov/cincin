@@ -5,7 +5,7 @@ function makeToast(id: string, overrides: Partial<Toast> = {}): Toast {
   return {
     id,
     content: `content of ${id}`,
-    type: 'default',
+    type: 'message',
     status: 'active',
     duration: 4000,
     dismissible: true,

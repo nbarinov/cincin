@@ -43,7 +43,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     this.warning = this.warning.bind(this);
     this.info = this.info.bind(this);
     this.loading = this.loading.bind(this);
-    this.default = this.default.bind(this);
+    this.message = this.message.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
     this.dismiss = this.dismiss.bind(this);
@@ -75,8 +75,8 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     return this.create(content, { ...options, type: 'loading' });
   }
 
-  default(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
-    return this.create(content, { ...options, type: 'default' });
+  message(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
+    return this.create(content, { ...options, type: 'message' });
   }
 
   create(content: Content, options: CreateOptions = {}): ToastId {
@@ -94,7 +94,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       return toastId;
     }
 
-    const toastType = type ?? 'default';
+    const toastType = type ?? 'message';
     const toast: Toast<Content> = {
       id: toastId,
       content,

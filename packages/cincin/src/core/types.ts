@@ -1,6 +1,6 @@
 type ToastId = string | number;
 type ToastType =
-  'success' | 'error' | 'warning' | 'info' | 'loading' | 'default';
+  'success' | 'error' | 'warning' | 'info' | 'loading' | 'message';
 type ToastStatus = 'queued' | 'active' | 'dismissing';
 
 interface Toast<Content extends {} = string> {
@@ -80,12 +80,12 @@ interface ToasterConfig {
 interface Toaster<Content extends {} = string> {
   readonly config: Readonly<Required<ToasterConfig>>;
 
-  success(content: Content, options?: CreateOptions): ToastId;
-  error(content: Content, options?: CreateOptions): ToastId;
-  warning(content: Content, options?: CreateOptions): ToastId;
-  info(content: Content, options?: CreateOptions): ToastId;
-  loading(content: Content, options?: CreateOptions): ToastId;
-  default(content: Content, options?: CreateOptions): ToastId;
+  success(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
+  error(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
+  warning(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
+  info(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
+  loading(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
+  message(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
 
   create(content: Content, options?: CreateOptions): ToastId;
   update(id: ToastId, patch: UpdatePatch<Content>): void;
