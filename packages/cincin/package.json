@@ -22,10 +22,12 @@
   "sideEffects": [],
   "exports": {
     ".": {
+      "source": "./src/core/index.ts",
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
     "./dom": {
+      "source": "./src/dom/index.ts",
       "types": "./dist/dom/index.d.mts",
       "import": "./dist/dom/index.mjs"
     },

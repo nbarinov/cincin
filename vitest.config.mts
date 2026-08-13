@@ -12,6 +12,11 @@ export default defineConfig({
         },
       },
       {
+        resolve: {
+          // Follow the "source" condition of workspace packages: tests must
+          // exercise the core source, not a stale dist build.
+          conditions: ['source'],
+        },
         test: {
           name: 'react',
           environment: 'jsdom',
