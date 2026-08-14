@@ -102,7 +102,8 @@ describe('attachSwipe', () => {
     const animate = vi.spyOn(Element.prototype, 'animate');
     attachSwipe(element, { onDismiss, onRemove: () => {} });
 
-    // 20px over 200ms: velocity 0.1 px/ms, both thresholds missed.
+    // 20px total: distance misses the 45px gate, and the trailing 80ms
+    // window holds only the release sample, so velocity reads 0.
     drag(element, [
       [10, 0, 100],
       [20, 0, 100],
@@ -112,6 +113,10 @@ describe('attachSwipe', () => {
     expect(element.hasAttribute('data-swiping')).toBe(false);
     expect(element.style.translate).toBe('0px 0px'); // spring rest target
     expect(animate).toHaveBeenCalledTimes(1); // the spring overlay
+    expect(animate).toHaveBeenCalledWith(
+      [{ translate: '20px 0px' }, { translate: '0px 0px' }],
+      { duration: 300, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }
+    );
   });
 
   it('should dismiss past the distance threshold and remove after the fling', async () => {
@@ -143,6 +148,34 @@ describe('attachSwipe', () => {
     drag(element, [[20, 0, 50]]);
 
     expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('should wire the release velocity into the fling duration and easing', () => {
+    const element = makeElement();
+    const animate = vi.spyOn(Element.prototype, 'animate');
+    attachSwipe(element, {
+      onDismiss: () => {},
+      onRemove: () => {},
+      // Lift the clamp so the raw velocity-match formula is observable.
+      fling: { maxDuration: 100_000 },
+    });
+
+    // 20px in 50ms: velocity 0.4 px/ms.
+    drag(element, [[20, 0, 50]]);
+
+    const target = window.innerWidth + 40; // exitTarget: viewport + buffer
+    const [keyframes, timing] = animate.mock.calls[0]! as [
+      Keyframe[],
+      KeyframeAnimationOptions,
+    ];
+
+    expect(keyframes).toEqual([
+      { translate: '20px 0px' },
+      { translate: `${target}px 0px` },
+    ]);
+    // slope * remaining / velocity, with the default slope of 3.
+    expect(timing.duration).toBeCloseTo((3 * (target - 20)) / 0.4, 5);
+    expect(timing.easing).toBe('cubic-bezier(0.333, 1, 0.7, 1)');
   });
 
   it('should treat pointercancel as a cancel regardless of thresholds', () => {
@@ -331,6 +364,36 @@ describe('attachSwipe', () => {
     detach();
 
     expect(cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not fire onRemove when detached during the fling', async () => {
+    // A cancelled WAAPI animation rejects its finished promise; the
+    // always-resolved global stub cannot model that, so this test builds
+    // its own controllable animation.
+    let rejectFinished!: (reason?: unknown) => void;
+    vi.spyOn(Element.prototype, 'animate').mockReturnValue({
+      finished: new Promise((_, reject) => {
+        rejectFinished = reject;
+      }),
+      cancel() {
+        rejectFinished(new DOMException('Aborted', 'AbortError'));
+      },
+    } as unknown as Animation);
+
+    const element = makeElement();
+    const onRemove = vi.fn();
+    const detach = attachSwipe(element, { onDismiss: () => {}, onRemove });
+
+    drag(element, [
+      [30, 0, 200],
+      [60, 0, 200],
+    ]);
+
+    detach();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(onRemove).not.toHaveBeenCalled();
   });
 
   it('should clear data-swiping when detached mid-drag', () => {
