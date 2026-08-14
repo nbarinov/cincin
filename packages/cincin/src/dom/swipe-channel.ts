@@ -13,6 +13,12 @@ interface SwipeChannel {
   read(): number;
   /** Signed off-screen target along the direction, with a shadow buffer. */
   exitTarget(): number;
+  /** Toggles the grabbed state for skins ([data-swiping]). */
+  markSwiping(active: boolean): void;
+  /** Enters the departure phase ([data-swipe-direction]). One-way. */
+  markExit(): void;
+  /** True once the departure phase started: a dead toast is not grabbable. */
+  exiting(): boolean;
   /** Returns every claimed channel to its pre-attach state. */
   release(): void;
 }
@@ -56,7 +62,26 @@ function createSwipeChannel(
       // The buffer keeps shadows and blurs from lingering at the edge.
       return sign * (size + 40);
     },
-    release: restore,
+    markSwiping(active) {
+      if (active) {
+        element.setAttribute('data-swiping', 'true');
+      } else {
+        element.removeAttribute('data-swiping');
+      }
+    },
+    markExit() {
+      element.setAttribute('data-swipe-direction', direction);
+    },
+    exiting() {
+      return element.hasAttribute('data-swipe-direction');
+    },
+    release() {
+      restore();
+
+      element.removeAttribute('data-swiping');
+      // data-swipe-direction stays: the departure phase is one-way and
+      // the protocol signal must survive a detach during the fling.
+    },
   };
 }
 

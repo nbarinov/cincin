@@ -209,4 +209,44 @@ describe('attachSwipe', () => {
     expect(onRemove).toHaveBeenCalledTimes(1); // synchronously, no fling
     expect(animate).not.toHaveBeenCalled();
   });
+
+  it('should ignore a grab once the toast is exiting', () => {
+    const element = makeElement();
+    const onDismiss = vi.fn();
+    attachSwipe(element, { onDismiss, onRemove: () => {} });
+
+    drag(element, [
+      [30, 0, 200],
+      [60, 0, 200],
+    ]);
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    const parked = element.style.translate;
+
+    // The departure phase is one-way: a re-grab must not resurrect the toast.
+    drag(element, [
+      [30, 0, 200],
+      [60, 0, 200],
+    ]);
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(element.hasAttribute('data-swiping')).toBe(false);
+    expect(element.style.translate).toBe(parked);
+  });
+
+  it('should clear data-swiping when detached mid-drag', () => {
+    const element = makeElement();
+    const detach = attachSwipe(element, {
+      onDismiss: () => {},
+      onRemove: () => {},
+    });
+
+    firePointer(element, 'pointerdown', 0, 0);
+    vi.advanceTimersByTime(50);
+    firePointer(element, 'pointermove', 10, 2);
+    expect(element.getAttribute('data-swiping')).toBe('true');
+
+    detach();
+
+    expect(element.hasAttribute('data-swiping')).toBe(false);
+  });
 });

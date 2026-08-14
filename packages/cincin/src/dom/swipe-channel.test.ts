@@ -81,4 +81,39 @@ describe('createSwipeChannel', () => {
     expect(element.style.translate).toBe('');
     expect(element.style.getPropertyValue('--cincin-swipe-x')).toBe('');
   });
+
+  it('should toggle the swiping marker', () => {
+    const element = makeElement();
+    const channel = createSwipeChannel(element, 'right');
+
+    channel.markSwiping(true);
+    expect(element.getAttribute('data-swiping')).toBe('true');
+
+    channel.markSwiping(false);
+    expect(element.hasAttribute('data-swiping')).toBe(false);
+  });
+
+  it('should enter the departure phase and report it', () => {
+    const element = makeElement();
+    const channel = createSwipeChannel(element, 'left');
+
+    expect(channel.exiting()).toBe(false);
+
+    channel.markExit();
+
+    expect(channel.exiting()).toBe(true);
+    expect(element.getAttribute('data-swipe-direction')).toBe('left');
+  });
+
+  it('should clear the swiping marker on release but keep the exit marker', () => {
+    const element = makeElement();
+    const channel = createSwipeChannel(element, 'right');
+
+    channel.markSwiping(true);
+    channel.markExit();
+    channel.release();
+
+    expect(element.hasAttribute('data-swiping')).toBe(false);
+    expect(element.getAttribute('data-swipe-direction')).toBe('right');
+  });
 });

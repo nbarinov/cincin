@@ -57,15 +57,16 @@ const DEFAULTS = {
 function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
   const { direction, drag, dismiss, fling, cancel } = resolveOptions(options);
 
-  // The channel owns every style claim (touch-action, translate rest
-  // position, the protocol variable) and returns them on release().
+  // The channel owns every style and protocol claim (touch-action, the
+  // translate rest position, the variable, the data attributes) and
+  // returns the transient ones on release().
   const channel = createSwipeChannel(element, direction);
   const { axis, sign } = channel;
 
   let gesture: Gesture | null = null;
 
   const onPointerDown = (event: PointerEvent) => {
-    if (!event.isPrimary || gesture !== null) {
+    if (!event.isPrimary || gesture !== null || channel.exiting()) {
       return;
     }
 
@@ -107,7 +108,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       gesture.ours = Math.abs(dx) >= Math.abs(dy) === (axis === 'x');
 
       if (gesture.ours) {
-        element.setAttribute('data-swiping', 'true');
+        channel.markSwiping(true);
       }
     }
 
@@ -141,7 +142,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
 
     const g = gesture;
     gesture = null;
-    element.removeAttribute('data-swiping');
+    channel.markSwiping(false);
 
     if (!g.moved || !g.ours) {
       // A tap: let the click through untouched.
@@ -163,7 +164,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
 
     // The fling owns the exit: skins must not play their CSS exit
     // animation while data-swipe-direction is present.
-    element.setAttribute('data-swipe-direction', direction);
+    channel.markExit();
     options.onDismiss();
     flingOut(
       channel,
@@ -190,8 +191,6 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     element.getAnimations().forEach((animation) => animation.cancel());
     // One call returns every claimed channel to its pre-attach state.
     channel.release();
-    // data-swipe-direction stays: it is the protocol signal for the
-    // departure phase and the element is leaving the DOM anyway.
   };
 }
 
