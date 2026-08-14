@@ -152,7 +152,11 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       return;
     }
 
-    suppressNextClick(element);
+    // pointercancel never synthesizes a click: arming the suppression
+    // there would eat the user's next legitimate tap instead.
+    if (event.type !== 'pointercancel') {
+      suppressNextClick(element);
+    }
 
     const velocity = trailingVelocity(g.samples, dismiss.velocityWindow) * sign;
     const distance = g.offset * sign;
@@ -227,16 +231,12 @@ function resolveOptions(options: SwipeOptions): DeepRequired<SwipeOptions> {
  * a swipe would also "press" whatever action sits under the finger.
  */
 function suppressNextClick(element: HTMLElement): void {
-  const swallow = (event: Event) => {
-    event.stopPropagation();
-    event.preventDefault();
-
-    clearTimeout(timeout);
-  };
-
-  element.addEventListener('click', swallow, { capture: true, once: true });
-
-  const timeout = setTimeout(() => {
-    element.removeEventListener('click', swallow, { capture: true });
-  }, 400);
+  element.addEventListener(
+    'click',
+    (event) => {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    },
+    { capture: true, once: true, signal: AbortSignal.timeout(400) }
+  );
 }

@@ -178,6 +178,61 @@ describe('attachSwipe', () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
+  it('should not arm click suppression after a pointercancel', () => {
+    const element = makeElement();
+    const onClick = vi.fn();
+    element.parentElement!.addEventListener('click', onClick);
+    attachSwipe(element, { onDismiss: () => {}, onRemove: () => {} });
+
+    // pointercancel synthesizes no click: the next real one must pass.
+    drag(
+      element,
+      [
+        [10, 0, 100],
+        [20, 0, 100],
+      ],
+      'pointercancel'
+    );
+    element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('should suppress the click for a direct listener on the element', () => {
+    const element = makeElement();
+    const onClick = vi.fn();
+    element.addEventListener('click', onClick);
+    attachSwipe(element, { onDismiss: () => {}, onRemove: () => {} });
+
+    drag(element, [
+      [10, 0, 100],
+      [20, 0, 100],
+    ]);
+    element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('should let a click through once the suppression window expires', async () => {
+    const element = makeElement();
+    const onClick = vi.fn();
+    element.parentElement!.addEventListener('click', onClick);
+    attachSwipe(element, { onDismiss: () => {}, onRemove: () => {} });
+
+    drag(element, [
+      [10, 0, 100],
+      [20, 0, 100],
+    ]);
+
+    // AbortSignal.timeout runs on the real clock, out of reach of the
+    // fake timers that drive the drag.
+    vi.useRealTimers();
+    await new Promise((resolve) => setTimeout(resolve, 450));
+    element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   it('should let a plain tap click through', () => {
     const element = makeElement();
     const onClick = vi.fn();
