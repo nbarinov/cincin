@@ -58,6 +58,8 @@ const DEFAULTS = {
 function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
   const { direction, drag, dismiss, fling, cancel } = resolveOptions(options);
 
+  const controller = new AbortController();
+
   // The channel owns every style and protocol claim (touch-action, the
   // translate rest position, the variable, the data attributes) and
   // returns the transient ones on release().
@@ -157,7 +159,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     // pointercancel never synthesizes a click: arming the suppression
     // there would eat the user's next legitimate tap instead.
     if (event.type !== 'pointercancel') {
-      suppressNextClick(element);
+      suppressNextClick(element, { signal: controller.signal });
     }
 
     const velocity = trailingVelocity(g.samples, dismiss.velocityWindow) * sign;
@@ -184,16 +186,21 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     );
   };
 
-  element.addEventListener('pointerdown', onPointerDown);
-  element.addEventListener('pointermove', onPointerMove);
-  element.addEventListener('pointerup', onPointerUp);
-  element.addEventListener('pointercancel', onPointerUp);
+  element.addEventListener('pointerdown', onPointerDown, {
+    signal: controller.signal,
+  });
+  element.addEventListener('pointermove', onPointerMove, {
+    signal: controller.signal,
+  });
+  element.addEventListener('pointerup', onPointerUp, {
+    signal: controller.signal,
+  });
+  element.addEventListener('pointercancel', onPointerUp, {
+    signal: controller.signal,
+  });
 
   return () => {
-    element.removeEventListener('pointerdown', onPointerDown);
-    element.removeEventListener('pointermove', onPointerMove);
-    element.removeEventListener('pointerup', onPointerUp);
-    element.removeEventListener('pointercancel', onPointerUp);
+    controller.abort();
     overlay?.cancel();
     // One call returns every claimed channel to its pre-attach state.
     channel.release();
@@ -233,13 +240,20 @@ function resolveOptions(options: SwipeOptions): ResolvedOptions {
  * After a drag the browser still synthesizes a click; without suppression
  * a swipe would also "press" whatever action sits under the finger.
  */
-function suppressNextClick(element: HTMLElement): void {
+function suppressNextClick(
+  element: HTMLElement,
+  { signal }: { signal: AbortSignal }
+): void {
   element.addEventListener(
     'click',
     (event) => {
       event.stopImmediatePropagation();
       event.preventDefault();
     },
-    { capture: true, once: true, signal: AbortSignal.timeout(400) }
+    {
+      capture: true,
+      once: true,
+      signal: AbortSignal.any([AbortSignal.timeout(400), signal]),
+    }
   );
 }
