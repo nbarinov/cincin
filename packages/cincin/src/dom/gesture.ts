@@ -86,10 +86,12 @@ interface Gesture {
   locked: boolean;
   /** The locked axis matches ours. When false we step aside and let scrolling happen. */
   ours: boolean;
-  offset: number;
-  moved: boolean;
+  /**
+   * The grab sample plus one per own-axis move, pruned to the trailing
+   * velocity window. Two or more samples mean the toast actually moved.
+   */
   samples: VelocitySample[];
 }
 
 export { AXIS, SIGN, dampen, trailingVelocity, flingDuration };
-export type { Gesture, VelocitySample, SwipeDirection };
+export type { Gesture, SwipeDirection };

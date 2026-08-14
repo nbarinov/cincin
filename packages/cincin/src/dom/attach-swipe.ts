@@ -2,6 +2,7 @@ import { dampen, trailingVelocity } from './gesture';
 import type { Gesture, SwipeDirection } from './gesture';
 import { createSwipeChannel } from './swipe-channel';
 import { flingOut, springBack } from './swipe-exits';
+import type { FlingConfig } from './swipe-exits';
 
 type SwipeOptions = {
   /** Physical swipe direction. @default 'right' */
@@ -88,8 +89,6 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       base,
       locked: false,
       ours: false,
-      offset: base,
-      moved: false,
       samples: [{ t: performance.now(), pos: base }],
     };
   };
@@ -124,8 +123,6 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     const raw = (axis === 'x' ? dx : dy) + gesture.base;
     const offset = dampen(raw, sign, drag.damping);
 
-    gesture.offset = offset;
-    gesture.moved = true;
     gesture.samples.push({ t: now, pos: offset });
 
     // Keep only the trailing velocity window; the sample right before the
@@ -147,10 +144,12 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     gesture = null;
     channel.markSwiping(false);
 
-    if (!g.moved || !g.ours) {
-      // A tap: let the click through untouched.
+    if (g.samples.length < 2) {
+      // Never moved along our axis: a tap, or a foreign-axis gesture.
       return;
     }
+
+    const offset = g.samples.at(-1)!.pos;
 
     // pointercancel never synthesizes a click: arming the suppression
     // there would eat the user's next legitimate tap instead.
@@ -159,13 +158,13 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     }
 
     const velocity = trailingVelocity(g.samples, dismiss.velocityWindow) * sign;
-    const distance = g.offset * sign;
+    const distance = offset * sign;
     const passed =
       event.type !== 'pointercancel' &&
       (distance > dismiss.distance || velocity > dismiss.velocity);
 
     if (!passed) {
-      overlay = springBack(channel, g.offset, cancel.duration);
+      overlay = springBack(channel, offset, cancel.duration);
       return;
     }
 
@@ -175,12 +174,9 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     options.onDismiss();
     overlay = flingOut(
       channel,
-      g.offset,
+      offset,
       Math.max(velocity, 0),
-      {
-        slope: fling.slope,
-        duration: { min: fling.minDuration, max: fling.maxDuration },
-      },
+      fling,
       options.onRemove
     );
   };
@@ -206,13 +202,17 @@ export type { SwipeOptions, SwipeDirection };
 
 // utils
 
-type DeepRequired<T> = T extends (...args: never) => unknown
-  ? T
-  : T extends object
-    ? { [P in keyof T]-?: DeepRequired<T[P]> }
-    : T;
+interface ResolvedOptions {
+  direction: SwipeDirection;
+  onDismiss: () => void;
+  onRemove: () => void;
+  drag: Required<NonNullable<SwipeOptions['drag']>>;
+  dismiss: Required<NonNullable<SwipeOptions['dismiss']>>;
+  fling: FlingConfig;
+  cancel: Required<NonNullable<SwipeOptions['cancel']>>;
+}
 
-function resolveOptions(options: SwipeOptions): DeepRequired<SwipeOptions> {
+function resolveOptions(options: SwipeOptions): ResolvedOptions {
   const fling = { ...DEFAULTS.fling, ...options.fling };
   fling.slope = Math.max(fling.slope, 1);
 

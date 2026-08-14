@@ -1,12 +1,5 @@
 import { attachSwipe } from './attach-swipe';
-
-function makeElement(): HTMLElement {
-  const parent = document.createElement('div');
-  const element = document.createElement('div');
-  parent.append(element);
-  document.body.append(parent);
-  return element;
-}
+import { makeElement } from './test-helpers';
 
 function firePointer(
   element: HTMLElement,

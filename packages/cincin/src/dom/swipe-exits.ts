@@ -3,11 +3,10 @@ import type { SwipeChannel } from './swipe-channel';
 import { prefersReducedMotion, translateValue } from './utils';
 
 interface FlingConfig {
+  /** Initial slope of the fling easing; ties duration to hand speed. */
   slope: number;
-  duration: {
-    min: number;
-    max: number;
-  };
+  minDuration: number;
+  maxDuration: number;
 }
 
 const CANCEL_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
@@ -37,8 +36,8 @@ function flingOut(
     Math.abs(target - from),
     velocity,
     config.slope,
-    config.duration.min,
-    config.duration.max
+    config.minDuration,
+    config.maxDuration
   );
 
   const animation = channel.element.animate(
