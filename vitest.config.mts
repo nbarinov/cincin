@@ -8,7 +8,16 @@ export default defineConfig({
           name: 'core',
           environment: 'node',
           globals: true,
-          include: ['packages/cincin/src/**/*.test.ts'],
+          include: ['packages/cincin/src/core/**/*.test.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'dom',
+          environment: 'jsdom',
+          globals: true,
+          include: ['packages/cincin/src/dom/**/*.test.ts'],
+          setupFiles: ['packages/cincin/src/dom/test-setup.ts'],
         },
       },
       {
