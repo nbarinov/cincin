@@ -64,6 +64,9 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
   const { axis, sign } = channel;
 
   let gesture: Gesture | null = null;
+  // The one overlay animation this controller owns (spring or fling).
+  // Cancelling is scoped to it: skin animations are out of reach.
+  let overlay: Animation | null = null;
 
   const onPointerDown = (event: PointerEvent) => {
     if (!event.isPrimary || gesture !== null || channel.exiting()) {
@@ -76,7 +79,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     // otherwise the element snaps to its rest target for one frame.
     const base = channel.read();
     channel.set(base);
-    element.getAnimations().forEach((animation) => animation.cancel());
+    overlay?.cancel();
 
     gesture = {
       pointerId: event.pointerId,
@@ -158,7 +161,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       (distance > dismiss.distance || velocity > dismiss.velocity);
 
     if (!passed) {
-      springBack(channel, g.offset, cancel.duration);
+      overlay = springBack(channel, g.offset, cancel.duration);
       return;
     }
 
@@ -166,7 +169,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     // animation while data-swipe-direction is present.
     channel.markExit();
     options.onDismiss();
-    flingOut(
+    overlay = flingOut(
       channel,
       g.offset,
       Math.max(velocity, 0),
@@ -188,7 +191,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     element.removeEventListener('pointermove', onPointerMove);
     element.removeEventListener('pointerup', onPointerUp);
     element.removeEventListener('pointercancel', onPointerUp);
-    element.getAnimations().forEach((animation) => animation.cancel());
+    overlay?.cancel();
     // One call returns every claimed channel to its pre-attach state.
     channel.release();
   };

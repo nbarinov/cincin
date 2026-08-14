@@ -233,6 +233,51 @@ describe('attachSwipe', () => {
     expect(element.style.translate).toBe(parked);
   });
 
+  it('should cancel the running spring overlay on a re-grab', () => {
+    const cancel = vi.fn();
+    vi.spyOn(Element.prototype, 'animate').mockReturnValue({
+      finished: Promise.resolve(),
+      cancel,
+    } as unknown as Animation);
+
+    const element = makeElement();
+    attachSwipe(element, { onDismiss: () => {}, onRemove: () => {} });
+
+    // Below both thresholds: the release starts the cancel spring.
+    drag(element, [
+      [10, 0, 100],
+      [20, 0, 100],
+    ]);
+    expect(cancel).not.toHaveBeenCalled();
+
+    firePointer(element, 'pointerdown', 0, 0);
+
+    expect(cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('should cancel the live overlay on detach', () => {
+    const cancel = vi.fn();
+    vi.spyOn(Element.prototype, 'animate').mockReturnValue({
+      finished: Promise.resolve(),
+      cancel,
+    } as unknown as Animation);
+
+    const element = makeElement();
+    const detach = attachSwipe(element, {
+      onDismiss: () => {},
+      onRemove: () => {},
+    });
+
+    drag(element, [
+      [10, 0, 100],
+      [20, 0, 100],
+    ]);
+
+    detach();
+
+    expect(cancel).toHaveBeenCalledTimes(1);
+  });
+
   it('should clear data-swiping when detached mid-drag', () => {
     const element = makeElement();
     const detach = attachSwipe(element, {

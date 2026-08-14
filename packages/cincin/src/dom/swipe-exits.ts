@@ -24,13 +24,13 @@ function flingOut(
   velocity: number,
   config: FlingConfig,
   onComplete: () => void
-): void {
+): Animation | null {
   const target = channel.exitTarget();
   channel.set(target);
 
   if (prefersReducedMotion()) {
     onComplete();
-    return;
+    return null;
   }
 
   const duration = flingDuration(
@@ -55,20 +55,22 @@ function flingOut(
   animation.finished.then(onComplete, () => {
     // noop
   });
+
+  return animation;
 }
 
 function springBack(
   channel: SwipeChannel,
   from: number,
   duration: number
-): void {
+): Animation | null {
   channel.set(0);
 
   if (prefersReducedMotion()) {
-    return;
+    return null;
   }
 
-  channel.element.animate(
+  return channel.element.animate(
     [
       { translate: translateValue(channel.axis, from) },
       { translate: translateValue(channel.axis, 0) },

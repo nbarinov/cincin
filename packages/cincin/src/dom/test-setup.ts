@@ -10,10 +10,6 @@ if (!Element.prototype.releasePointerCapture) {
   Element.prototype.releasePointerCapture = () => {};
 }
 
-if (!Element.prototype.getAnimations) {
-  Element.prototype.getAnimations = () => [];
-}
-
 if (!Element.prototype.animate) {
   Element.prototype.animate = function animate() {
     return {
