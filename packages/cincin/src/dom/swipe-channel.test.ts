@@ -56,7 +56,9 @@ describe('createSwipeChannel', () => {
   it('should sign the exit target by the direction', () => {
     const element = makeElement();
 
-    expect(createSwipeChannel(element, 'right').exitTarget()).toBeGreaterThan(0);
+    expect(createSwipeChannel(element, 'right').exitTarget()).toBeGreaterThan(
+      0
+    );
     expect(createSwipeChannel(element, 'left').exitTarget()).toBeLessThan(0);
     expect(createSwipeChannel(element, 'up').exitTarget()).toBeLessThan(0);
     expect(createSwipeChannel(element, 'down').exitTarget()).toBeGreaterThan(0);

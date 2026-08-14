@@ -259,6 +259,29 @@ describe('attachSwipe', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('should capture the pointer only once the gesture locks onto the axis', () => {
+    const element = makeElement();
+    const capture = vi.spyOn(element, 'setPointerCapture');
+    attachSwipe(element, { onDismiss: () => {}, onRemove: () => {} });
+
+    // A plain tap: capturing here would retarget the compatibility
+    // click away from the toast's interactive children.
+    firePointer(element, 'pointerdown', 0, 0);
+    firePointer(element, 'pointerup', 0, 0);
+    expect(capture).not.toHaveBeenCalled();
+
+    // A foreign-axis gesture never captures either.
+    drag(element, [[2, 20, 50]]);
+    expect(capture).not.toHaveBeenCalled();
+
+    // A drag locked onto our axis does.
+    drag(element, [
+      [10, 0, 100],
+      [20, 0, 100],
+    ]);
+    expect(capture).toHaveBeenCalledTimes(1);
+  });
+
   it('should let a plain tap click through', () => {
     const element = makeElement();
     const onClick = vi.fn();

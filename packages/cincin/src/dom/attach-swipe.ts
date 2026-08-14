@@ -74,7 +74,6 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       return;
     }
 
-    element.setPointerCapture(event.pointerId);
     // A running spring is a transient overlay animation: read the visual
     // position first, pin it inline, then kill the overlay. Order matters,
     // otherwise the element snaps to its rest target for one frame.
@@ -110,6 +109,10 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       gesture.ours = Math.abs(dx) >= Math.abs(dy) === (axis === 'x');
 
       if (gesture.ours) {
+        // Capture only once the drag is real: pointer capture retargets
+        // even the compatibility click, so capturing on pointerdown would
+        // steal taps from the toast's interactive children.
+        element.setPointerCapture(event.pointerId);
         channel.markSwiping(true);
       }
     }
