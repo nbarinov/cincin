@@ -50,8 +50,8 @@ function createSwipeChannel(
       const container = element.parentElement;
       const size =
         axis === 'x'
-          ? (container?.clientWidth ?? window.innerWidth)
-          : (container?.clientHeight ?? window.innerHeight);
+          ? container?.clientWidth || window.innerWidth
+          : container?.clientHeight || window.innerHeight;
 
       // The buffer keeps shadows and blurs from lingering at the edge.
       return sign * (size + 40);

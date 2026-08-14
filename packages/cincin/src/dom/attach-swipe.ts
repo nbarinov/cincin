@@ -34,7 +34,10 @@ type SwipeOptions = {
     minDuration?: number;
     /** @default 450 */
     maxDuration?: number;
-    /** Initial slope of the fling easing; ties duration to hand speed. @default 3 */
+    /**
+     * Initial slope of the fling easing; ties duration to hand speed.
+     * Clamped to >= 1 so the easing stays a valid bezier. @default 3
+     */
     slope?: number;
   };
   cancel?: {
@@ -62,7 +65,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
   let gesture: Gesture | null = null;
 
   const onPointerDown = (event: PointerEvent) => {
-    if (!event.isPrimary) {
+    if (!event.isPrimary || gesture !== null) {
       return;
     }
 
@@ -113,12 +116,21 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       return;
     }
 
+    const now = performance.now();
     const raw = (axis === 'x' ? dx : dy) + gesture.base;
     const offset = dampen(raw, sign, drag.damping);
 
     gesture.offset = offset;
     gesture.moved = true;
-    gesture.samples.push({ t: performance.now(), pos: offset });
+    gesture.samples.push({ t: now, pos: offset });
+
+    // Keep only the trailing velocity window; the sample right before the
+    // cutoff stays so the window is always fully covered.
+    const cutoff = now - dismiss.velocityWindow;
+    while (gesture.samples.length > 2 && gesture.samples.at(1)!.t < cutoff) {
+      gesture.samples.shift();
+    }
+
     channel.set(offset);
   };
 
@@ -156,7 +168,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
     flingOut(
       channel,
       g.offset,
-      Math.abs(velocity),
+      Math.max(velocity, 0),
       {
         slope: fling.slope,
         duration: { min: fling.minDuration, max: fling.maxDuration },
@@ -195,12 +207,15 @@ type DeepRequired<T> = T extends (...args: never) => unknown
     : T;
 
 function resolveOptions(options: SwipeOptions): DeepRequired<SwipeOptions> {
+  const fling = { ...DEFAULTS.fling, ...options.fling };
+  fling.slope = Math.max(fling.slope, 1);
+
   return {
     ...DEFAULTS,
     ...options,
     drag: { ...DEFAULTS.drag, ...options.drag },
     dismiss: { ...DEFAULTS.dismiss, ...options.dismiss },
-    fling: { ...DEFAULTS.fling, ...options.fling },
+    fling,
     cancel: { ...DEFAULTS.cancel, ...options.cancel },
   };
 }
