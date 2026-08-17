@@ -3,7 +3,7 @@ import { attachSwipe } from 'cincin/dom';
 import type { SwipeOptions } from 'cincin/dom';
 import { useCallback } from 'react';
 import type { RefCallback } from 'react';
-import { useLatestRef } from './use-latest-ref';
+import { useLatestRef } from '../shared/use-latest-ref';
 
 type ToastSwipeOptions = Omit<SwipeOptions, 'onDismiss' | 'onRemove'>;
 
