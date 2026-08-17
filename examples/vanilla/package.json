@@ -1,0 +1,17 @@
+{
+  "name": "cincin-example-vanilla",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "cincin": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^7.2.4"
+  }
+}

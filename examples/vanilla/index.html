@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>cincin · vanilla example</title>
+    <link rel="stylesheet" href="/src/skin.css" />
+    <script>
+      // Applied before first paint so an overridden theme does not flash.
+      const theme = localStorage.getItem('cincin:theme');
+      if (theme) document.documentElement.style.colorScheme = theme;
+    </script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>🥂 cincin</h1>
+        <button id="theme-toggle" type="button" aria-label="Switch theme">
+          🌙
+        </button>
+      </header>
+      <p>
+        A vanilla renderer over <code>cincin</code> and <code>cincin/dom</code>.
+        Swipe a toast to the right, hover to pause timers.
+      </p>
+      <section class="controls" aria-label="Toast controls">
+        <button id="toast-message" type="button">Message</button>
+        <button id="toast-success" type="button">Success</button>
+        <button id="toast-error" type="button">Error</button>
+        <button id="toast-sticky" type="button">Sticky</button>
+        <button id="toast-update" type="button">Update</button>
+        <button id="toast-promise" type="button">Promise</button>
+        <button id="toast-burst" type="button">Burst ×8</button>
+        <button id="toast-dismiss-all" type="button">Dismiss all</button>
+      </section>
+    </main>
+    <ol id="toasts" aria-label="Notifications"></ol>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

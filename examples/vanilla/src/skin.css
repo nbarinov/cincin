@@ -1,0 +1,315 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  --page-pad: 2rem;
+
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 100dvh;
+  padding: max(var(--page-pad), env(safe-area-inset-top, 0px))
+    max(var(--page-pad), env(safe-area-inset-right, 0px))
+    max(var(--page-pad), env(safe-area-inset-bottom, 0px))
+    max(var(--page-pad), env(safe-area-inset-left, 0px));
+}
+
+@media (max-width: 600px) {
+  body {
+    --page-pad: 1.25rem;
+  }
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+main header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#theme-toggle {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.5rem;
+  background: transparent;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  #theme-toggle:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}
+
+#theme-toggle:active {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.controls button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .controls button:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}
+
+.controls button:active {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* --- toast region ------------------------------------------------- */
+
+#toasts {
+  position: fixed;
+  /* The region's distance from the viewport edges: the base inset plus
+   * the device safe area (home indicator, rotated notch; needs
+   * viewport-fit=cover in the meta). Every rule that moves a toast
+   * fully off screen adds --inset-bottom on top of 100%. */
+  --region-inset: 1rem;
+  --inset-right: calc(var(--region-inset) + env(safe-area-inset-right, 0px));
+  --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
+  --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
+  right: var(--inset-right);
+  bottom: var(--inset-bottom);
+  z-index: 10;
+  width: 22rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  /* Layered shadows tuned for a floating element: the color keeps the
+   * page hue (cool grey, desaturated) instead of pure black, layers
+   * double in size with a soft alpha, and both elevations have the
+   * same layer count so the grab transition interpolates
+   * layer-for-layer. The tokens go through light-dark() so they follow
+   * color-scheme (and the theme toggle), not just the system: a dark
+   * ground needs a near-black hue at a much denser alpha. */
+  --shadow-soft: light-dark(
+    hsl(220deg 15% 45% / 0.12),
+    hsl(220deg 45% 2% / 0.38)
+  );
+  --shadow-deep: light-dark(
+    hsl(220deg 15% 45% / 0.16),
+    hsl(220deg 45% 2% / 0.5)
+  );
+  --shadow-rest:
+    0 1px 2px var(--shadow-soft), 0 4px 8px var(--shadow-soft),
+    0 12px 24px -4px var(--shadow-deep);
+  --shadow-lift:
+    0 2px 4px var(--shadow-soft), 0 8px 16px var(--shadow-soft),
+    0 24px 48px -8px var(--shadow-deep);
+
+  /* Elevated surface: in dark mode shadows alone cannot separate the
+   * toast from the page, so the surface itself gets lighter (the
+   * closer to the "light", the brighter), light mode stays on canvas. */
+  --toast-surface: light-dark(canvas, color-mix(in oklab, canvas 82%, white));
+}
+
+@media (max-width: 600px) {
+  #toasts {
+    left: var(--inset-left);
+    width: auto;
+  }
+}
+
+.toast {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  background: var(--toast-surface);
+  box-shadow: var(--shadow-rest);
+  cursor: grab;
+  user-select: none;
+  transform-origin: center bottom;
+  transform: translateY(calc(var(--index) * -0.875rem))
+    scale(calc(1 - var(--index) * 0.05));
+  transition:
+    transform 400ms,
+    opacity 400ms,
+    box-shadow 200ms;
+}
+
+.toast::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border-left: 4px solid var(--toast-accent);
+  pointer-events: none;
+}
+
+/* Collapsed: only the front toasts peek out. */
+.toast[data-hidden='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#toasts[data-expanded='true'] .toast {
+  transform: translateY(calc(-1 * var(--offset)));
+}
+
+#toasts[data-expanded='true'] .toast[data-hidden='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hover bridge over the expanded gap, so the pointer never falls out
+ * of the region between two toasts and collapses the stack. */
+#toasts[data-expanded='true'] .toast::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: calc(12px + 1px);
+}
+
+/* Enter from below the viewport edge: the starting style is what the
+ * first frame transitions FROM (the added inset cancels the region's
+ * bottom offset, so the toast begins fully off screen). */
+@starting-style {
+  .toast {
+    transform: translateY(calc(100% + var(--inset-bottom)));
+    opacity: 0;
+  }
+}
+
+.toast[data-status='dismissing']:not([data-swipe-direction]) {
+  transform: translateY(calc(100% + var(--inset-bottom)));
+  opacity: 0;
+}
+
+#toasts[data-expanded='true']
+  .toast[data-status='dismissing']:not([data-swipe-direction]) {
+  transform: translateY(calc(-1 * var(--offset) + 100%));
+  opacity: 0;
+}
+
+.toast[data-type='message'] {
+  --toast-accent: #8590a2;
+}
+
+.toast[data-type='info'] {
+  --toast-accent: #388bff;
+}
+
+.toast[data-type='success'] {
+  --toast-accent: #22a06b;
+}
+
+.toast[data-type='warning'] {
+  --toast-accent: #e2b203;
+}
+
+.toast[data-type='error'] {
+  --toast-accent: #ef5c48;
+}
+
+.toast[data-type='loading'] {
+  --toast-accent: #8f7ee7;
+}
+
+.toast[data-swiping] {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lift);
+}
+
+/* The protocol variable in action: the swipe progress fills the
+ * surface with the accent tint. Behind the content (negative z-index
+ * inside the toast's own stacking context), the fill edge tracks the
+ * finger 1:1 while dragging and animates home on release. */
+.toast::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(
+      to right,
+      color-mix(in oklab, var(--toast-accent) 15%, transparent),
+      color-mix(in oklab, var(--toast-accent) 15%, transparent)
+    )
+    no-repeat;
+  background-size: clamp(0px, abs(var(--cincin-swipe-x, 0px)), 100%) 100%;
+}
+
+.toast:not([data-swiping])::after {
+  /* Matches the cancel spring: the fill retreats with the toast. */
+  transition: background-size 300ms ease-out;
+}
+
+/* Reduced motion: crossfades stay, movement snaps. The renderer
+ * removes dismissed toasts synchronously in this mode (mirroring the
+ * swipe controller), so nothing here waits for a transition to end. */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition:
+      opacity 400ms,
+      box-shadow 200ms;
+  }
+
+  .toast:not([data-swiping])::after {
+    transition: none;
+  }
+}
+
+.toast-content {
+  flex: 1;
+  margin: 0;
+}
+
+.toast-close {
+  flex: none;
+  padding: 0.2rem 0.45rem;
+  border: none;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .toast-close:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    opacity: 1;
+  }
+}
+
+.toast-close:active {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  opacity: 1;
+}
