@@ -52,9 +52,11 @@ function assignStyle(
     for (const [property, value] of previousValues) {
       // An empty string resets the declaration entirely on both paths.
       if (property.startsWith('--')) {
-        value.length === 0
-          ? element.style.removeProperty(property)
-          : element.style.setProperty(property, value);
+        if (value.length === 0) {
+          element.style.removeProperty(property);
+        } else {
+          element.style.setProperty(property, value);
+        }
       } else {
         declaration[property] = value;
       }

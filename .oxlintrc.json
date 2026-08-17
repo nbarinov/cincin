@@ -1,0 +1,101 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "unicorn/consistent-function-scoping": "off"
+  },
+  "ignorePatterns": ["**/dist/**"],
+  "overrides": [
+    {
+      "files": ["packages/cincin/src/core/**/*.ts"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          {
+            "name": "window",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "document",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "navigator",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "location",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "history",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "localStorage",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "sessionStorage",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "matchMedia",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "getComputedStyle",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "requestAnimationFrame",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "cancelAnimationFrame",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "addEventListener",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "HTMLElement",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "Element",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "Node",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "Event",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "CustomEvent",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "MutationObserver",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "ResizeObserver",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "IntersectionObserver",
+            "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          }
+        ]
+      }
+    }
+  ]
+}

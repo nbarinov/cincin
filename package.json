@@ -9,12 +9,14 @@
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "lint": "oxlint --deny-warnings",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1",
   "devDependencies": {
     "jsdom": "^30.0.1",
+    "oxlint": "^1.78.0",
     "prettier": "^3.9.6",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
