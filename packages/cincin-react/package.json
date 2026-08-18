@@ -39,8 +39,11 @@
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json"
   },
+  "dependencies": {
+    "cincin": "workspace:^"
+  },
   "peerDependencies": {
-    "cincin": "workspace:*",
+    "cincin": "workspace:^",
     "react": ">=19"
   },
   "devDependencies": {
@@ -48,7 +51,6 @@
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.4",
-    "cincin": "workspace:*",
     "react": "^19.2.0",
     "react-dom": "^19.2.8",
     "vitest": "^4.1.10"
