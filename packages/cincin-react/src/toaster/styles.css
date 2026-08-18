@@ -1,0 +1,297 @@
+/*
+ * The skin plays by docs/protocol.md:
+ * - all skin motion lives on transform/opacity transitions; the skin
+ *   never writes `translate` (the swipe channel), so a grabbed toast
+ *   keeps its stack position under the drag
+ * - the regular exit is gated on the absence of data-swipe-direction:
+ *   the fling owns that exit
+ * - data-swiping and --cincin-swipe-x drive the grabbed styling
+ *
+ * Pseudo-element budget of a card: ::before is the hover bridge over
+ * the expanded gap, ::after is the swipe fill. The accent stripe is a
+ * plain border-left for that reason.
+ */
+
+[data-cincin-toaster] {
+  --region-inset: 1rem;
+  --inset-right: calc(var(--region-inset) + env(safe-area-inset-right, 0px));
+  --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
+  --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
+
+  position: fixed;
+  right: var(--inset-right);
+  bottom: var(--inset-bottom);
+  z-index: 999999999;
+  width: 22rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  outline: none;
+
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: CanvasText;
+
+  --shadow-soft: light-dark(
+    hsl(220deg 15% 45% / 0.12),
+    hsl(220deg 45% 2% / 0.38)
+  );
+  --shadow-deep: light-dark(
+    hsl(220deg 15% 45% / 0.16),
+    hsl(220deg 45% 2% / 0.5)
+  );
+  --shadow-rest:
+    0 1px 2px var(--shadow-soft), 0 4px 8px var(--shadow-soft),
+    0 12px 24px -4px var(--shadow-deep);
+  --shadow-lift:
+    0 2px 4px var(--shadow-soft), 0 8px 16px var(--shadow-soft),
+    0 24px 48px -8px var(--shadow-deep);
+
+  --toast-surface: light-dark(canvas, color-mix(in oklab, canvas 82%, white));
+}
+
+@media (max-width: 600px) {
+  [data-cincin-toaster] {
+    left: var(--inset-left);
+    width: auto;
+  }
+}
+
+[data-cincin-toast] {
+  --toast-accent: #8590a2;
+
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.8rem 0.9rem;
+  border-left: 4px solid var(--toast-accent);
+  border-radius: 0.6rem;
+  background: var(--toast-surface);
+  box-shadow: var(--shadow-rest);
+  cursor: grab;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transform-origin: center bottom;
+  transform: translateY(calc(var(--index) * -0.875rem))
+    scale(calc(1 - var(--index) * 0.05));
+  transition:
+    transform 400ms,
+    opacity 400ms,
+    box-shadow 200ms;
+}
+
+[data-cincin-toast][data-type='info'] {
+  --toast-accent: #388bff;
+}
+
+[data-cincin-toast][data-type='success'] {
+  --toast-accent: #22a06b;
+}
+
+[data-cincin-toast][data-type='warning'] {
+  --toast-accent: #e2b203;
+}
+
+[data-cincin-toast][data-type='error'] {
+  --toast-accent: #ef5c48;
+}
+
+[data-cincin-toast][data-type='loading'] {
+  --toast-accent: #8f7ee7;
+}
+
+/* --- slots --------------------------------------------------------- */
+
+[data-cincin-toast] > [data-cincin-icon] {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--toast-accent);
+}
+
+[data-cincin-toast][data-type='loading'] > [data-cincin-icon] {
+  animation: cincin-spin 900ms linear infinite;
+}
+
+[data-cincin-content] {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+[data-cincin-title] {
+  font-weight: 600;
+}
+
+[data-cincin-description] {
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+[data-cincin-action] {
+  flex: none;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-action]:active {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+[data-cincin-close] {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.55;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-close] > [data-cincin-icon] {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+[data-cincin-close]:active {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  [data-cincin-action]:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  [data-cincin-close]:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    opacity: 1;
+  }
+}
+
+/* --- stack states -------------------------------------------------- */
+
+[data-cincin-toast][data-hidden='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-cincin-toaster][data-expanded='true'] [data-cincin-toast] {
+  transform: translateY(calc(-1 * var(--offset)));
+}
+
+[data-cincin-toaster][data-expanded='true']
+  [data-cincin-toast][data-hidden='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hover bridge over the expanded gap, so the pointer never falls out
+ * of the region between two toasts and collapses the stack. Keep the
+ * height in sync with the stack gap of use-stack. */
+[data-cincin-toaster][data-expanded='true'] [data-cincin-toast]::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: calc(12px + 1px);
+}
+
+/* Enter from below the viewport edge: the starting style is what the
+ * first frame transitions FROM. */
+@starting-style {
+  [data-cincin-toast] {
+    transform: translateY(calc(100% + var(--inset-bottom)));
+    opacity: 0;
+  }
+}
+
+/* The regular exit: slide back down. Swiped toasts skip it, and the
+ * fading toast keeps its pointer-events: it stays the hover surface
+ * while the survivors reflow into its slot. */
+[data-cincin-toast][data-status='dismissing']:not([data-swipe-direction]) {
+  transform: translateY(calc(100% + var(--inset-bottom)));
+  opacity: 0;
+}
+
+/* Expanded, the toast exits in place: the pointer stays over the stack
+ * while the survivors reflow into the vacated slot. */
+[data-cincin-toaster][data-expanded='true']
+  [data-cincin-toast][data-status='dismissing']:not([data-swipe-direction]) {
+  transform: translateY(calc(-1 * var(--offset) + 100%));
+  opacity: 0;
+}
+
+/* --- swipe --------------------------------------------------------- */
+
+[data-cincin-toast][data-swiping] {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lift);
+}
+
+/* The protocol variable in action: the swipe progress fills the
+ * surface with the accent tint, behind the content. */
+[data-cincin-toast]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(
+      to right,
+      color-mix(in oklab, var(--toast-accent) 15%, transparent),
+      color-mix(in oklab, var(--toast-accent) 15%, transparent)
+    )
+    no-repeat;
+  background-size: clamp(0px, abs(var(--cincin-swipe-x, 0px)), 100%) 100%;
+}
+
+[data-cincin-toast]:not([data-swiping])::after {
+  /* Matches the cancel spring: the fill retreats with the toast. */
+  transition: background-size 300ms ease-out;
+}
+
+@keyframes cincin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion: crossfades stay, movement snaps. The exit hook
+ * removes dismissed toasts synchronously in this mode, so nothing here
+ * waits for a transition to end. The loading spin stays: it signals
+ * state, not decoration. */
+@media (prefers-reduced-motion: reduce) {
+  [data-cincin-toast] {
+    transition:
+      opacity 400ms,
+      box-shadow 200ms;
+  }
+
+  [data-cincin-toast]:not([data-swiping])::after {
+    transition: none;
+  }
+}

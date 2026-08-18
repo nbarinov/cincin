@@ -1,7 +1,9 @@
-export { createToasterContext } from './core/context';
-export { useToastExit } from './core/use-toast-exit';
-export { useToastSwipe } from './core/use-toast-swipe';
-export type { ToastSwipeOptions } from './core/use-toast-swipe';
-export type { ToastExitEvent } from './core/use-toast-exit';
+// The quick start: a ready-to-use toaster over the package singleton.
+// The stylesheet travels through the consumer's bundler via this
+// import, so one entry brings both the component and its skin. The
+// headless building blocks live in 'cincin-react/core'.
+import './toaster/styles.css';
 
-export type { Toaster, Toast, ToastNotifyEvent } from 'cincin';
+export { Toaster } from './toaster/toaster';
+export { toast } from './toaster/toast';
+export type { ToastContent } from './toaster/content';

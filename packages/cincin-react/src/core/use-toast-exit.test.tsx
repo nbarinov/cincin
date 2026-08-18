@@ -3,7 +3,13 @@ import { createToaster } from 'cincin';
 import { useToastExit } from './use-toast-exit';
 import type { Toaster, ToastId } from 'cincin';
 
-function ExitHost({ toastId, toaster }: { toastId: ToastId; toaster: Toaster }) {
+function ExitHost({
+  toastId,
+  toaster,
+}: {
+  toastId: ToastId;
+  toaster: Toaster;
+}) {
   const onExitEnd = useToastExit(toastId, toaster);
   return (
     <li data-testid="toast" onTransitionEnd={onExitEnd}>

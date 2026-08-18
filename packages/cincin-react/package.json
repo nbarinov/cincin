@@ -19,11 +19,19 @@
   "files": [
     "dist"
   ],
-  "sideEffects": [],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./core": {
+      "source": "./src/core/index.ts",
+      "types": "./dist/core/index.d.mts",
+      "import": "./dist/core/index.mjs"
     },
     "./package.json": "./package.json"
   },
@@ -33,7 +41,7 @@
   },
   "peerDependencies": {
     "cincin": "workspace:*",
-    "react": ">=18"
+    "react": ">=19"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
