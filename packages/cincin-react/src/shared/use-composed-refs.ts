@@ -11,7 +11,7 @@ export { useComposedRefs };
 
 // utils
 
-function setRef<T>(ref: ComposableRef<T>, value: T) {
+function setRef<T>(ref: ComposableRef<T>, value: T): (() => void) | void {
   if (typeof ref === 'function') {
     return ref(value);
   } else if (ref !== null && ref !== undefined) {
