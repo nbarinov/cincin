@@ -1,9 +1,9 @@
 'use client';
 
 import type { Toaster, Toast } from 'cincin';
-import { createContext, useContext, useSyncExternalStore } from 'react';
+import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
-import { getServerSnapshot } from '../shared/ssr';
+import { useToasts as useToastsOf } from './use-toasts';
 
 function createToasterContext<Content extends {} = string>(
   defaultToaster?: Toaster<Content>
@@ -41,11 +41,7 @@ function createToasterContext<Content extends {} = string>(
   ): ReadonlyArray<Toast<Content>> {
     const instance = useToaster(toaster);
 
-    return useSyncExternalStore(
-      instance.subscribe,
-      instance.getSnapshot,
-      getServerSnapshot
-    );
+    return useToastsOf(instance);
   }
 
   return { ToasterProvider, useToaster, useToasts };
