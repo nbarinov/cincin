@@ -76,6 +76,7 @@ function Toast({
   const onExitToast = useToastExit(toast.id, toaster);
   const swipeRef = useToastSwipe(toast.id, toaster, {
     direction: swipeDirection,
+    enabled: toast.dismissible,
   });
   const composedRef = useComposedRefs(swipeRef, forwardedRef);
 
@@ -89,6 +90,7 @@ function Toast({
       data-cincin-toast
       data-type={toast.type}
       data-status={toast.status}
+      data-dismissible={toast.dismissible}
       ref={composedRef}
       onTransitionEnd={onExitToast}
     >

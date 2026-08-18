@@ -159,4 +159,69 @@ describe('useToastSwipe', () => {
 
     toaster.destroy();
   });
+
+  it('should not attach the controller while disabled', () => {
+    const toaster = createToaster();
+    const id = toaster.message('locked');
+
+    render(
+      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: false }} />
+    );
+    const element = getToastElement();
+    stubGestureSurface(element);
+
+    // No controller at all: no touch-action claim, and a passing gesture
+    // changes nothing.
+    expect(element.style.touchAction).toBe('');
+
+    firePointer(element, 'pointerdown', 0);
+    firePointer(element, 'pointermove', 30);
+    firePointer(element, 'pointermove', 60);
+    firePointer(element, 'pointerup', 60);
+
+    expect(element.hasAttribute('data-swiping')).toBe(false);
+    expect(toaster.getSnapshot()[0]?.status).toBe('active');
+    toaster.destroy();
+  });
+
+  it('should attach once enabled flips to true', () => {
+    const toaster = createToaster();
+    const id = toaster.message('unlocked later');
+
+    const view = render(
+      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: false }} />
+    );
+    const element = getToastElement();
+    stubGestureSurface(element);
+    expect(element.style.touchAction).toBe('');
+
+    view.rerender(
+      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: true }} />
+    );
+    expect(element.style.touchAction).toBe('pan-y');
+
+    firePointer(element, 'pointerdown', 0);
+    firePointer(element, 'pointermove', 30);
+    firePointer(element, 'pointermove', 60);
+    firePointer(element, 'pointerup', 60);
+
+    expect(toaster.getSnapshot()[0]?.status).toBe('dismissing');
+    toaster.destroy();
+  });
+
+  it('should detach and release its claims once disabled', () => {
+    const toaster = createToaster();
+    const id = toaster.message('locked later');
+
+    const view = render(<SwipeHost toastId={id} toaster={toaster} />);
+    const element = getToastElement();
+    expect(element.style.touchAction).toBe('pan-y');
+
+    view.rerender(
+      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: false }} />
+    );
+
+    expect(element.style.touchAction).toBe('');
+    toaster.destroy();
+  });
 });

@@ -87,6 +87,11 @@
     box-shadow 200ms;
 }
 
+/* A non-dismissible toast carries no swipe controller: nothing to grab. */
+[data-cincin-toast][data-dismissible='false'] {
+  cursor: default;
+}
+
 [data-cincin-toast][data-type='info'] {
   --toast-accent: #388bff;
 }

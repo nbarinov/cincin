@@ -5,28 +5,36 @@ import { useCallback } from 'react';
 import type { RefCallback } from 'react';
 import { useLatestRef } from '../shared/use-latest-ref';
 
-type ToastSwipeOptions = Omit<SwipeOptions, 'onDismiss' | 'onRemove'>;
+type ToastSwipeOptions = Omit<SwipeOptions, 'onDismiss' | 'onRemove'> & {
+  /**
+   * Whether the gesture is attached at all. A non-dismissible toast
+   * gets no controller: no swipe, and no touch-action claim either.
+   * @default true
+   */
+  enabled?: boolean;
+};
 
 function useToastSwipe<T extends HTMLElement, Content extends {}>(
   toastId: ToastId,
   toaster: Toaster<Content>,
-  options?: ToastSwipeOptions
+  options: ToastSwipeOptions = {}
 ): RefCallback<T> {
-  const optionsRef = useLatestRef(options);
+  const { enabled = true, ...swipeOptions } = options;
+  const swipeOptionsRef = useLatestRef(swipeOptions);
 
   return useCallback(
     (el) => {
-      if (el === null) {
+      if (!enabled || el === null) {
         return;
       }
 
       return attachSwipe(el, {
-        ...optionsRef.current,
+        ...swipeOptionsRef.current,
         onDismiss: () => toaster.dismiss(toastId),
         onRemove: () => toaster.remove(toastId),
       });
     },
-    [optionsRef, toaster, toastId, options?.direction]
+    [swipeOptionsRef, toaster, toastId, options?.direction, enabled]
   );
 }
 
