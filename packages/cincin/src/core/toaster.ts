@@ -5,6 +5,7 @@ import type {
   CreateOptions,
   UpdatePatch,
   PromisePhase,
+  PromiseOptions,
   Toast,
   Toaster as ToasterContract,
   ToasterConfig,
@@ -125,7 +126,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       duration: this.#resolveToastDuration(toastType, duration),
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      dismissible: dismissible ?? true,
+      dismissible: this.#resolveDismissible(toastType, dismissible),
       paused: false,
     };
 
@@ -151,6 +152,11 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     const duration =
       patch.duration ??
       (typeChanged ? this.#resolveToastDuration(type) : prev.duration);
+    // Same rule for dismissibility: it derives from the type unless set
+    // explicitly, so a settled promise becomes closable again.
+    const dismissible =
+      patch.dismissible ??
+      (typeChanged ? this.#resolveDismissible(type) : prev.dismissible);
     // The timer belongs to the duration: touching it explicitly (even with the
     // same value) or implicitly via a type change rewinds the clock. A repeated
     // notification can extend its toast this way; content-only updates never do.
@@ -161,6 +167,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       ...patch,
       type,
       duration,
+      dismissible,
       updatedAt: Date.now(),
     };
 
@@ -209,9 +216,12 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
 
   promise<T>(
     promise: Promise<T>,
-    phases: PromisePhase<T, Content>
+    phases: PromisePhase<T, Content>,
+    options?: PromiseOptions
   ): Promise<T> {
-    const id = this.loading(phases.loading);
+    // The options only shape the pending toast: create handles id
+    // addressing (upsert included) and the dismissible override.
+    const id = this.loading(phases.loading, options);
 
     promise
       .then(
@@ -529,6 +539,17 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     }
 
     return this.config.duration;
+  }
+
+  #resolveDismissible(type: ToastType, dismissible?: boolean): boolean {
+    if (typeof dismissible === 'boolean') {
+      return dismissible;
+    }
+
+    // A running operation has an unknown outcome: the user cannot close
+    // it, only the code that started it can (dismiss and remove still
+    // work, the flag only steers user-facing controls).
+    return type !== 'loading';
   }
 }
 

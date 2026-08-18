@@ -13,6 +13,7 @@ export type {
   RemovedNotifyEvent,
   ToastNotifyEvent,
   PromisePhase,
+  PromiseOptions,
   ToasterConfig,
   Toaster,
 } from './types';

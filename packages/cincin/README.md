@@ -23,11 +23,15 @@ import { createToaster } from 'cincin';
 const toaster = createToaster({ max: 5, duration: 4000 });
 
 toaster.success('Saved');
-toaster.promise(upload(), {
-  loading: 'Uploading…',
-  success: (ms) => `Uploaded in ${ms}ms`,
-  error: () => 'Upload failed',
-});
+toaster.promise(
+  upload(),
+  {
+    loading: 'Uploading…',
+    success: (ms) => `Uploaded in ${ms}ms`,
+    error: () => 'Upload failed',
+  },
+  { id: 'upload' } // optional: address the toast, override dismissible
+);
 
 const unsubscribe = toaster.subscribe((event) => {
   // event.type: 'added' | 'updated' | 'dismissed' | 'removed'

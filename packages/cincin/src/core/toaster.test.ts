@@ -129,6 +129,66 @@ describe('store', () => {
     });
   });
 
+  describe('dismissible', () => {
+    it('should default to true for every type but loading', () => {
+      const t = createToaster();
+      const message = t.message('m');
+      const loading = t.loading('l');
+
+      expect(t.getSnapshot().find((x) => x.id === message)!.dismissible).toBe(
+        true
+      );
+      expect(t.getSnapshot().find((x) => x.id === loading)!.dismissible).toBe(
+        false
+      );
+    });
+
+    it('should honor an explicit dismissible on a loading toast', () => {
+      const t = createToaster();
+      t.loading('l', { dismissible: true });
+
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(true);
+    });
+
+    it('should re-derive dismissible from the new type on update', () => {
+      const t = createToaster();
+      const id = t.loading('l');
+
+      t.update(id, { type: 'success' });
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(true);
+
+      t.update(id, { type: 'loading' });
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
+    });
+
+    it('should keep dismissible across content-only updates', () => {
+      const t = createToaster();
+      const id = t.message('m', { dismissible: false });
+
+      t.update(id, { content: 'changed' });
+
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
+    });
+
+    it('should let an explicit patch win over the type default', () => {
+      const t = createToaster();
+      const id = t.message('m');
+
+      t.update(id, { type: 'loading', dismissible: true });
+
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(true);
+    });
+
+    it('should still dismiss a loading toast programmatically', () => {
+      const t = createToaster();
+      const id = t.loading('l');
+
+      t.dismiss(id);
+
+      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
+    });
+  });
+
   describe('dismiss & remove', () => {
     it('should move toast to dismissing status and keep it in the snapshot', () => {
       const t = createToaster();
@@ -453,6 +513,62 @@ describe('store', () => {
         expect(t.getSnapshot().at(0)!.content).toBe('got 42')
       );
       expect(t.getSnapshot().at(0)!.type).toBe('success');
+    });
+
+    it('should address the toast by the given id', async () => {
+      const t = createToaster();
+      const p = t.promise(
+        Promise.resolve('ok'),
+        { loading: 'wait', success: 'done' },
+        { id: 'upload' }
+      );
+
+      expect(t.getSnapshot().at(0)!.id).toBe('upload');
+      await p;
+      await vi.waitFor(() =>
+        expect(t.getSnapshot().at(0)!.content).toBe('done')
+      );
+      expect(t.getSnapshot().at(0)!.id).toBe('upload');
+    });
+
+    it('should upsert over a live toast with the same id', () => {
+      const t = createToaster();
+      t.message('draft', { id: 'doc' });
+
+      t.promise(new Promise(() => {}), { loading: 'saving' }, { id: 'doc' });
+
+      expect(t.getSnapshot()).toHaveLength(1);
+      expect(t.getSnapshot().at(0)!.type).toBe('loading');
+      expect(t.getSnapshot().at(0)!.content).toBe('saving');
+    });
+
+    it('should let dismissible open the loading phase', () => {
+      const t = createToaster();
+      t.promise(
+        new Promise(() => {}),
+        { loading: 'wait' },
+        { dismissible: true }
+      );
+
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(true);
+    });
+
+    it('should lock the loading phase and unlock the settled one', async () => {
+      const t = createToaster();
+      const p = t.promise(Promise.resolve('ok'), {
+        loading: 'wait',
+        success: 'done',
+      });
+
+      // While pending the user cannot close it: the outcome is unknown.
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
+
+      await p;
+      await vi.waitFor(() =>
+        expect(t.getSnapshot().at(0)!.type).toBe('success')
+      );
+      // The result is an ordinary toast again.
+      expect(t.getSnapshot().at(0)!.dismissible).toBe(true);
     });
 
     it('should accept plain content for phases', async () => {

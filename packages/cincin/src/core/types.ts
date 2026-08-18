@@ -19,7 +19,7 @@ type CreateOptions = {
   id?: ToastId;
   type?: ToastType;
   duration?: number;
-  /** @default true */
+  /** @default true, false for the loading type */
   dismissible?: boolean;
 };
 
@@ -69,6 +69,16 @@ interface PromisePhase<T, Content extends {} = string> {
   error?: Content | ((error: unknown) => Content | Promise<Content>);
 }
 
+/**
+ * Toast options a promise can carry. `id` addresses the toast (an
+ * existing one gets upserted, exactly like create); `dismissible`
+ * overrides the loading lock for the pending phase, the settled phase
+ * derives it from its own type again. Durations are not accepted: the
+ * loading phase is open-ended by definition and the settled phase takes
+ * the type default.
+ */
+type PromiseOptions = Pick<CreateOptions, 'id' | 'dismissible'>;
+
 interface ToasterConfig {
   /** @default Infinity */
   max?: number;
@@ -107,7 +117,11 @@ interface Toaster<Content extends {} = string> {
   resume(id: ToastId): void;
   resume(ids: ToastId[]): void;
 
-  promise<T>(promise: Promise<T>, phases: PromisePhase<T, Content>): Promise<T>;
+  promise<T>(
+    promise: Promise<T>,
+    phases: PromisePhase<T, Content>,
+    options?: PromiseOptions
+  ): Promise<T>;
 
   getSnapshot(): ReadonlyArray<Toast<Content>>;
   subscribe(listener: (event: ToastNotifyEvent<Content>) => void): () => void;
@@ -129,6 +143,7 @@ export type {
   RemovedNotifyEvent,
   ToastNotifyEvent,
   PromisePhase,
+  PromiseOptions,
   ToasterConfig,
   Toaster,
 };
