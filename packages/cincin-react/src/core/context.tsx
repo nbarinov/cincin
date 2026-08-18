@@ -3,6 +3,7 @@
 import type { Toaster, Toast } from 'cincin';
 import { createContext, useContext, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
+import { getServerSnapshot } from '../shared/ssr';
 
 function createToasterContext<Content extends {} = string>(
   defaultToaster?: Toaster<Content>
@@ -51,7 +52,3 @@ function createToasterContext<Content extends {} = string>(
 }
 
 export { createToasterContext };
-
-const EMPTY_SNAPSHOT: ReadonlyArray<never> = Object.freeze([]);
-
-const getServerSnapshot = (): ReadonlyArray<never> => EMPTY_SNAPSHOT;
