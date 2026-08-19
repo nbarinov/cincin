@@ -1,15 +1,12 @@
 type ToastId = string | number;
 type ToastType =
   'success' | 'error' | 'warning' | 'info' | 'loading' | 'message';
-type ToastStatus = 'queued' | 'active' | 'dismissing';
 
 interface Toast<Content extends {} = string> {
   readonly id: ToastId;
   readonly type: ToastType;
-  readonly status: ToastStatus;
   readonly duration: number;
   readonly dismissible: boolean;
-  readonly paused: boolean;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly content: Content;
@@ -31,7 +28,7 @@ type UpdatePatch<Content extends {} = string> = Partial<{
 }>;
 
 interface NotifyEvent {
-  type: 'added' | 'updated' | 'dismissed' | 'removed';
+  type: 'added' | 'updated' | 'removed';
 }
 
 interface AddedNotifyEvent<Content extends {} = string> extends NotifyEvent {
@@ -43,13 +40,9 @@ interface UpdatedNotifyEvent<Content extends {} = string> extends NotifyEvent {
   type: 'updated';
   toast: Toast<Content>;
   previous: Toast<Content>;
-}
-
-interface DismissedNotifyEvent<
-  Content extends {} = string,
-> extends NotifyEvent {
-  type: 'dismissed';
-  toast: Toast<Content>;
+  /** What the caller asked to change: a presenter restarts its show clock
+   * on an explicit duration touch even when the value is the same. */
+  patch: UpdatePatch<Content>;
 }
 
 interface RemovedNotifyEvent<Content extends {} = string> extends NotifyEvent {
@@ -60,7 +53,6 @@ interface RemovedNotifyEvent<Content extends {} = string> extends NotifyEvent {
 type ToastNotifyEvent<Content extends {} = string> =
   | AddedNotifyEvent<Content>
   | UpdatedNotifyEvent<Content>
-  | DismissedNotifyEvent<Content>
   | RemovedNotifyEvent<Content>;
 
 interface PromisePhase<T, Content extends {} = string> {
@@ -80,12 +72,8 @@ interface PromisePhase<T, Content extends {} = string> {
 type PromiseOptions = Pick<CreateOptions, 'id' | 'dismissible'>;
 
 interface ToasterConfig {
-  /** @default Infinity */
-  max?: number;
   /** @default 4000 */
   duration?: number;
-  /** @default 2000 */
-  removeTimeout?: number;
 }
 
 interface Toaster<Content extends {} = string> {
@@ -101,21 +89,9 @@ interface Toaster<Content extends {} = string> {
   create(content: Content, options?: CreateOptions): ToastId;
   update(id: ToastId, patch: UpdatePatch<Content>): void;
 
-  dismiss(): void;
-  dismiss(id: ToastId): void;
-  dismiss(ids: ToastId[]): void;
-
   remove(): void;
   remove(id: ToastId): void;
   remove(ids: ToastId[]): void;
-
-  pause(): void;
-  pause(id: ToastId): void;
-  pause(ids: ToastId[]): void;
-
-  resume(): void;
-  resume(id: ToastId): void;
-  resume(ids: ToastId[]): void;
 
   promise<T>(
     promise: Promise<T>,
@@ -125,7 +101,6 @@ interface Toaster<Content extends {} = string> {
 
   getSnapshot(): ReadonlyArray<Toast<Content>>;
   subscribe(listener: (event: ToastNotifyEvent<Content>) => void): () => void;
-  getRemainingMs(id: ToastId): number;
 
   destroy(): void;
 }
@@ -134,12 +109,10 @@ export type {
   Toast,
   ToastId,
   ToastType,
-  ToastStatus,
   CreateOptions,
   UpdatePatch,
   AddedNotifyEvent,
   UpdatedNotifyEvent,
-  DismissedNotifyEvent,
   RemovedNotifyEvent,
   ToastNotifyEvent,
   PromisePhase,

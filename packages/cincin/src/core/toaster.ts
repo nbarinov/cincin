@@ -1,5 +1,4 @@
 import { ToastStore } from './store';
-import { TimerManager } from './timer-manager';
 import { counter, devWarn } from './utils';
 import type {
   CreateOptions,
@@ -11,18 +10,18 @@ import type {
   ToasterConfig,
   ToastId,
   ToastNotifyEvent,
-  DismissedNotifyEvent,
-  RemovedNotifyEvent,
-  UpdatedNotifyEvent,
   ToastType,
 } from './types';
 
+/**
+ * The notification record store with its sugar. It knows nothing about
+ * showing: queueing, timers, pauses and exit phases belong to a presenter
+ * subscribed to it. The only lifecycle here is create, update, remove.
+ */
 class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   readonly config: Readonly<Required<ToasterConfig>>;
 
   #store = new ToastStore<Content>();
-  #durationTimers = new TimerManager<ToastId>();
-  #removeTimers = new TimerManager<ToastId>();
   #toastCounter = counter();
   #idSalt = Math.random().toString(36).slice(2, 6);
 
@@ -31,19 +30,9 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   readonly getSnapshot: ToasterContract<Content>['getSnapshot'];
 
   constructor(config?: ToasterConfig) {
-    this.config = {
-      max: config?.max ?? Infinity,
+    this.config = Object.freeze({
       duration: config?.duration ?? 4000,
-      removeTimeout: config?.removeTimeout ?? 2000,
-    };
-
-    if (!(this.config.max >= 1)) {
-      // NaN fails this comparison too. Not an error: a frozen toaster may be
-      // intentional, but silently showing nothing is the classic typo symptom.
-      devWarn(
-        `config.max is ${this.config.max}: every toast will stay queued and nothing will ever show`
-      );
-    }
+    });
 
     this.subscribe = this.#store.subscribe;
     this.getSnapshot = this.#store.getSnapshot;
@@ -56,12 +45,8 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     this.message = this.message.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
-    this.dismiss = this.dismiss.bind(this);
     this.remove = this.remove.bind(this);
-    this.pause = this.pause.bind(this);
-    this.resume = this.resume.bind(this);
     this.promise = this.promise.bind(this);
-    this.getRemainingMs = this.getRemainingMs.bind(this);
     this.destroy = this.destroy.bind(this);
   }
 
@@ -95,10 +80,11 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     const { id, type, duration, dismissible } = options;
     const toastId = this.#resolveToastId(id);
 
-    const existing = this.#store.get(toastId);
-
-    if (existing !== undefined && existing.status !== 'dismissing') {
+    if (this.#store.has(toastId)) {
       // Upsert: only explicitly provided fields make it into the patch.
+      // Whether the record is currently leaving a screen is the presenter's
+      // concern (it opens a fresh presentation for an update on a leaving
+      // one); the store just patches the record.
       this.update(toastId, {
         content,
         ...(type !== undefined && { type }),
@@ -109,32 +95,19 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       return toastId;
     }
 
-    if (existing !== undefined) {
-      // Dead means dead: a dismissing toast is on its way out. Bury it now
-      // and fall through to a fresh create under the same id, so the caller
-      // gets a live toast instead of patching a corpse the safety net is
-      // about to delete. The renderer sees familiar removed + added events.
-      this.remove(toastId);
-    }
-
     const toastType = type ?? 'message';
     const toast: Toast<Content> = {
       id: toastId,
       content,
-      status: this.#hasFreeSlot() ? 'active' : 'queued',
       type: toastType,
       duration: this.#resolveToastDuration(toastType, duration),
       createdAt: Date.now(),
       updatedAt: Date.now(),
       dismissible: this.#resolveDismissible(toastType, dismissible),
-      paused: false,
     };
 
     this.#store.set(toast);
-    if (toast.status === 'active') {
-      this.#startDuration(toast);
-    }
-    this.#commit({ type: 'added', toast });
+    this.#store.commit({ type: 'added', toast });
 
     return toastId;
   }
@@ -153,14 +126,12 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       patch.duration ??
       (typeChanged ? this.#resolveToastDuration(type) : prev.duration);
     // Same rule for dismissibility: it derives from the type unless set
-    // explicitly, so a settled promise becomes closable again.
+    // explicitly, so a settled promise becomes closable again. Restarting
+    // the show clock on a duration touch is the presenter's rule; it reads
+    // the previous record off the updated event.
     const dismissible =
       patch.dismissible ??
       (typeChanged ? this.#resolveDismissible(type) : prev.dismissible);
-    // The timer belongs to the duration: touching it explicitly (even with the
-    // same value) or implicitly via a type change rewinds the clock. A repeated
-    // notification can extend its toast this way; content-only updates never do.
-    const shouldRestartTimer = patch.duration !== undefined || typeChanged;
 
     const next: Toast<Content> = {
       ...prev,
@@ -172,46 +143,39 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     };
 
     this.#store.set(next);
-    if (shouldRestartTimer && next.status === 'active') {
-      this.#startDuration(next);
-    }
-    this.#commit({ type: 'updated', toast: next, previous: prev });
-  }
-
-  dismiss(): void;
-  dismiss(id: ToastId): void;
-  dismiss(ids: ToastId[]): void;
-  dismiss(target?: ToastId | ToastId[]): void {
-    this.#command('dismiss', arguments.length, target, (toast) =>
-      this.#dismissOne(toast)
-    );
+    this.#store.commit({ type: 'updated', toast: next, previous: prev, patch });
   }
 
   remove(): void;
   remove(id: ToastId): void;
   remove(ids: ToastId[]): void;
   remove(target?: ToastId | ToastId[]): void {
-    this.#command('remove', arguments.length, target, (toast) =>
-      this.#removeOne(toast)
-    );
-  }
+    if (arguments.length > 0 && target === undefined) {
+      devWarn('remove: called with undefined id, did you mean remove()?');
+      return;
+    }
 
-  pause(): void;
-  pause(id: ToastId): void;
-  pause(ids: ToastId[]): void;
-  pause(target?: ToastId | ToastId[]): void {
-    this.#command('pause', arguments.length, target, (toast) =>
-      this.#pauseOne(toast)
+    const ids = new Set(
+      target === undefined
+        ? this.#store.values().map((toast) => toast.id)
+        : Array.isArray(target)
+          ? target
+          : [target]
     );
-  }
 
-  resume(): void;
-  resume(id: ToastId): void;
-  resume(ids: ToastId[]): void;
-  resume(target?: ToastId | ToastId[]): void {
-    this.#command('resume', arguments.length, target, (toast) =>
-      this.#resumeOne(toast)
-    );
+    const events: ToastNotifyEvent<Content>[] = [];
+    for (const id of ids) {
+      const toast = this.#store.get(id);
+      // A remove on a gone record is routine (a presenter finishing a ghost
+      // whose record already left): no warning, no event.
+      if (toast === undefined) continue;
+
+      this.#store.delete(id);
+      events.push({ type: 'removed', toast });
+    }
+
+    // One batch, one snapshot swap.
+    this.#store.commit(...events);
   }
 
   promise<T>(
@@ -236,8 +200,8 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       .catch((error) => {
         // Even the error phase factory failed: give up loudly (dev) but gracefully.
         devWarn('promise: error phase factory failed', error);
-        if (this.#canSettle(id)) {
-          this.dismiss(id);
+        if (this.#store.has(id)) {
+          this.remove(id);
         }
       });
 
@@ -253,32 +217,27 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     phase: Content | ((input: never) => Content | Promise<Content>) | undefined,
     input: unknown
   ): Promise<void> {
-    // The user may have dismissed the toast while the promise was pending.
-    if (!this.#canSettle(id)) {
+    // The record may have been removed while the promise was pending: a
+    // settle on a gone record is dropped.
+    if (!this.#store.has(id)) {
       return;
     }
 
     if (phase === undefined) {
-      // An omitted phase means "nothing to show": the toast just leaves.
-      this.dismiss(id);
+      // An omitted phase means "nothing to show": the toast just goes.
+      this.remove(id);
       return;
     }
 
     const content = await this.#resolvePhaseContent(phase, input);
 
     // Re-check after the await: the factory could be slow, the user faster.
-    if (!this.#canSettle(id)) {
+    if (!this.#store.has(id)) {
       return;
     }
 
-    // Type change brings the type default duration and restarts the clock.
+    // A type change re-derives duration and dismissibility from the type.
     this.update(id, { type, content });
-  }
-
-  /** A toast can settle while it is still visible and not on its way out. */
-  #canSettle(id: ToastId): boolean {
-    const toast = this.#store.get(id);
-    return toast !== undefined && toast.status !== 'dismissing';
   }
 
   /** The only place where the core branches on a phase value shape. */
@@ -297,210 +256,11 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     return phase;
   }
 
-  getRemainingMs(id: ToastId): number {
-    const toast = this.#store.get(id);
-    if (toast !== undefined && toast.status === 'queued') {
-      // Life has not started yet: the full duration is still ahead.
-      return toast.duration;
-    }
-
-    return this.#durationTimers.remaining(id);
-  }
-
   destroy(): void {
-    this.#durationTimers.clear();
-    this.#removeTimers.clear();
+    if (this.#store.hasListeners()) {
+      devWarn('destroy: the toaster still has subscribers');
+    }
     this.#store.clearListeners();
-  }
-
-  // --- planners: mutate the store, return an event or null, never commit ---
-
-  #dismissOne(toast: Toast<Content>): DismissedNotifyEvent<Content> | null {
-    if (toast.status === 'dismissing') {
-      return null;
-    }
-
-    this.#durationTimers.cancel(toast.id);
-
-    const next: Toast<Content> = {
-      ...toast,
-      status: 'dismissing',
-      updatedAt: Date.now(),
-    };
-    this.#store.set(next);
-    // Safety net: if the renderer never calls remove(), we do.
-    // Capture only the id to avoid pinning the toast in the closure.
-    const id = next.id;
-    this.#removeTimers.start(id, this.config.removeTimeout, () =>
-      this.remove(id)
-    );
-
-    return { type: 'dismissed', toast: next };
-  }
-
-  #removeOne(toast: Toast<Content>): RemovedNotifyEvent<Content> | null {
-    this.#removeTimers.cancel(toast.id);
-    this.#durationTimers.cancel(toast.id);
-
-    if (!this.#store.delete(toast.id)) {
-      return null;
-    }
-
-    return { type: 'removed', toast };
-  }
-
-  #pauseOne(toast: Toast<Content>): UpdatedNotifyEvent<Content> | null {
-    // Active and queued toasts are pausable: a paused queued toast gets
-    // promoted frozen (#startDuration honors the flag), so pause() honestly
-    // covers the whole stack. Dismissing is excluded: the safety net must
-    // keep ticking.
-    if (toast.status === 'dismissing' || toast.paused) {
-      return null;
-    }
-
-    this.#durationTimers.pause(toast.id);
-
-    const next: Toast<Content> = {
-      ...toast,
-      paused: true,
-      updatedAt: Date.now(),
-    };
-    this.#store.set(next);
-
-    return { type: 'updated', toast: next, previous: toast };
-  }
-
-  #resumeOne(toast: Toast<Content>): UpdatedNotifyEvent<Content> | null {
-    if (!toast.paused) {
-      return null;
-    }
-
-    this.#durationTimers.resume(toast.id);
-
-    const next: Toast<Content> = {
-      ...toast,
-      paused: false,
-      updatedAt: Date.now(),
-    };
-    this.#store.set(next);
-
-    return { type: 'updated', toast: next, previous: toast };
-  }
-
-  #command(
-    name: string,
-    arity: number,
-    target: ToastId | ToastId[] | undefined,
-    applyOne: (toast: Toast<Content>) => ToastNotifyEvent<Content> | null
-  ): void {
-    if (arity > 0 && target === undefined) {
-      devWarn(`${name}: called with undefined id, did you mean ${name}()?`);
-      return;
-    }
-
-    const events: ToastNotifyEvent<Content>[] = [];
-    for (const toast of this.#resolveTargets(name, target)) {
-      const event = applyOne(toast);
-      if (event !== null) {
-        events.push(event);
-      }
-    }
-
-    this.#commit(...events);
-  }
-
-  #resolveTargets(
-    name: string,
-    target: ToastId | ToastId[] | undefined
-  ): Toast<Content>[] {
-    if (target === undefined) {
-      return this.#store.values();
-    }
-
-    const ids = Array.isArray(target) ? target : [target];
-    const seen = new Set<ToastId>();
-    const found: Toast<Content>[] = [];
-
-    for (const id of ids) {
-      if (seen.has(id)) {
-        // Duplicates are routine when ids come from several sources; the
-        // planners would otherwise act on stale prefetched objects and
-        // emit duplicate events for one toast.
-        continue;
-      }
-      seen.add(id);
-
-      const toast = this.#store.get(id);
-      if (toast === undefined) {
-        devWarn(`${name}: toast not found`, id);
-        continue;
-      }
-      found.push(toast);
-    }
-
-    return found;
-  }
-
-  // --- publication ---
-
-  /**
-   * The only publication point of the facade. Replays the queue invariant
-   * (count(active) <= max) so promotions land in the same batch as their cause.
-   * Convention guarded by CI grep: `store.commit` has exactly one call site.
-   */
-  #commit(...events: ToastNotifyEvent<Content>[]): void {
-    if (events.length === 0) {
-      // No mutations means no freed slots: nothing to promote, nothing to publish.
-      return;
-    }
-
-    while (this.#hasFreeSlot()) {
-      const nextQueued = this.#store
-        .values()
-        .find((toast) => toast.status === 'queued');
-
-      if (nextQueued === undefined) {
-        break;
-      }
-
-      const activated = this.#activate(nextQueued);
-      events.push({ type: 'updated', toast: activated, previous: nextQueued });
-    }
-
-    this.#store.commit(...events);
-  }
-
-  #hasFreeSlot(): boolean {
-    return (
-      this.#store.count((toast) => toast.status === 'active') < this.config.max
-    );
-  }
-
-  /** The single definition of what becoming active means. */
-  #activate(toast: Toast<Content>): Toast<Content> {
-    const next: Toast<Content> = {
-      ...toast,
-      status: 'active',
-      updatedAt: Date.now(),
-    };
-
-    this.#store.set(next);
-    this.#startDuration(next);
-
-    return next;
-  }
-
-  #startDuration(toast: Toast<Content>): void {
-    // Capture only the id: the closure outlives the toast object and must
-    // not pin its content payload for the timer's lifetime.
-    const id = toast.id;
-
-    // Expiry goes through the public command: no second path to death.
-    this.#durationTimers.start(id, toast.duration, () => this.dismiss(id));
-
-    if (toast.paused) {
-      this.#durationTimers.pause(id);
-    }
   }
 
   // --- resolution helpers ---
@@ -547,8 +307,8 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     }
 
     // A running operation has an unknown outcome: the user cannot close
-    // it, only the code that started it can (dismiss and remove still
-    // work, the flag only steers user-facing controls).
+    // it, only the code that started it can (remove still works, the
+    // flag only steers user-facing controls).
     return type !== 'loading';
   }
 }
