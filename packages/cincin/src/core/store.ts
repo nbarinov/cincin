@@ -1,4 +1,4 @@
-import { Subscribable } from './subscribable';
+import { Subscribable } from '../shared/subscribable';
 import type { ToastId, Toast, ToastNotifyEvent } from './types';
 
 class ToastStore<Content extends {} = string> extends Subscribable<

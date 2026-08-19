@@ -1,5 +1,5 @@
 import { ToastStore } from './store';
-import { counter, devWarn } from './utils';
+import { counter, devWarn } from '../shared/utils';
 import type {
   CreateOptions,
   UpdatePatch,

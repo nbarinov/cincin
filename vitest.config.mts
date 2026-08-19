@@ -8,7 +8,11 @@ export default defineConfig({
           name: 'core',
           environment: 'node',
           globals: true,
-          include: ['packages/cincin/src/core/**/*.test.ts'],
+          include: [
+            'packages/cincin/src/core/**/*.test.ts',
+            'packages/cincin/src/shared/**/*.test.ts',
+            'packages/cincin/src/presenter/**/*.test.ts',
+          ],
         },
       },
       {
