@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/core/index.ts',
     'dom/index': 'src/dom/index.ts',
+    'presenter/index': 'src/presenter/index.ts',
   },
   format: 'esm',
   dts: { tsconfig: 'tsconfig.build.json' },

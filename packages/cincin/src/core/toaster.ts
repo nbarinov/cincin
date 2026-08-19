@@ -127,7 +127,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       (typeChanged ? this.#resolveToastDuration(type) : prev.duration);
     // Same rule for dismissibility: it derives from the type unless set
     // explicitly, so a settled promise becomes closable again. Restarting
-    // the show clock on a duration touch is the presenter's rule; it reads
+    // the expiry clock on a duration touch is the presenter's rule; it reads
     // the previous record off the updated event.
     const dismissible =
       patch.dismissible ??

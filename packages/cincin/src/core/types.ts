@@ -40,7 +40,7 @@ interface UpdatedNotifyEvent<Content extends {} = string> extends NotifyEvent {
   type: 'updated';
   toast: Toast<Content>;
   previous: Toast<Content>;
-  /** What the caller asked to change: a presenter restarts its show clock
+  /** What the caller asked to change: a presenter restarts its expiry clock
    * on an explicit duration touch even when the value is the same. */
   patch: UpdatePatch<Content>;
 }
