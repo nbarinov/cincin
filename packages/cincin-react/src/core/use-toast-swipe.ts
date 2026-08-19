@@ -1,9 +1,9 @@
-import type { Toaster, ToastId } from 'cincin';
 import { attachSwipe } from 'cincin/dom';
 import type { SwipeOptions } from 'cincin/dom';
 import { useCallback } from 'react';
 import type { RefCallback } from 'react';
 import { useLatestRef } from '../shared/use-latest-ref';
+import type { Presenter, PresentationKey } from 'cincin/presenter';
 
 type ToastSwipeOptions = Omit<SwipeOptions, 'onDismiss' | 'onRemove'> & {
   /**
@@ -15,8 +15,8 @@ type ToastSwipeOptions = Omit<SwipeOptions, 'onDismiss' | 'onRemove'> & {
 };
 
 function useToastSwipe<T extends HTMLElement, Content extends {}>(
-  toastId: ToastId,
-  toaster: Toaster<Content>,
+  key: PresentationKey,
+  presenter: Presenter<Content>,
   options: ToastSwipeOptions = {}
 ): RefCallback<T> {
   const { enabled = true, ...swipeOptions } = options;
@@ -30,11 +30,11 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
 
       return attachSwipe(el, {
         ...swipeOptionsRef.current,
-        onDismiss: () => toaster.dismiss(toastId),
-        onRemove: () => toaster.remove(toastId),
+        onDismiss: () => presenter.dismiss(key),
+        onRemove: () => presenter.finish(key),
       });
     },
-    [swipeOptionsRef, toaster, toastId, options?.direction, enabled]
+    [swipeOptionsRef, presenter, key, options?.direction, enabled]
   );
 }
 

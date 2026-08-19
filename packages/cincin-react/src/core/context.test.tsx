@@ -92,7 +92,6 @@ describe('createToasterContext', () => {
       expect(result.current.at(0)!).toMatchObject({
         content: 'saved',
         type: 'success',
-        status: 'active',
       });
     });
 
@@ -123,9 +122,9 @@ describe('createToasterContext', () => {
       });
 
       act(() => {
-        toaster.dismiss(id);
+        toaster.update(id, { content: 'updated' });
       });
-      expect(result.current.at(0)!.status).toBe('dismissing');
+      expect(result.current.at(0)!.content).toBe('updated');
 
       act(() => {
         toaster.remove(id);

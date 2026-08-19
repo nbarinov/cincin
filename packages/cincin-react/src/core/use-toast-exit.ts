@@ -1,45 +1,45 @@
-import type { ToastId, Toaster } from 'cincin';
 import { prefersReducedMotion } from 'cincin/dom';
+import type { PresentationKey, Presenter } from 'cincin/presenter';
 import type { TransitionEvent, AnimationEvent } from 'react';
 import { useCallback, useEffect } from 'react';
 
 type ToastExitEvent = TransitionEvent | AnimationEvent;
 
 function useToastExit<Content extends {}>(
-  toastId: ToastId,
-  toaster: Toaster<Content>
+  key: PresentationKey,
+  presenter: Presenter<Content>
 ): (event: ToastExitEvent) => void {
   useEffect(
     function subscribeReducedMotionRemoval() {
-      return toaster.subscribe((e) => {
+      return presenter.subscribe((e) => {
         if (
           prefersReducedMotion() &&
-          e.type === 'dismissed' &&
-          e.toast.id === toastId
+          e.type === 'leaving' &&
+          e.presentation.key === key
         ) {
-          queueMicrotask(() => toaster.remove(toastId));
+          queueMicrotask(() => presenter.finish(key));
         }
       });
     },
-    [toastId, toaster]
+    [key, presenter]
   );
 
   return useCallback(
     (e: ToastExitEvent) => {
       const el = e.currentTarget;
-      const dismissing = toaster
+      const dismissing = presenter
         .getSnapshot()
-        .some((toast) => toast.id === toastId && toast.status === 'dismissing');
+        .some((p) => p.key === key && p.phase === 'leaving');
 
       if (
         e.target === el &&
         dismissing &&
         !el.hasAttribute('data-swipe-direction')
       ) {
-        toaster.remove(toastId);
+        presenter.finish(key);
       }
     },
-    [toastId, toaster]
+    [key, presenter]
   );
 }
 

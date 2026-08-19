@@ -27,6 +27,8 @@
   padding: 0;
   list-style: none;
   outline: none;
+  user-select: none;
+  -webkit-user-select: none;
 
   color-scheme: light dark;
   font-family: ui-sans-serif, system-ui, sans-serif;
@@ -76,7 +78,6 @@
   background: var(--toast-surface);
   box-shadow: var(--shadow-rest);
   cursor: grab;
-  user-select: none;
   -webkit-tap-highlight-color: transparent;
   transform-origin: center bottom;
   transform: translateY(calc(var(--index) * -0.875rem))
@@ -237,7 +238,7 @@
 /* The regular exit: slide back down. Swiped toasts skip it, and the
  * fading toast keeps its pointer-events: it stays the hover surface
  * while the survivors reflow into its slot. */
-[data-cincin-toast][data-status='dismissing']:not([data-swipe-direction]) {
+[data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
   transform: translateY(calc(100% + var(--inset-bottom)));
   opacity: 0;
 }
@@ -245,7 +246,7 @@
 /* Expanded, the toast exits in place: the pointer stays over the stack
  * while the survivors reflow into the vacated slot. */
 [data-cincin-toaster][data-expanded='true']
-  [data-cincin-toast][data-status='dismissing']:not([data-swipe-direction]) {
+  [data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
   transform: translateY(calc(-1 * var(--offset) + 100%));
   opacity: 0;
 }

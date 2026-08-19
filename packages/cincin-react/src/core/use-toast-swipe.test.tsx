@@ -1,21 +1,31 @@
 import { StrictMode } from 'react';
 import { cleanup, render } from '@testing-library/react';
 import { createToaster } from 'cincin';
+import { createPresenter } from 'cincin/presenter';
 import { useToastSwipe } from './use-toast-swipe';
-import type { Toaster, ToastId } from 'cincin';
+import type { Presenter, PresentationKey } from 'cincin/presenter';
 import type { ToastSwipeOptions } from './use-toast-swipe';
 
 function SwipeHost({
-  toastId,
-  toaster,
+  presentationKey,
+  presenter,
   options,
 }: {
-  toastId: ToastId;
-  toaster: Toaster;
+  presentationKey: PresentationKey;
+  presenter: Presenter;
   options?: ToastSwipeOptions;
 }) {
-  const ref = useToastSwipe(toastId, toaster, options);
+  const ref = useToastSwipe(presentationKey, presenter, options);
   return <li data-testid="toast" ref={ref} />;
+}
+
+/** A mounted presenter over a fresh toaster with one shown toast. */
+function setup(): { presenter: Presenter; key: PresentationKey } {
+  const toaster = createToaster();
+  const presenter = createPresenter(toaster);
+  presenter.mount();
+  toaster.message('swipe me');
+  return { presenter, key: presenter.getSnapshot()[0]!.key };
 }
 
 function getToastElement(): HTMLElement {
@@ -50,6 +60,14 @@ function firePointer(
   );
 }
 
+/** A drag far past the 45px distance gate: the release dismisses. */
+function swipeOut(element: HTMLElement): void {
+  firePointer(element, 'pointerdown', 0);
+  firePointer(element, 'pointermove', 30);
+  firePointer(element, 'pointermove', 60);
+  firePointer(element, 'pointerup', 60);
+}
+
 beforeEach(() => {
   window.matchMedia = ((query: string) =>
     ({
@@ -66,36 +84,35 @@ afterEach(() => {
 
 describe('useToastSwipe', () => {
   it('should attach the controller on mount and detach it on unmount', () => {
-    const toaster = createToaster();
-    const id = toaster.message('swipe me');
+    const { presenter, key } = setup();
 
-    const view = render(<SwipeHost toastId={id} toaster={toaster} />);
+    const view = render(
+      <SwipeHost presentationKey={key} presenter={presenter} />
+    );
     expect(getToastElement().style.touchAction).toBe('pan-y');
 
     view.unmount();
-    toaster.destroy();
+    presenter.unmount();
   });
 
   it('should survive a StrictMode double mount', () => {
-    const toaster = createToaster();
-    const id = toaster.message('strict');
+    const { presenter, key } = setup();
 
     render(
       <StrictMode>
-        <SwipeHost toastId={id} toaster={toaster} />
+        <SwipeHost presentationKey={key} presenter={presenter} />
       </StrictMode>
     );
 
     expect(getToastElement().style.touchAction).toBe('pan-y');
-    toaster.destroy();
+    presenter.unmount();
   });
 
   it('should reattach the controller when the direction changes', () => {
-    const toaster = createToaster();
-    const id = toaster.message('turn');
+    const { presenter, key } = setup();
 
     const view = render(
-      <SwipeHost toastId={id} toaster={toaster} options={{}} />
+      <SwipeHost presentationKey={key} presenter={presenter} options={{}} />
     );
     expect(getToastElement().style.touchAction).toBe('pan-y');
 
@@ -103,69 +120,67 @@ describe('useToastSwipe', () => {
     // a lagging latest-ref would reattach with the previous direction.
     view.rerender(
       <SwipeHost
-        toastId={id}
-        toaster={toaster}
+        presentationKey={key}
+        presenter={presenter}
         options={{ direction: 'down' }}
       />
     );
     expect(getToastElement().style.touchAction).toBe('pan-x');
 
-    toaster.destroy();
+    presenter.unmount();
   });
 
   it('should not reattach when only the tuning identity changes', () => {
-    const toaster = createToaster();
-    const id = toaster.message('tune');
+    const { presenter, key } = setup();
 
     const view = render(
-      <SwipeHost toastId={id} toaster={toaster} options={{}} />
+      <SwipeHost presentationKey={key} presenter={presenter} options={{}} />
     );
     const element = getToastElement();
     const listen = vi.spyOn(element, 'addEventListener');
 
     view.rerender(
       <SwipeHost
-        toastId={id}
-        toaster={toaster}
+        presentationKey={key}
+        presenter={presenter}
         options={{ drag: { damping: 0.5 } }}
       />
     );
 
     expect(listen).not.toHaveBeenCalled();
-    toaster.destroy();
+    presenter.unmount();
   });
 
-  it('should wire dismiss and remove to the toaster on a passing gesture', async () => {
-    const toaster = createToaster();
-    const id = toaster.message('goodbye');
+  it('should wire dismiss and finish to the presenter on a passing gesture', async () => {
+    const { presenter, key } = setup();
 
-    render(<SwipeHost toastId={id} toaster={toaster} />);
+    render(<SwipeHost presentationKey={key} presenter={presenter} />);
     const element = getToastElement();
     stubGestureSurface(element);
 
-    // Far past the 45px distance gate: the release dismisses.
-    firePointer(element, 'pointerdown', 0);
-    firePointer(element, 'pointermove', 30);
-    firePointer(element, 'pointermove', 60);
-    firePointer(element, 'pointerup', 60);
+    swipeOut(element);
 
     expect(element.getAttribute('data-swipe-direction')).toBe('right');
-    expect(toaster.getSnapshot()[0]?.status).toBe('dismissing');
+    expect(presenter.getSnapshot()[0]?.phase).toBe('leaving');
 
-    // The stubbed fling resolves immediately: remove follows.
+    // The stubbed fling resolves immediately: finish follows, and the
+    // presenter removes the record it owned.
     await Promise.resolve();
     await Promise.resolve();
-    expect(toaster.getSnapshot()).toHaveLength(0);
+    expect(presenter.getSnapshot()).toHaveLength(0);
 
-    toaster.destroy();
+    presenter.unmount();
   });
 
   it('should not attach the controller while disabled', () => {
-    const toaster = createToaster();
-    const id = toaster.message('locked');
+    const { presenter, key } = setup();
 
     render(
-      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: false }} />
+      <SwipeHost
+        presentationKey={key}
+        presenter={presenter}
+        options={{ enabled: false }}
+      />
     );
     const element = getToastElement();
     stubGestureSurface(element);
@@ -174,54 +189,60 @@ describe('useToastSwipe', () => {
     // changes nothing.
     expect(element.style.touchAction).toBe('');
 
-    firePointer(element, 'pointerdown', 0);
-    firePointer(element, 'pointermove', 30);
-    firePointer(element, 'pointermove', 60);
-    firePointer(element, 'pointerup', 60);
+    swipeOut(element);
 
     expect(element.hasAttribute('data-swiping')).toBe(false);
-    expect(toaster.getSnapshot()[0]?.status).toBe('active');
-    toaster.destroy();
+    expect(presenter.getSnapshot()[0]?.phase).toBe('active');
+    presenter.unmount();
   });
 
   it('should attach once enabled flips to true', () => {
-    const toaster = createToaster();
-    const id = toaster.message('unlocked later');
+    const { presenter, key } = setup();
 
     const view = render(
-      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: false }} />
+      <SwipeHost
+        presentationKey={key}
+        presenter={presenter}
+        options={{ enabled: false }}
+      />
     );
     const element = getToastElement();
     stubGestureSurface(element);
     expect(element.style.touchAction).toBe('');
 
     view.rerender(
-      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: true }} />
+      <SwipeHost
+        presentationKey={key}
+        presenter={presenter}
+        options={{ enabled: true }}
+      />
     );
     expect(element.style.touchAction).toBe('pan-y');
 
-    firePointer(element, 'pointerdown', 0);
-    firePointer(element, 'pointermove', 30);
-    firePointer(element, 'pointermove', 60);
-    firePointer(element, 'pointerup', 60);
+    swipeOut(element);
 
-    expect(toaster.getSnapshot()[0]?.status).toBe('dismissing');
-    toaster.destroy();
+    expect(presenter.getSnapshot()[0]?.phase).toBe('leaving');
+    presenter.unmount();
   });
 
   it('should detach and release its claims once disabled', () => {
-    const toaster = createToaster();
-    const id = toaster.message('locked later');
+    const { presenter, key } = setup();
 
-    const view = render(<SwipeHost toastId={id} toaster={toaster} />);
+    const view = render(
+      <SwipeHost presentationKey={key} presenter={presenter} />
+    );
     const element = getToastElement();
     expect(element.style.touchAction).toBe('pan-y');
 
     view.rerender(
-      <SwipeHost toastId={id} toaster={toaster} options={{ enabled: false }} />
+      <SwipeHost
+        presentationKey={key}
+        presenter={presenter}
+        options={{ enabled: false }}
+      />
     );
 
     expect(element.style.touchAction).toBe('');
-    toaster.destroy();
+    presenter.unmount();
   });
 });
