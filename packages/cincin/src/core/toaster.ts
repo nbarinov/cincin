@@ -1,4 +1,4 @@
-import { ToastStore } from './store';
+import { createToastStore } from './store';
 import { counter, devWarn } from '../shared/utils';
 import type {
   CreateOptions,
@@ -21,7 +21,7 @@ import type {
 class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   readonly config: Readonly<Required<ToasterConfig>>;
 
-  #store = new ToastStore<Content>();
+  #store = createToastStore<Content>();
   #toastCounter = counter();
   #idSalt = Math.random().toString(36).slice(2, 6);
 
