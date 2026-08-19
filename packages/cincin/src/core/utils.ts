@@ -10,17 +10,15 @@ export { counter };
 
 // dev warnings
 
-interface RuntimeGlobals {
-  console?: { warn(...args: unknown[]): void };
-  process?: { env?: { NODE_ENV?: string } };
-}
-
-const runtime = globalThis as unknown as RuntimeGlobals;
-
 export function devWarn(message: string, ...args: unknown[]): void {
-  if (runtime.process?.env?.NODE_ENV === 'production') {
+  // `process` exists in Node and under bundlers that define it, not in
+  // a bare browser: the typeof guard keeps the read from throwing there.
+  if (
+    typeof process !== 'undefined' &&
+    process.env?.NODE_ENV === 'production'
+  ) {
     return;
   }
 
-  runtime.console?.warn(`[cincin] ${message}`, ...args);
+  console.warn(`[cincin] ${message}`, ...args);
 }

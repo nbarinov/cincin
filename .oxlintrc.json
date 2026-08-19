@@ -93,6 +93,34 @@
           {
             "name": "IntersectionObserver",
             "message": "The core is DOM-free: browser APIs belong to cincin/dom."
+          },
+          {
+            "name": "Buffer",
+            "message": "The core is platform-neutral: Node globals do not exist in browsers."
+          },
+          {
+            "name": "require",
+            "message": "The core is platform-neutral: Node globals do not exist in browsers."
+          },
+          {
+            "name": "__dirname",
+            "message": "The core is platform-neutral: Node globals do not exist in browsers."
+          },
+          {
+            "name": "__filename",
+            "message": "The core is platform-neutral: Node globals do not exist in browsers."
+          },
+          {
+            "name": "setImmediate",
+            "message": "The core is platform-neutral: Node globals do not exist in browsers."
+          },
+          {
+            "name": "clearImmediate",
+            "message": "The core is platform-neutral: Node globals do not exist in browsers."
+          },
+          {
+            "name": "global",
+            "message": "The core is platform-neutral: Node globals do not exist in browsers."
           }
         ]
       }

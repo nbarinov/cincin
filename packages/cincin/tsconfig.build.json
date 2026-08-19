@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["es2022", "dom", "dom.iterable"],
-    "noEmit": false
+    "noEmit": false,
+    "types": ["node"]
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts"]

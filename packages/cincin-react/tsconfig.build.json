@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "react-jsx",
-    "noEmit": false
+    "noEmit": false,
+    "types": ["node"]
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "**/*.test.tsx"]

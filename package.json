@@ -19,6 +19,7 @@
   "devDependencies": {
     "@size-limit/preset-small-lib": "^13.0.3",
     "@tsdown/css": "0.22.14",
+    "@types/node": "^26.2.0",
     "jsdom": "^30.0.1",
     "oxlint": "^1.78.0",
     "prettier": "^3.9.6",

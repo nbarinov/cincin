@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "include": ["src"],
   "compilerOptions": {
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "node"],
     "lib": ["es2022", "dom", "dom.iterable"]
   }
 }
