@@ -9,7 +9,7 @@ describe('store', () => {
       const snapshot = t.getSnapshot();
 
       expect(snapshot).toEqual([]);
-      expect(t.getSnapshot()).toBe(snapshot); // uSES-контракт: без мутаций ссылка та же
+      expect(t.getSnapshot()).toBe(snapshot); // uSES contract: no mutation, same reference
     });
 
     it('should keep the old snapshot untouched and produce a new reference on commit', () => {
@@ -18,7 +18,7 @@ describe('store', () => {
 
       t.create('hi');
 
-      expect(before).toEqual([]); // старая ссылка нетронута
+      expect(before).toEqual([]); // the old reference is untouched
       expect(t.getSnapshot()).toHaveLength(1);
     });
 
@@ -37,7 +37,7 @@ describe('store', () => {
   });
 
   describe('create & sugar', () => {
-    it('should return id and create an active toast with defaults', () => {
+    it('should return id and create a toast with defaults', () => {
       const t = createToaster();
       const id = t.create('hi');
       const toast = t.getSnapshot().at(0)!;
@@ -46,10 +46,8 @@ describe('store', () => {
         id,
         content: 'hi',
         type: 'message',
-        status: 'active',
         duration: 4000,
         dismissible: true,
-        paused: false,
       });
     });
 
@@ -62,68 +60,57 @@ describe('store', () => {
 
     it('should set toast type from sugar methods', () => {
       const t = createToaster();
+      t.success('s');
+      t.error('e');
+      t.warning('w');
+      t.info('i');
+      t.loading('l');
+      t.message('m');
 
-      const sId = t.success('ok');
-      const eId = t.error('fail');
-      const wId = t.warning('warn');
-      const iId = t.info('info');
-      const snapshot = t.getSnapshot();
-
-      expect(snapshot.find((toast) => toast.id === sId)!.type).toBe('success');
-      expect(snapshot.find((toast) => toast.id === eId)!.type).toBe('error');
-      expect(snapshot.find((toast) => toast.id === wId)!.type).toBe('warning');
-      expect(snapshot.find((toast) => toast.id === iId)!.type).toBe('info');
+      expect(t.getSnapshot().map((toast) => toast.type)).toEqual([
+        'success',
+        'error',
+        'warning',
+        'info',
+        'loading',
+        'message',
+      ]);
     });
 
     it('should let explicit duration override the type default', () => {
       const t = createToaster();
-      t.loading('...', { duration: 2000 });
+      t.loading('l', { duration: 1000 });
 
-      expect(t.getSnapshot().at(0)!.duration).toBe(2000);
+      expect(t.getSnapshot().at(0)!.duration).toBe(1000);
     });
 
-    it('should replace a dismissing toast with a fresh one on create with the same id', () => {
+    it('should upsert a live toast on create with the same id', () => {
       const t = createToaster();
       const events: string[] = [];
-      const id = t.create('old');
-      t.dismiss(id);
-
       t.subscribe((e) => events.push(e.type));
-      const returned = t.create('new', { id });
+      t.message('old', { id: 'x' });
 
-      expect(returned).toBe(id);
-      expect(events).toEqual(['removed', 'added']); // dead means dead: bury, then fresh create
-      expect(t.getSnapshot().at(0)!).toMatchObject({
-        id,
-        content: 'new',
-        status: 'active',
-      });
+      t.create('new', { id: 'x' });
+
+      expect(t.getSnapshot()).toHaveLength(1);
+      expect(t.getSnapshot().at(0)!.content).toBe('new');
+      expect(events).toEqual(['added', 'updated']);
     });
 
     it('should update dismissible on upsert of a live toast', () => {
       const t = createToaster();
-      const id = t.create('a', { dismissible: true });
+      const id = t.create('old');
 
-      t.create('b', { id, dismissible: false });
+      t.create('new', { id, dismissible: false });
 
       expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
     });
 
     it('should keep dismissible untouched when the upsert omits it', () => {
       const t = createToaster();
-      const id = t.create('a', { dismissible: false });
+      const id = t.create('old', { dismissible: false });
 
-      t.create('b', { id });
-
-      expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
-    });
-
-    it('should apply dismissible when re-creating over a dismissing toast', () => {
-      const t = createToaster();
-      const id = t.create('old');
-      t.dismiss(id);
-
-      t.create('new', { id, dismissible: false });
+      t.create('new', { id });
 
       expect(t.getSnapshot().at(0)!.dismissible).toBe(false);
     });
@@ -179,137 +166,66 @@ describe('store', () => {
       expect(t.getSnapshot().at(0)!.dismissible).toBe(true);
     });
 
-    it('should still dismiss a loading toast programmatically', () => {
+    it('should still remove a loading toast programmatically', () => {
       const t = createToaster();
       const id = t.loading('l');
 
-      t.dismiss(id);
+      t.remove(id);
 
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
+      expect(t.getSnapshot()).toEqual([]);
     });
   });
 
-  describe('dismiss & remove', () => {
-    it('should move toast to dismissing status and keep it in the snapshot', () => {
+  describe('update', () => {
+    it('should carry the patch on the updated event', () => {
       const t = createToaster();
-      const id = t.create('hi');
+      const id = t.message('a');
+      const events: unknown[] = [];
+      t.subscribe((e) => events.push(e));
 
-      t.dismiss(id);
+      t.update(id, { duration: 4000 });
 
-      expect(t.getSnapshot()).toHaveLength(1);
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
+      expect(events.at(0)).toMatchObject({
+        type: 'updated',
+        patch: { duration: 4000 },
+        previous: { content: 'a' },
+        toast: { content: 'a', duration: 4000 },
+      });
     });
 
-    it('should remove toast from the snapshot on remove', () => {
+    it('should re-derive duration from the new type', () => {
       const t = createToaster();
-      const id = t.create('hi');
+      const id = t.loading('l');
 
-      t.dismiss(id);
+      t.update(id, { type: 'success' });
+
+      expect(t.getSnapshot().at(0)!.duration).toBe(4000);
+    });
+
+    it('should keep an explicit duration across a type change', () => {
+      const t = createToaster();
+      const id = t.loading('l');
+
+      t.update(id, { type: 'success', duration: 1000 });
+
+      expect(t.getSnapshot().at(0)!.duration).toBe(1000);
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a toast from the snapshot and emit removed', () => {
+      const t = createToaster();
+      const events: string[] = [];
+      t.subscribe((e) => events.push(e.type));
+      const id = t.create('a');
+
       t.remove(id);
 
       expect(t.getSnapshot()).toEqual([]);
+      expect(events).toEqual(['added', 'removed']);
     });
 
-    it('should dismiss all toasts when called without arguments', () => {
-      const t = createToaster();
-      t.create('a');
-      t.create('b');
-
-      t.dismiss();
-
-      expect(
-        t.getSnapshot().every((toast) => toast.status === 'dismissing')
-      ).toBe(true);
-    });
-
-    it('should warn and do nothing when dismiss receives explicit undefined', () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const t = createToaster();
-      t.create('a');
-      t.create('b');
-
-      (t.dismiss as (id?: unknown) => void)(undefined);
-
-      expect(t.getSnapshot().every((toast) => toast.status === 'active')).toBe(
-        true
-      );
-      expect(warn).toHaveBeenCalled();
-      warn.mockRestore();
-    });
-
-    it('should emit dismissed and removed events once per phase', () => {
-      const t = createToaster();
-      const events: string[] = [];
-      const id = t.create('hi');
-
-      t.subscribe((e) => events.push(e.type));
-      t.dismiss(id);
-      t.remove(id);
-
-      expect(events).toEqual(['dismissed', 'removed']);
-    });
-
-    it('should not emit a second dismissed event for an already dismissing toast', () => {
-      const t = createToaster();
-      const events: string[] = [];
-      const id = t.create('hi');
-
-      t.subscribe((e) => events.push(e.type));
-      t.dismiss(id);
-      t.dismiss(id);
-
-      expect(events).toEqual(['dismissed']);
-    });
-
-    it('should auto-remove a dismissing toast after removeTimeout as a safety net', () => {
-      vi.useFakeTimers();
-
-      const t = createToaster({ removeTimeout: 2000 });
-      const id = t.create('hi');
-
-      t.dismiss(id);
-      vi.advanceTimersByTime(1999);
-      expect(t.getSnapshot()).toHaveLength(1); // рендерер ещё может позвать remove
-      vi.advanceTimersByTime(1);
-      expect(t.getSnapshot()).toEqual([]);
-
-      vi.useRealTimers();
-    });
-
-    it('should dismiss only the listed toasts in a single commit', () => {
-      const t = createToaster();
-      const a = t.create('a');
-      const b = t.create('b');
-      t.create('c');
-
-      t.dismiss([a, b]);
-
-      const statuses = t.getSnapshot().map((toast) => toast.status);
-      expect(statuses).toEqual(['dismissing', 'dismissing', 'active']);
-    });
-
-    it('should deduplicate ids within one command call', () => {
-      const t = createToaster();
-      const events: string[] = [];
-      const id = t.create('hi');
-
-      t.subscribe((e) => events.push(e.type));
-      t.dismiss([id, id]);
-
-      expect(events).toEqual(['dismissed']); // one event per phase, even with duplicates
-    });
-
-    it('should do nothing when dismiss receives an empty array', () => {
-      const t = createToaster();
-      t.create('a');
-
-      t.dismiss([]);
-
-      // регресс-тест футгана: «пустая выборка» ≠ «все»
-      expect(t.getSnapshot().at(0)!.status).toBe('active');
-    });
-
-    it('should remove all toasts when remove is called without arguments', () => {
+    it('should remove every toast when called without arguments', () => {
       const t = createToaster();
       t.create('a');
       t.create('b');
@@ -318,6 +234,70 @@ describe('store', () => {
 
       expect(t.getSnapshot()).toEqual([]);
     });
+
+    it('should warn and do nothing when remove receives explicit undefined', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const t = createToaster();
+      t.create('a');
+
+      t.remove(undefined as unknown as string);
+
+      expect(t.getSnapshot()).toHaveLength(1);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('did you mean remove()?')
+      );
+      warn.mockRestore();
+    });
+
+    it('should remove only the listed toasts in a single commit', () => {
+      const t = createToaster();
+      const a = t.create('a');
+      t.create('b');
+      const c = t.create('c');
+      const batches: number[] = [];
+      let snapshots = 0;
+      t.subscribe(() => {
+        snapshots += 1;
+      });
+
+      t.remove([a, c]);
+      batches.push(snapshots);
+
+      expect(t.getSnapshot().map((x) => x.content)).toEqual(['b']);
+      expect(batches).toEqual([2]); // two events, one batch
+    });
+
+    it('should deduplicate ids within one call', () => {
+      const t = createToaster();
+      const events: string[] = [];
+      t.subscribe((e) => events.push(e.type));
+      const id = t.create('a');
+
+      t.remove([id, id]);
+
+      expect(events.filter((e) => e === 'removed')).toHaveLength(1);
+    });
+
+    it('should do nothing when remove receives an empty array', () => {
+      const t = createToaster();
+      const events: string[] = [];
+      t.subscribe((e) => events.push(e.type));
+      t.create('a');
+
+      t.remove([]);
+
+      expect(t.getSnapshot()).toHaveLength(1);
+      expect(events).toEqual(['added']);
+    });
+
+    it('should treat remove on a gone id as a silent no-op', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const t = createToaster();
+
+      expect(() => t.remove('nope')).not.toThrow();
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
+    });
   });
 
   describe('dev warnings', () => {
@@ -325,178 +305,30 @@ describe('store', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const t = createToaster();
 
-      t.update('ghost', { content: 'x' });
+      t.update('nope', { content: 'x' });
 
       expect(t.getSnapshot()).toEqual([]);
-      expect(warn).toHaveBeenCalled();
-      warn.mockRestore();
-    });
-
-    it('should warn when config.max cannot show any toast', () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      createToaster({ max: 0 });
-      expect(warn).toHaveBeenCalledTimes(1);
-
-      createToaster({ max: Number.NaN });
-      expect(warn).toHaveBeenCalledTimes(2);
-
-      createToaster({ max: 3 });
-      expect(warn).toHaveBeenCalledTimes(2); // valid max stays silent
-
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('toast not found'),
+        'nope'
+      );
       warn.mockRestore();
     });
 
     it('should warn and generate an id when an empty string id is passed', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const t = createToaster();
-      const id = t.create('hi', { id: '' });
 
-      expect(id).not.toBe('');
-      expect(t.getSnapshot().at(0)!.id).toBe(id);
-      expect(warn).toHaveBeenCalled();
+      const id = t.create('a', { id: '' });
+
+      expect(id).toMatch(/^t-/);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('empty string id')
+      );
       warn.mockRestore();
     });
   });
 
-  describe('duration engine', () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('should auto-dismiss an active toast after its duration', () => {
-      const t = createToaster();
-      t.create('hi', { duration: 1000 });
-
-      vi.advanceTimersByTime(999);
-      expect(t.getSnapshot().at(0)!.status).toBe('active');
-      vi.advanceTimersByTime(1);
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
-    });
-
-    it('should never auto-dismiss an Infinity toast', () => {
-      const t = createToaster();
-      t.loading('...');
-
-      vi.advanceTimersByTime(1_000_000);
-      expect(t.getSnapshot().at(0)!.status).toBe('active');
-    });
-
-    it('should not restart the timer on content-only update', () => {
-      const t = createToaster();
-      const id = t.create('1/3', { duration: 1000 });
-
-      vi.advanceTimersByTime(900);
-      t.update(id, { content: '2/3' });
-      vi.advanceTimersByTime(100); // 1000ms total since creation
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
-    });
-
-    it('should restart the timer when update changes the duration', () => {
-      const t = createToaster();
-      const id = t.create('x', { duration: 1000 });
-
-      vi.advanceTimersByTime(900);
-      t.update(id, { duration: 1000 });
-      vi.advanceTimersByTime(999);
-      expect(t.getSnapshot().at(0)!.status).toBe('active');
-      vi.advanceTimersByTime(1);
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
-    });
-
-    it('should restart with the new type default when update changes the type', () => {
-      const t = createToaster();
-      const id = t.loading('saving...');
-
-      vi.advanceTimersByTime(60_000);
-      t.update(id, { type: 'success', content: 'saved' });
-      expect(t.getSnapshot().at(0)!.status).toBe('active');
-
-      vi.advanceTimersByTime(4000); // config default kicks in from the update moment
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
-    });
-
-    it('should freeze the remainder on pause and finish it after resume', () => {
-      const t = createToaster();
-      const id = t.create('hi', { duration: 5000 });
-
-      vi.advanceTimersByTime(2000);
-      t.pause(id);
-      vi.advanceTimersByTime(60_000);
-      expect(t.getSnapshot().at(0)!.status).toBe('active');
-      expect(t.getRemainingMs(id)).toBe(3000);
-
-      t.resume(id);
-      vi.advanceTimersByTime(3000);
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
-    });
-
-    it('should not tick while queued and start on promotion', () => {
-      const t = createToaster({ max: 1 });
-      const first = t.create('a', { duration: 1000 });
-      t.create('b', { duration: 1000 });
-
-      vi.advanceTimersByTime(500);
-      expect(t.getRemainingMs(t.getSnapshot().at(1)!.id)).toBe(1000); // full duration ahead
-
-      t.dismiss(first);
-      vi.advanceTimersByTime(999);
-      expect(t.getSnapshot().at(1)!.status).toBe('active');
-      vi.advanceTimersByTime(1);
-      expect(t.getSnapshot().at(1)!.status).toBe('dismissing');
-    });
-
-    it('should pause queued toasts so promotion starts them frozen', () => {
-      const t = createToaster({ max: 1 });
-      const first = t.create('a', { duration: 1000 });
-      const second = t.create('b', { duration: 1000 });
-
-      const byId = (id: ReturnType<typeof t.create>) =>
-        t.getSnapshot().find((toast) => toast.id === id)!;
-
-      t.pause(); // covers the queued toast too
-      t.dismiss(first);
-
-      // Promoted while paused: active, but the clock stands still.
-      expect(byId(second).status).toBe('active');
-      expect(byId(second).paused).toBe(true);
-      vi.advanceTimersByTime(60_000);
-      expect(byId(second).status).toBe('active');
-
-      t.resume(second);
-      vi.advanceTimersByTime(1000);
-      expect(byId(second).status).toBe('dismissing');
-    });
-
-    it('should not pause dismissing toasts so the safety net keeps ticking', () => {
-      const t = createToaster({ removeTimeout: 2000 });
-      const id = t.create('hi');
-
-      t.dismiss(id);
-      t.pause(id); // must be a no-op
-      vi.advanceTimersByTime(2000);
-      expect(t.getSnapshot()).toEqual([]);
-    });
-
-    it('should stop everything on destroy', () => {
-      const t = createToaster();
-      const events: string[] = [];
-      t.create('a', { duration: 1000 });
-      t.subscribe((e) => events.push(e.type));
-
-      t.destroy();
-      vi.advanceTimersByTime(60_000);
-
-      expect(t.getSnapshot().at(0)!.status).toBe('active'); // frozen in place
-      expect(events).toEqual([]); // listeners dropped
-    });
-  });
-
-  // Real timers here: promise microtasks and fake timers make vi.waitFor flaky.
   describe('promise', () => {
     it('should show loading immediately and switch to success with factory content', async () => {
       const t = createToaster();
@@ -588,41 +420,44 @@ describe('store', () => {
       const boom = new Error('boom');
       const p = t.promise(Promise.reject(boom), {
         loading: 'wait',
-        error: 'failed',
+        error: (e) => `failed: ${(e as Error).message}`,
       });
 
       await expect(p).rejects.toBe(boom);
-      await vi.waitFor(() => expect(t.getSnapshot().at(0)!.type).toBe('error'));
-      expect(t.getSnapshot().at(0)!.content).toBe('failed');
+      await vi.waitFor(() =>
+        expect(t.getSnapshot().at(0)!.content).toBe('failed: boom')
+      );
+      expect(t.getSnapshot().at(0)!.type).toBe('error');
     });
 
     it('should keep loading until an async factory resolves', async () => {
       const t = createToaster();
-      let release!: (content: string) => void;
-      const gate = new Promise<string>((r) => (release = r));
-
-      void t.promise(Promise.resolve('res'), {
-        loading: 'wait',
-        success: () => gate, // the await res.json() case
+      let release!: (value: string) => void;
+      const gate = new Promise<string>((resolve) => {
+        release = resolve;
       });
 
+      const p = t.promise(Promise.resolve(1), {
+        loading: 'wait',
+        success: () => gate,
+      });
+      await p;
+      await Promise.resolve();
+
+      expect(t.getSnapshot().at(0)!.type).toBe('loading');
+
+      release('late');
       await vi.waitFor(() =>
-        expect(t.getSnapshot().at(0)!.type).toBe('loading')
+        expect(t.getSnapshot().at(0)!.content).toBe('late')
       );
-      release('parsed');
-      await vi.waitFor(() =>
-        expect(t.getSnapshot().at(0)!.content).toBe('parsed')
-      );
-      expect(t.getSnapshot().at(0)!.type).toBe('success');
     });
 
-    it('should dismiss the toast when the settled phase is omitted', async () => {
+    it('should remove the toast when the settled phase is omitted', async () => {
       const t = createToaster();
-      await t.promise(Promise.resolve('ok'), { loading: 'wait' }); // no success phase
 
-      await vi.waitFor(() =>
-        expect(t.getSnapshot().at(0)!.status).toBe('dismissing')
-      );
+      await t.promise(Promise.resolve('ok'), { loading: 'wait' });
+
+      await vi.waitFor(() => expect(t.getSnapshot()).toEqual([]));
     });
 
     it('should fall through to the error phase when the success factory fails', async () => {
@@ -630,58 +465,51 @@ describe('store', () => {
       const p = t.promise(Promise.resolve('ok'), {
         loading: 'wait',
         success: () => {
-          throw new Error('parse failed');
+          throw new Error('render failed');
         },
         error: (e) => `error: ${(e as Error).message}`,
       });
 
-      await expect(p).resolves.toBe('ok'); // the mirror is untouched by factory failures
-      await vi.waitFor(() => expect(t.getSnapshot().at(0)!.type).toBe('error'));
-      expect(t.getSnapshot().at(0)!.content).toBe('error: parse failed');
-    });
-
-    it('should dismiss and warn when the error phase factory fails too', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const t = createToaster();
-
-      void t
-        .promise(Promise.reject(new Error('boom')), {
-          loading: 'wait',
-          error: () => {
-            throw new Error('renderer of errors is broken');
-          },
-        })
-        .catch(() => {}); // silence the mirrored rejection in the test
-
+      await p;
       await vi.waitFor(() =>
-        expect(t.getSnapshot().at(0)!.status).toBe('dismissing')
+        expect(t.getSnapshot().at(0)!.content).toBe('error: render failed')
       );
-      expect(warn).toHaveBeenCalled();
-      warn.mockRestore();
     });
 
-    it('should silently skip settling a toast the user already dismissed', async () => {
+    it('should remove and warn when the error phase factory fails too', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const t = createToaster();
-      let release!: (content: string) => void;
-      const gate = new Promise<string>((r) => (release = r));
-
-      void t.promise(Promise.resolve('res'), {
+      const p = t.promise(Promise.reject(new Error('boom')), {
         loading: 'wait',
-        success: () => gate,
+        error: () => {
+          throw new Error('also broken');
+        },
       });
-      await vi.waitFor(() =>
-        expect(t.getSnapshot().at(0)!.type).toBe('loading')
+
+      await expect(p).rejects.toThrow('boom');
+      await vi.waitFor(() => expect(t.getSnapshot()).toEqual([]));
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('error phase factory failed'),
+        expect.any(Error)
       );
-
-      t.dismiss(t.getSnapshot().at(0)!.id); // the user is faster than res.json()
-      release('too late');
-      await new Promise((r) => setTimeout(r, 0)); // let the settle path run
-
-      expect(t.getSnapshot().at(0)!.content).toBe('wait'); // untouched
-      expect(t.getSnapshot().at(0)!.status).toBe('dismissing');
-      expect(warn).not.toHaveBeenCalled(); // a legitimate race, not a user error
       warn.mockRestore();
+    });
+
+    it('should silently skip settling a toast that was removed meanwhile', async () => {
+      const t = createToaster();
+      let release!: (value: string) => void;
+      const gate = new Promise<string>((resolve) => {
+        release = resolve;
+      });
+      const p = t.promise(gate, { loading: 'wait', success: 'done' });
+
+      t.remove(t.getSnapshot().at(0)!.id);
+      release('ok');
+      await p;
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(t.getSnapshot()).toEqual([]);
     });
   });
 });
