@@ -124,6 +124,13 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
       return;
     }
 
+    // The gesture is ours from here: cancel the default pointermove
+    // (text selection) for the rest of the drag. Doing it before the lock
+    // would hijack foreign-axis moves and clicks.
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+
     const now = performance.now();
     const raw = (axis === 'x' ? dx : dy) + gesture.base;
     const offset = dampen(raw, sign, drag.damping);

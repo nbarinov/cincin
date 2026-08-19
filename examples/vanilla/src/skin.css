@@ -85,6 +85,9 @@ main header {
 
 #toasts {
   position: fixed;
+  /* The region owns selection: a drag that starts on a card must not
+   * pull a text selection across the cards or the page. */
+  user-select: none;
   /* The region's distance from the viewport edges: the base inset plus
    * the device safe area (home indicator, rotated notch; needs
    * viewport-fit=cover in the meta). Every rule that moves a toast
@@ -150,7 +153,6 @@ main header {
   background: var(--toast-surface);
   box-shadow: var(--shadow-rest);
   cursor: grab;
-  user-select: none;
   transform-origin: center bottom;
   transform: translateY(calc(var(--index) * -0.875rem))
     scale(calc(1 - var(--index) * 0.05));
