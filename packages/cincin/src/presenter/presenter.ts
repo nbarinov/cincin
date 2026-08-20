@@ -80,7 +80,9 @@ class Presenter<Content extends {} = string>
           return;
 
         case 'updated':
-          this.#commit(...this.#refresh(event.entry, event.prev, event.patch));
+          this.#commit(
+            ...this.#refresh(event.entry, event.prev, event.patch, event.via)
+          );
           return;
 
         case 'removed':
@@ -129,16 +131,20 @@ class Presenter<Content extends {} = string>
   #refresh(
     entry: ToastEntry<Content>,
     prev: ToastEntry<Content>,
-    patch: UpdatePatch<Content>
+    patch: UpdatePatch<Content>,
+    via: 'create' | 'update'
   ): ToastEvent<Content>[] {
     const live = this.#store.select(
       (t) => t.entry.id === entry.id && t.phase !== 'leaving'
     );
 
     if (live.length === 0) {
-      // Dead means dead: every toast of this entry is leaving; the
-      // updated entry gets a fresh toast while the ghosts play out.
-      return [this.#enter(entry)];
+      // Every toast of this entry is leaving. A create expressed the
+      // intent to show: dead means dead, the ghosts play out and the
+      // updated entry gets a fresh toast. A plain update did not (a
+      // promise settling after the user dismissed it): swallow, and the
+      // finishing ghost takes the record with it.
+      return via === 'create' ? [this.#enter(entry)] : [];
     }
 
     // The clock belongs to the duration: an explicit touch (even with the

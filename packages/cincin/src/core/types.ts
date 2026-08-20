@@ -45,6 +45,10 @@ interface ToastEntryUpdatedEvent<
   /** What the caller asked to change: a presenter restarts its expiry clock
    * on an explicit duration touch even when the value is the same. */
   patch: UpdatePatch<Content>;
+  /** Which facade call produced this update: a create over a live id (an
+   * upsert, the caller wants the toast shown) or a plain update. A
+   * presenter reopens a leaving toast only for 'create'. */
+  via: 'create' | 'update';
 }
 
 interface ToastEntryRemovedEvent<

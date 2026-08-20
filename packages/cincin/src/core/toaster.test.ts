@@ -87,7 +87,11 @@ describe('store', () => {
     it('should upsert a live toast on create with the same id', () => {
       const t = createToaster();
       const events: string[] = [];
-      t.subscribe((e) => events.push(e.type));
+      const seen: unknown[] = [];
+      t.subscribe((e) => {
+        events.push(e.type);
+        seen.push(e);
+      });
       t.message('old', { id: 'x' });
 
       t.create('new', { id: 'x' });
@@ -95,6 +99,8 @@ describe('store', () => {
       expect(t.getSnapshot()).toHaveLength(1);
       expect(t.getSnapshot().at(0)!.content).toBe('new');
       expect(events).toEqual(['added', 'updated']);
+      // An upsert is stamped as such: presenters reopen only for these.
+      expect(seen.at(-1)).toMatchObject({ type: 'updated', via: 'create' });
     });
 
     it('should update dismissible on upsert of a live toast', () => {
@@ -190,6 +196,7 @@ describe('store', () => {
         patch: { duration: 4000 },
         prev: { content: 'a' },
         entry: { content: 'a', duration: 4000 },
+        via: 'update',
       });
     });
 

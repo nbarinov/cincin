@@ -454,13 +454,13 @@ describe('presenter', () => {
       expect(storeEvents).toEqual([]); // no second removed
     });
 
-    it('should open a fresh presentation for an update on a leaving record (dead means dead)', () => {
+    it('should open a fresh toast for a create over a leaving entry (dead means dead)', () => {
       const { t, p } = setup();
       const id = t.message('a');
       const [ghostKey] = keys(p);
       p.dismiss(ghostKey!);
 
-      t.update(id, { content: 'b' });
+      t.create('b', { id });
 
       expect(
         p.getSnapshot().map((x) => `${x.entry.content}:${x.phase}`)
@@ -468,12 +468,30 @@ describe('presenter', () => {
       expect(keys(p)[1]).not.toBe(ghostKey);
     });
 
+    it('should swallow a plain update on a leaving entry', () => {
+      const { t, p } = setup();
+      const id = t.message('a');
+      const [key] = keys(p);
+      p.dismiss(key!);
+
+      // A promise settling after the user dismissed it goes this way:
+      // the record updates in the store, but nothing reopens on screen.
+      t.update(id, { content: 'b' });
+
+      expect(phases(p)).toEqual(['leaving']);
+      expect(p.getSnapshot().at(0)!.entry.content).toBe('a'); // the ghost froze
+
+      p.finish(key!);
+      expect(p.getSnapshot()).toEqual([]);
+      expect(t.getSnapshot()).toEqual([]); // the ghost took the record along
+    });
+
     it('should keep the record while a fresh presentation is alive after the ghost finishes', () => {
       const { t, p } = setup();
       const id = t.message('a');
       const [ghostKey] = keys(p);
       p.dismiss(ghostKey!);
-      t.update(id, { content: 'b' });
+      t.create('b', { id });
 
       p.finish(ghostKey!);
 

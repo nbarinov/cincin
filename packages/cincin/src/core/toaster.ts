@@ -82,15 +82,18 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
 
     if (this.#store.has(toastId)) {
       // Upsert: only explicitly provided fields make it into the patch.
-      // Whether the record is currently leaving a screen is the presenter's
-      // concern (it opens a fresh presentation for an update on a leaving
-      // one); the store just patches the record.
-      this.update(toastId, {
-        content,
-        ...(type !== undefined && { type }),
-        ...(duration !== undefined && { duration }),
-        ...(dismissible !== undefined && { dismissible }),
-      });
+      // Stamped 'create': the caller wants the toast shown, so a presenter
+      // whose toasts of this entry are all leaving opens a fresh one.
+      this.#applyUpdate(
+        toastId,
+        {
+          content,
+          ...(type !== undefined && { type }),
+          ...(duration !== undefined && { duration }),
+          ...(dismissible !== undefined && { dismissible }),
+        },
+        'create'
+      );
 
       return toastId;
     }
@@ -113,6 +116,14 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   }
 
   update(id: ToastId, patch: UpdatePatch<Content>): void {
+    this.#applyUpdate(id, patch, 'update');
+  }
+
+  #applyUpdate(
+    id: ToastId,
+    patch: UpdatePatch<Content>,
+    via: 'create' | 'update'
+  ): void {
     const prev = this.#store.get(id);
     if (prev === undefined) {
       devWarn('update: toast not found', id);
@@ -143,7 +154,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     };
 
     this.#store.set(next);
-    this.#store.commit({ type: 'updated', entry: next, prev, patch });
+    this.#store.commit({ type: 'updated', entry: next, prev, patch, via });
   }
 
   remove(): void;
