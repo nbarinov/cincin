@@ -251,6 +251,34 @@ describe('presenter', () => {
       expect(phases(p)).toEqual(['leaving']);
     });
 
+    it('should report Infinity remaining for an active permanent toast', () => {
+      const { t, p } = setup();
+      t.loading('forever');
+
+      // Not 0: an active Infinity toast is alive, not expired, and the
+      // answer matches what the same toast reported while queued.
+      expect(p.getRemainingMs(keys(p)[0]!)).toBe(Infinity);
+    });
+
+    it('should freeze the new duration when a paused toast is touched', () => {
+      const { t, p } = setup();
+      const id = t.message('a', { duration: 1000 });
+      const [key] = keys(p);
+
+      vi.advanceTimersByTime(600);
+      p.pause(key!);
+      t.update(id, { duration: 2000 });
+
+      vi.advanceTimersByTime(5000);
+      expect(phases(p)).toEqual(['active']); // still frozen
+
+      p.resume(key!);
+      vi.advanceTimersByTime(1999);
+      expect(phases(p)).toEqual(['active']); // the full new duration
+      vi.advanceTimersByTime(1);
+      expect(phases(p)).toEqual(['leaving']);
+    });
+
     it('should report the remaining time by phase', () => {
       const { t, p } = setup({ max: 1 });
       t.message('a', { duration: 1000 });
@@ -301,6 +329,14 @@ describe('presenter', () => {
       // Long past its duration (and past the ghost's safety net): frozen.
       vi.advanceTimersByTime(5000);
       expect(promoted().phase).toBe('active');
+
+      // The frozen clock exists and resumes with the full remainder: a
+      // promotion under pause must not lose the expiry entry.
+      p.resume();
+      vi.advanceTimersByTime(999);
+      expect(promoted().phase).toBe('active');
+      vi.advanceTimersByTime(1);
+      expect(promoted().phase).toBe('leaving');
     });
 
     it('should not pause a leaving presentation so the safety net keeps ticking', () => {

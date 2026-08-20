@@ -13,7 +13,7 @@ interface TimerEntry {
  * expiration callbacks out. Policy (what to start, when to pause, what expiry means)
  * belongs to the caller.
  *
- * Invariant kept by the Toaster facade: every active toast has an entry here,
+ * Invariant kept by the presenter: every active toast has an entry here,
  * including `Infinity` ones, so `remaining()` answers lifetime questions uniformly.
  */
 class TimerManager<Key> {

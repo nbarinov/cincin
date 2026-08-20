@@ -311,14 +311,17 @@ class Presenter<Content extends {} = string>
   }
 
   #startExpiry(toast: Toast<Content>): void {
-    if (toast.entry.duration === Infinity || toast.paused) {
-      return;
-    }
-
     const key = toast.key;
+    // Every active toast keeps a timer entry, Infinity included, so
+    // remaining() answers lifetime questions uniformly. A paused toast
+    // starts frozen (start, then pause): the entry holds the full
+    // remainder for the resume that unfreezes it.
     this.#expiryTimers.start(key, toast.entry.duration, () =>
       this.dismiss(key)
     );
+    if (toast.paused) {
+      this.#expiryTimers.pause(key);
+    }
   }
 
   #hasFreeSlot(): boolean {
