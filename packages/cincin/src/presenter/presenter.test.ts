@@ -91,6 +91,37 @@ describe('presenter', () => {
       ]);
     });
 
+    it('should complete leaving exits on unmount and drop their entries', () => {
+      const { t, p } = setup();
+      t.message('closed');
+      t.message('open');
+      p.dismiss(keys(p)[0]!);
+
+      p.unmount();
+
+      // The dismissed one is gone for good; the live one waits frozen.
+      expect(t.getSnapshot().map((entry) => entry.content)).toEqual(['open']);
+
+      p.mount();
+      expect(p.getSnapshot().map((x) => x.entry.content)).toEqual(['open']);
+    });
+
+    it('should keep the shared entry when a ghost and a fresh toast leave together', () => {
+      const { t, p } = setup();
+      const id = t.message('a');
+      p.dismiss(keys(p)[0]!);
+      t.create('b', { id }); // dead means dead: ghost of a + fresh b
+
+      p.unmount();
+
+      // The ghost's exit completes, but the entry belongs to the live
+      // toast now: it survives for the remount.
+      expect(t.getSnapshot().map((entry) => entry.content)).toEqual(['b']);
+
+      p.mount();
+      expect(p.getSnapshot().map((x) => x.entry.content)).toEqual(['b']);
+    });
+
     it('should count mounts and unmount on the last one', () => {
       const { t, p } = setup();
       p.mount(); // second consumer

@@ -93,8 +93,9 @@ class Presenter<Content extends {} = string>
   }
 
   protected override onUnmount(): void {
-    // No region, nothing to animate: every toast leaves at once, clocks
-    // stop, the entry store is untouched.
+    // No region, nothing to animate: every toast goes at once and the
+    // clocks stop. Live toasts keep their entries: time stands still and
+    // a remount shows them again.
     this.#unsubscribe?.();
     this.#unsubscribe = undefined;
     this.#expiryTimers.clear();
@@ -108,6 +109,21 @@ class Presenter<Content extends {} = string>
     this.#store.commit(
       ...gone.map((toast) => ({ type: 'left' as const, toast }))
     );
+
+    // Leaving toasts were already on their way out: their exits complete
+    // here and their entries go with them, as finish() would have done.
+    // An entry a live toast still represented survives for the remount,
+    // dead-means-dead included (a ghost and a fresh toast share one id).
+    const liveIds = new Set(
+      gone
+        .filter((toast) => toast.phase !== 'leaving')
+        .map((toast) => toast.entry.id)
+    );
+    for (const toast of gone) {
+      if (toast.phase === 'leaving' && !liveIds.has(toast.entry.id)) {
+        this.#toaster.remove(toast.entry.id);
+      }
+    }
   }
 
   // --- planners: mutate the store, return events, never commit ---
