@@ -283,27 +283,49 @@ main header {
   margin: 0;
 }
 
+/* The layout box stays 1rem — under the text line — so the button
+ * mounting on a settling promise toast never sets the card's height.
+ * The comfortable hit target and the hover/active plate live on the
+ * ::before overhang instead. */
 .toast-close {
+  position: relative;
   flex: none;
-  padding: 0.2rem 0.45rem;
+  display: grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
   border: none;
-  border-radius: 0.4rem;
   background: transparent;
   color: inherit;
   font: inherit;
+  line-height: 1;
   cursor: pointer;
   opacity: 0.6;
   -webkit-tap-highlight-color: transparent;
 }
 
+.toast-close::before {
+  content: '';
+  position: absolute;
+  inset: -0.25rem;
+  border-radius: 0.4rem;
+}
+
 @media (hover: hover) {
   .toast-close:hover {
-    background: color-mix(in srgb, currentColor 10%, transparent);
     opacity: 1;
+  }
+
+  .toast-close:hover::before {
+    background: color-mix(in srgb, currentColor 10%, transparent);
   }
 }
 
 .toast-close:active {
-  background: color-mix(in srgb, currentColor 14%, transparent);
   opacity: 1;
+}
+
+.toast-close:active::before {
+  background: color-mix(in srgb, currentColor 14%, transparent);
 }

@@ -33,7 +33,10 @@ section {
   gap: 0.5rem;
 }
 
-button {
+/* Scoped to the demo section: a bare `button` selector reaches the
+ * toast's close/action buttons too, and paints them with the page's
+ * hover/active backgrounds and radius. */
+section button {
   padding: 0.5rem 0.9rem;
   border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
   border-radius: 0.5rem;
@@ -45,11 +48,11 @@ button {
 }
 
 @media (hover: hover) {
-  button:hover {
+  section button:hover {
     background: color-mix(in srgb, currentColor 8%, transparent);
   }
 }
 
-button:active {
+section button:active {
   background: color-mix(in srgb, currentColor 12%, transparent);
 }

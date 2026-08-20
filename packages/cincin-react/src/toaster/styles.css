@@ -161,19 +161,26 @@
 }
 
 [data-cincin-close] {
+  position: relative;
   flex: none;
   display: grid;
   place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1rem;
+  height: 1rem;
   padding: 0;
   border: none;
-  border-radius: 0.4rem;
   background: transparent;
   color: inherit;
   cursor: pointer;
   opacity: 0.55;
   -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-close]::before {
+  content: '';
+  position: absolute;
+  inset: -0.25rem;
+  border-radius: 0.4rem;
 }
 
 [data-cincin-close] > [data-cincin-icon] {
@@ -182,8 +189,11 @@
 }
 
 [data-cincin-close]:active {
-  background: color-mix(in srgb, currentColor 14%, transparent);
   opacity: 1;
+}
+
+[data-cincin-close]:active::before {
+  background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
 @media (hover: hover) {
@@ -192,8 +202,11 @@
   }
 
   [data-cincin-close]:hover {
-    background: color-mix(in srgb, currentColor 10%, transparent);
     opacity: 1;
+  }
+
+  [data-cincin-close]:hover::before {
+    background: color-mix(in srgb, currentColor 10%, transparent);
   }
 }
 
