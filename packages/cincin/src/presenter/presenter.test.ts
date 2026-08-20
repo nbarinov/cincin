@@ -198,14 +198,98 @@ describe('presenter', () => {
       ).toEqual(['a:leaving', 'b:active', 'c:queued']);
     });
 
-    it('should warn when max cannot show any toast', () => {
+    it('should promote queued toasts when setConfig raises max', () => {
+      const { t, p, events } = setup({ max: 1 });
+      t.message('a');
+      t.message('b');
+      t.message('c');
+      expect(phases(p)).toEqual(['active', 'queued', 'queued']);
+      events.length = 0;
+
+      p.setConfig({ max: 3 });
+
+      expect(phases(p)).toEqual(['active', 'active', 'active']);
+      expect(events.map((e) => e.type)).toEqual(['updated', 'updated']);
+    });
+
+    it('should demote nobody when setConfig lowers max', () => {
+      const { t, p } = setup({ max: 3 });
+      t.message('a');
+      t.message('b');
+
+      p.setConfig({ max: 1 });
+
+      // The excess active toasts live out their time; only the next
+      // arrival feels the new limit.
+      expect(phases(p)).toEqual(['active', 'active']);
+      t.message('c');
+      expect(phases(p)).toEqual(['active', 'active', 'queued']);
+    });
+
+    it('should treat re-applying the current config as a no-op', () => {
+      const { p, events } = setup({ max: 2, removeTimeout: 500 });
+      const before = p.config;
+      events.length = 0;
+
+      p.setConfig({ max: 2, removeTimeout: 500 });
+      p.setConfig({});
+
+      // Same reference, no events: the effect firing after mount with
+      // the construction config costs nothing.
+      expect(p.config).toBe(before);
+      expect(events).toEqual([]);
+    });
+
+    it('should keep an omitted field on setConfig', () => {
+      const { p } = setup({ max: 2, removeTimeout: 500 });
+
+      p.setConfig({ max: 4 });
+
+      expect(p.config).toEqual({ max: 4, removeTimeout: 500 });
+    });
+
+    it('should warn and fall back to Infinity when max cannot show any toast', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      createPresenter(createToaster(), { max: 0 });
+      const t = createToaster();
+      const p = createPresenter(t, { max: 0 });
+      p.mount();
 
       expect(warn).toHaveBeenCalledWith(
         expect.stringContaining('max below 1'),
         0
       );
+      // Normalized, not just reported: the toast still shows.
+      expect(p.config.max).toBe(Infinity);
+      t.message('a');
+      expect(phases(p)).toEqual(['active']);
+      warn.mockRestore();
+    });
+
+    it('should normalize a NaN max too', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      // A computed max gone wrong (0/0, parseInt of garbage) must not
+      // silently queue everything forever.
+      const p = createPresenter(createToaster(), { max: Number.NaN });
+
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('max below 1'),
+        Number.NaN
+      );
+      expect(p.config.max).toBe(Infinity);
+      warn.mockRestore();
+    });
+
+    it('should normalize a bad max on setConfig as well', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { t, p } = setup({ max: 1 });
+      t.message('a');
+      t.message('b');
+
+      p.setConfig({ max: Number.NaN });
+
+      // The fallback frees the queue instead of freezing it.
+      expect(p.config.max).toBe(Infinity);
+      expect(phases(p)).toEqual(['active', 'active']);
       warn.mockRestore();
     });
   });

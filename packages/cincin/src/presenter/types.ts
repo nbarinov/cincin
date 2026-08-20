@@ -57,6 +57,8 @@ interface PresenterConfig {
 interface Presenter<Content extends {} = string> {
   readonly config: Readonly<Required<PresenterConfig>>;
 
+  setConfig(config: Partial<PresenterConfig>): void;
+
   dismiss(): void;
   dismiss(key: ToastKey): void;
   dismiss(keys: ToastKey[]): void;

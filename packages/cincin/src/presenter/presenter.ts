@@ -26,7 +26,11 @@ class Presenter<Content extends {} = string>
   extends Mountable
   implements PresenterContract<Content>
 {
-  readonly config: Readonly<Required<PresenterConfig>>;
+  #config: Readonly<Required<PresenterConfig>>;
+
+  get config(): Readonly<Required<PresenterConfig>> {
+    return this.#config;
+  }
 
   // Delegates are pre-bound by their owners.
   readonly subscribe: PresenterContract<Content>['subscribe'];
@@ -45,14 +49,10 @@ class Presenter<Content extends {} = string>
     super();
 
     this.#toaster = toaster;
-    this.config = Object.freeze({
-      max: config.max ?? Infinity,
+    this.#config = Object.freeze({
+      max: resolveMax(config.max),
       removeTimeout: config.removeTimeout ?? 2000,
     });
-
-    if (this.config.max < 1) {
-      devWarn('presenter: max below 1 can never show a toast', this.config.max);
-    }
 
     this.subscribe = this.#store.subscribe;
     this.getSnapshot = this.#store.getSnapshot;
@@ -62,6 +62,26 @@ class Presenter<Content extends {} = string>
     this.pause = this.pause.bind(this);
     this.resume = this.resume.bind(this);
     this.getRemainingMs = this.getRemainingMs.bind(this);
+    this.setConfig = this.setConfig.bind(this);
+  }
+
+  setConfig(config: Partial<PresenterConfig>): void {
+    const max =
+      config.max !== undefined ? resolveMax(config.max) : this.#config.max;
+    const removeTimeout = config.removeTimeout ?? this.#config.removeTimeout;
+
+    // Idempotent: a caller re-applying the current values (a React
+    // effect firing right after mount) costs nothing.
+    if (
+      max === this.#config.max &&
+      removeTimeout === this.#config.removeTimeout
+    ) {
+      return;
+    }
+
+    this.#config = Object.freeze({ max, removeTimeout });
+
+    this.#store.commit(...this.#promote());
   }
 
   // --- lifecycle ---
@@ -195,7 +215,7 @@ class Presenter<Content extends {} = string>
 
     // Safety net: if nobody finishes the exit, we do. Capture only the key.
     const key = next.key;
-    this.#leaveTimers.start(key, this.config.removeTimeout, () =>
+    this.#leaveTimers.start(key, this.#config.removeTimeout, () =>
       this.finish(key)
     );
 
@@ -347,7 +367,7 @@ class Presenter<Content extends {} = string>
   }
 
   #hasFreeSlot(): boolean {
-    return this.#store.count((t) => t.phase === 'active') < this.config.max;
+    return this.#store.count((t) => t.phase === 'active') < this.#config.max;
   }
 
   /**
@@ -359,6 +379,12 @@ class Presenter<Content extends {} = string>
     if (events.length === 0) {
       return;
     }
+
+    this.#store.commit(...events, ...this.#promote());
+  }
+
+  #promote(): ToastEvent<Content>[] {
+    const events: ToastEvent<Content>[] = [];
 
     while (this.#hasFreeSlot()) {
       const queued = this.#store.select((t) => t.phase === 'queued')[0];
@@ -372,8 +398,28 @@ class Presenter<Content extends {} = string>
       events.push({ type: 'updated', toast: active, prev: queued });
     }
 
-    this.#store.commit(...events);
+    return events;
   }
+}
+
+/**
+ * Normalized: a max that can never show a toast falls back to the
+ * default. Written so NaN fails too: !(NaN >= 1) is true.
+ */
+function resolveMax(max: number | undefined): number {
+  if (max === undefined) {
+    return Infinity;
+  }
+
+  if (!(max >= 1)) {
+    devWarn(
+      'presenter: max below 1 can never show a toast, using Infinity',
+      max
+    );
+    return Infinity;
+  }
+
+  return max;
 }
 
 function createPresenter<Content extends {} = string>(

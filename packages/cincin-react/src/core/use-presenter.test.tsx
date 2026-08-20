@@ -52,6 +52,29 @@ describe('usePresenter', () => {
     expect(presenter.getSnapshot()).toHaveLength(1);
   });
 
+  it('should apply config changes through setConfig', () => {
+    const toaster = createToaster();
+    toaster.message('a');
+    toaster.message('b');
+
+    const { result, rerender } = renderHook(
+      ({ max }) => usePresenter(toaster, { max }),
+      { initialProps: { max: 1 } }
+    );
+    expect(result.current.getSnapshot().map((t) => t.phase)).toEqual([
+      'active',
+      'queued',
+    ]);
+
+    rerender({ max: 2 });
+
+    expect(result.current.config.max).toBe(2);
+    expect(result.current.getSnapshot().map((t) => t.phase)).toEqual([
+      'active',
+      'active',
+    ]);
+  });
+
   it('should pass the config through', () => {
     const toaster = createToaster();
     const { result } = renderHook(() => usePresenter(toaster, { max: 1 }));
