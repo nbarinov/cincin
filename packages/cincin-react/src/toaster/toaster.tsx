@@ -8,6 +8,7 @@ import type { Ref } from 'react';
 import { useComposedRefs } from '../shared/use-composed-refs';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
+import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import { useToastExit } from '../core/use-toast-exit';
 import type { ToastContent } from './content';
@@ -42,6 +43,8 @@ function Toaster({
 
   const region = useRegion(presenter);
   const stack = useStack(shown, { visible });
+
+  useVisibilityPause(presenter);
 
   return (
     <ol
