@@ -1,4 +1,4 @@
-import { attachSwipe } from 'cincin/dom';
+import { attachSwipe, attachVisibilityPause } from 'cincin/dom';
 import { createPresenter } from 'cincin/presenter';
 import type { Toaster } from 'cincin';
 import type { Toast, ToastKey } from 'cincin/presenter';
@@ -237,9 +237,12 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     render();
   });
   presenter.mount();
+
+  const detachVisibilityPause = attachVisibilityPause(presenter);
   render();
 
   return () => {
+    detachVisibilityPause();
     unsubscribe();
     clearTimeout(collapseTimer);
     controller.abort();
