@@ -5,11 +5,11 @@ import type {
   UpdatePatch,
   PromisePhase,
   PromiseOptions,
-  Toast,
+  ToastEntry,
   Toaster as ToasterContract,
   ToasterConfig,
   ToastId,
-  ToastNotifyEvent,
+  ToastEntryEvent,
   ToastType,
 } from './types';
 
@@ -96,7 +96,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     }
 
     const toastType = type ?? 'message';
-    const toast: Toast<Content> = {
+    const entry: ToastEntry<Content> = {
       id: toastId,
       content,
       type: toastType,
@@ -106,8 +106,8 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       dismissible: this.#resolveDismissible(toastType, dismissible),
     };
 
-    this.#store.set(toast);
-    this.#store.commit({ type: 'added', toast });
+    this.#store.set(entry);
+    this.#store.commit({ type: 'added', entry });
 
     return toastId;
   }
@@ -133,7 +133,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       patch.dismissible ??
       (typeChanged ? this.#resolveDismissible(type) : prev.dismissible);
 
-    const next: Toast<Content> = {
+    const next: ToastEntry<Content> = {
       ...prev,
       ...patch,
       type,
@@ -143,7 +143,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     };
 
     this.#store.set(next);
-    this.#store.commit({ type: 'updated', toast: next, previous: prev, patch });
+    this.#store.commit({ type: 'updated', entry: next, previous: prev, patch });
   }
 
   remove(): void;
@@ -157,21 +157,21 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
 
     const ids = new Set(
       target === undefined
-        ? this.#store.values().map((toast) => toast.id)
+        ? this.#store.values().map((entry) => entry.id)
         : Array.isArray(target)
           ? target
           : [target]
     );
 
-    const events: ToastNotifyEvent<Content>[] = [];
+    const events: ToastEntryEvent<Content>[] = [];
     for (const id of ids) {
-      const toast = this.#store.get(id);
+      const entry = this.#store.get(id);
       // A remove on a gone record is routine (a presenter finishing a ghost
       // whose record already left): no warning, no event.
-      if (toast === undefined) continue;
+      if (entry === undefined) continue;
 
       this.#store.delete(id);
-      events.push({ type: 'removed', toast });
+      events.push({ type: 'removed', entry });
     }
 
     // One batch, one snapshot swap.

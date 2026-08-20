@@ -1,7 +1,7 @@
 import { createToaster } from '../core/toaster';
 import { createPresenter } from './presenter';
 import type { Toaster } from '../core/types';
-import type { Presenter, PresenterEvent } from './types';
+import type { Presenter, ToastEvent } from './types';
 
 declare const console: { warn(...args: unknown[]): void };
 
@@ -9,11 +9,11 @@ declare const console: { warn(...args: unknown[]): void };
 function setup(config?: Parameters<typeof createPresenter>[1]): {
   t: Toaster;
   p: Presenter;
-  events: PresenterEvent[];
+  events: ToastEvent[];
 } {
   const t = createToaster();
   const p = createPresenter(t, config);
-  const events: PresenterEvent[] = [];
+  const events: ToastEvent[] = [];
   p.subscribe((event) => events.push(event));
   p.mount();
   return { t, p, events };
@@ -41,7 +41,7 @@ describe('presenter', () => {
 
       p.mount();
       expect(phases(p)).toEqual(['active']);
-      expect(p.getSnapshot().at(0)!.toast.content).toBe('early');
+      expect(p.getSnapshot().at(0)!.entry.content).toBe('early');
     });
 
     it('should enter the existing records in one batch on mount', () => {
@@ -86,7 +86,7 @@ describe('presenter', () => {
       expect(p.getSnapshot()).toEqual([]);
 
       p.mount();
-      expect(p.getSnapshot().map((x) => x.toast.content)).toEqual([
+      expect(p.getSnapshot().map((x) => x.entry.content)).toEqual([
         'while unmounted',
       ]);
     });
@@ -110,7 +110,7 @@ describe('presenter', () => {
       const id = t.message('a');
 
       const [presentation] = p.getSnapshot();
-      expect(presentation!.toast.id).toBe(id);
+      expect(presentation!.entry.id).toBe(id);
       expect(presentation!.key).not.toBe(id);
       expect(presentation!.key).toMatch(/^p-[a-z0-9]+-1$/);
     });
@@ -119,7 +119,7 @@ describe('presenter', () => {
       const { t, p } = setup();
       t.message('a');
 
-      expect(p.getSnapshot().at(0)!.toast).toBe(t.getSnapshot().at(0));
+      expect(p.getSnapshot().at(0)!.entry).toBe(t.getSnapshot().at(0));
     });
 
     it('should follow record updates on a live presentation', () => {
@@ -129,11 +129,11 @@ describe('presenter', () => {
       t.update(id, { content: 'b' });
 
       expect(p.getSnapshot()).toHaveLength(1);
-      expect(p.getSnapshot().at(0)!.toast.content).toBe('b');
+      expect(p.getSnapshot().at(0)!.entry.content).toBe('b');
       expect(events.at(-1)).toMatchObject({
         type: 'updated',
-        presentation: { toast: { content: 'b' } },
-        previous: { toast: { content: 'a' } },
+        toast: { entry: { content: 'b' } },
+        previous: { entry: { content: 'a' } },
       });
     });
   });
@@ -163,7 +163,7 @@ describe('presenter', () => {
       p.dismiss(keys(p)[0]!);
 
       expect(
-        p.getSnapshot().map((x) => `${x.toast.content}:${x.phase}`)
+        p.getSnapshot().map((x) => `${x.entry.content}:${x.phase}`)
       ).toEqual(['a:leaving', 'b:active', 'c:queued']);
     });
 
@@ -295,7 +295,7 @@ describe('presenter', () => {
 
       p.dismiss(keys(p)[0]!);
       const promoted = () =>
-        p.getSnapshot().find((x) => x.toast.content === 'b')!;
+        p.getSnapshot().find((x) => x.entry.content === 'b')!;
       expect(promoted()).toMatchObject({ phase: 'active', paused: true });
 
       // Long past its duration (and past the ghost's safety net): frozen.
@@ -401,7 +401,7 @@ describe('presenter', () => {
       expect(t.getSnapshot()).toEqual([]);
       expect(phases(p)).toEqual(['leaving']);
       // The ghost keeps the last record it saw.
-      expect(p.getSnapshot().at(0)!.toast.content).toBe('a');
+      expect(p.getSnapshot().at(0)!.entry.content).toBe('a');
     });
 
     it('should let a ghost finish without touching the store again', () => {
@@ -427,7 +427,7 @@ describe('presenter', () => {
       t.update(id, { content: 'b' });
 
       expect(
-        p.getSnapshot().map((x) => `${x.toast.content}:${x.phase}`)
+        p.getSnapshot().map((x) => `${x.entry.content}:${x.phase}`)
       ).toEqual(['a:leaving', 'b:active']);
       expect(keys(p)[1]).not.toBe(ghostKey);
     });
@@ -492,7 +492,7 @@ describe('presenter', () => {
 
       expect(phases(p)).toEqual(['leaving']);
       expect(warn).toHaveBeenCalledWith(
-        expect.stringContaining('presentation not found'),
+        expect.stringContaining('toast not found'),
         'p-nope-1'
       );
       warn.mockRestore();

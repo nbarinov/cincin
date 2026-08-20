@@ -1,15 +1,15 @@
 export { createToaster } from './toaster';
 
 export type {
-  Toast,
+  ToastEntry,
   ToastId,
   ToastType,
   CreateOptions,
   UpdatePatch,
-  AddedNotifyEvent,
-  UpdatedNotifyEvent,
-  RemovedNotifyEvent,
-  ToastNotifyEvent,
+  ToastEntryAddedEvent,
+  ToastEntryUpdatedEvent,
+  ToastEntryRemovedEvent,
+  ToastEntryEvent,
   PromisePhase,
   PromiseOptions,
   ToasterConfig,

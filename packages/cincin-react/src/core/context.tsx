@@ -1,9 +1,9 @@
 'use client';
 
-import type { Toaster, Toast } from 'cincin';
+import type { Toaster, ToastEntry } from 'cincin';
 import { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
-import { useToasts as useToastsOf } from './use-toasts';
+import { useToastEntries as useToastEntriesOf } from './use-toast-entries';
 
 function createToasterContext<Content extends {} = string>(
   defaultToaster?: Toaster<Content>
@@ -36,15 +36,15 @@ function createToasterContext<Content extends {} = string>(
     return resolved;
   }
 
-  function useToasts(
+  function useToastEntries(
     toaster?: Toaster<Content>
-  ): ReadonlyArray<Toast<Content>> {
+  ): ReadonlyArray<ToastEntry<Content>> {
     const instance = useToaster(toaster);
 
-    return useToastsOf(instance);
+    return useToastEntriesOf(instance);
   }
 
-  return { ToasterProvider, useToaster, useToasts };
+  return { ToasterProvider, useToaster, useToastEntries };
 }
 
 export { createToasterContext };

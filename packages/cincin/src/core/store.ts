@@ -1,14 +1,14 @@
 import { EntityStore } from '../shared/entity-store';
-import type { ToastId, Toast, ToastNotifyEvent } from './types';
+import type { ToastId, ToastEntry, ToastEntryEvent } from './types';
 
 type ToastStore<Content extends {} = string> = EntityStore<
   ToastId,
-  Toast<Content>,
-  ToastNotifyEvent<Content>
+  ToastEntry<Content>,
+  ToastEntryEvent<Content>
 >;
 
 function createToastStore<Content extends {} = string>(): ToastStore<Content> {
-  return new EntityStore({ selectId: (toast) => toast.id });
+  return new EntityStore({ selectId: (entry) => entry.id });
 }
 
 export { createToastStore };

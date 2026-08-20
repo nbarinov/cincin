@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { useRefMap } from '../shared/use-ref-map';
-import type { Presentation, PresentationKey } from 'cincin/presenter';
+import type { Toast, ToastKey } from 'cincin/presenter';
 
 type ToastSlot = {
   index: number;
@@ -16,17 +16,17 @@ type StackOptions = {
 };
 
 function useStack(
-  entries: ReadonlyArray<Pick<Presentation, 'key' | 'phase'>>,
+  entries: ReadonlyArray<Pick<Toast, 'key' | 'phase'>>,
   options: StackOptions = {}
 ) {
   const { order = 'stack', visible = 3, gap = 12 } = options;
-  const elements = useRefMap<PresentationKey, HTMLElement>();
-  const slots = useRef(new Map<PresentationKey, ToastSlot>());
-  const aliveIds = useRef(new Set<PresentationKey>());
+  const elements = useRefMap<ToastKey, HTMLElement>();
+  const slots = useRef(new Map<ToastKey, ToastSlot>());
+  const aliveIds = useRef(new Set<ToastKey>());
 
   useLayoutEffect(
     function layoutStack() {
-      const next = new Map<PresentationKey, ToastSlot>();
+      const next = new Map<ToastKey, ToastSlot>();
       let offset = 0;
       let depth = 0;
 

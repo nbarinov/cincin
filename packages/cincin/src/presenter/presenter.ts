@@ -1,47 +1,47 @@
 import { TimerManager } from './timer-manager';
 import { Mountable } from '../shared/mountable';
 import { counter, devWarn } from '../shared/utils';
-import { createPresentationStore } from './store';
-import type { Toast, Toaster, ToastId, UpdatePatch } from '../core/types';
+import { createPresenterStore } from './store';
+import type { ToastEntry, Toaster, ToastId, UpdatePatch } from '../core/types';
 import type {
-  EnteredEvent,
-  LeavingEvent,
-  Presentation,
-  PresentationKey,
+  Toast,
+  ToastKey,
+  ToastEnteredEvent,
+  ToastLeavingEvent,
+  ToastUpdatedEvent,
+  ToastEvent,
   Presenter as PresenterContract,
   PresenterConfig,
-  PresenterEvent,
-  UpdatedEvent,
 } from './types';
 
 /**
- * Shows a toaster's records: one presentation per showing, with a queue
- * (max), an expiry clock per presentation, pauses, and an exit phase the
- * renderer finishes. Presentations reference the records and outlive
- * them as ghosts: a leaving presentation keeps the last record it saw.
- * Several presenters over one toaster are the consumer's coordination;
- * this one removes a record once none of its presentations remain here.
+ * Shows a toaster's entries: one toast per showing, with a queue (max),
+ * an expiry clock per toast, pauses, and a leaving phase the renderer
+ * finishes. Toasts reference the entries and outlive them as ghosts: a
+ * leaving toast keeps the last entry it saw. Several presenters over
+ * one toaster are the consumer's coordination; this one removes an
+ * entry once none of its toasts remain here.
  */
-class Presenter<ToastContent extends {} = string>
+class Presenter<Content extends {} = string>
   extends Mountable
-  implements PresenterContract<ToastContent>
+  implements PresenterContract<Content>
 {
   readonly config: Readonly<Required<PresenterConfig>>;
 
   // Delegates are pre-bound by their owners.
-  readonly subscribe: PresenterContract<ToastContent>['subscribe'];
-  readonly getSnapshot: PresenterContract<ToastContent>['getSnapshot'];
+  readonly subscribe: PresenterContract<Content>['subscribe'];
+  readonly getSnapshot: PresenterContract<Content>['getSnapshot'];
 
-  #toaster: Toaster<ToastContent>;
-  #store = createPresentationStore<ToastContent>();
-  #expiryTimers = new TimerManager<PresentationKey>();
-  #leaveTimers = new TimerManager<PresentationKey>();
+  #toaster: Toaster<Content>;
+  #store = createPresenterStore<Content>();
+  #expiryTimers = new TimerManager<ToastKey>();
+  #leaveTimers = new TimerManager<ToastKey>();
 
   #unsubscribe: (() => void) | undefined;
   #keyCounter = counter();
   #keySalt = Math.random().toString(36).slice(2, 6);
 
-  constructor(toaster: Toaster<ToastContent>, config: PresenterConfig = {}) {
+  constructor(toaster: Toaster<Content>, config: PresenterConfig = {}) {
     super();
 
     this.#toaster = toaster;
@@ -67,111 +67,110 @@ class Presenter<ToastContent extends {} = string>
   // --- lifecycle ---
 
   protected override onMount(): void {
-    // Records that already exist enter now, in one batch: a presenter
-    // mounted after toasts were added still shows them.
-    this.#commit(...this.#toaster.getSnapshot().map((t) => this.#enter(t)));
+    // Entries that already exist enter now, in one batch: a presenter
+    // mounted after toasts were created still shows them.
+    this.#commit(
+      ...this.#toaster.getSnapshot().map((entry) => this.#enter(entry))
+    );
 
     this.#unsubscribe = this.#toaster.subscribe((event) => {
       switch (event.type) {
         case 'added':
-          this.#commit(this.#enter(event.toast));
+          this.#commit(this.#enter(event.entry));
           return;
 
         case 'updated':
           this.#commit(
-            ...this.#refresh(event.toast, event.previous, event.patch)
+            ...this.#refresh(event.entry, event.previous, event.patch)
           );
           return;
 
         case 'removed':
-          this.#commit(...this.#orphan(event.toast.id));
+          this.#commit(...this.#orphan(event.entry.id));
           return;
       }
     });
   }
 
   protected override onUnmount(): void {
-    // No region, nothing to animate: every presentation leaves at once,
-    // clocks stop, the record store is untouched.
+    // No region, nothing to animate: every toast leaves at once, clocks
+    // stop, the entry store is untouched.
     this.#unsubscribe?.();
     this.#unsubscribe = undefined;
     this.#expiryTimers.clear();
     this.#leaveTimers.clear();
 
     const gone = this.#store.values();
-    for (const presentation of gone) {
-      this.#store.delete(presentation.key);
+    for (const toast of gone) {
+      this.#store.delete(toast.key);
     }
 
     this.#store.commit(
-      ...gone.map((presentation) => ({ type: 'left' as const, presentation }))
+      ...gone.map((toast) => ({ type: 'left' as const, toast }))
     );
   }
 
   // --- planners: mutate the store, return events, never commit ---
 
-  #enter(toast: Toast<ToastContent>): EnteredEvent<ToastContent> {
-    const presentation: Presentation<ToastContent> = {
+  #enter(entry: ToastEntry<Content>): ToastEnteredEvent<Content> {
+    const toast: Toast<Content> = {
       key: `p-${this.#keySalt}-${this.#keyCounter()}`,
-      toast,
+      entry,
       phase: this.#hasFreeSlot() ? 'active' : 'queued',
       paused: false,
     };
 
-    this.#store.set(presentation);
-    if (presentation.phase === 'active') {
-      this.#startExpiry(presentation);
+    this.#store.set(toast);
+    if (toast.phase === 'active') {
+      this.#startExpiry(toast);
     }
 
-    return { type: 'entered', presentation };
+    return { type: 'entered', toast };
   }
 
   #refresh(
-    toast: Toast<ToastContent>,
-    previous: Toast<ToastContent>,
-    patch: UpdatePatch<ToastContent>
-  ): PresenterEvent<ToastContent>[] {
+    entry: ToastEntry<Content>,
+    previous: ToastEntry<Content>,
+    patch: UpdatePatch<Content>
+  ): ToastEvent<Content>[] {
     const live = this.#store.select(
-      (p) => p.toast.id === toast.id && p.phase !== 'leaving'
+      (t) => t.entry.id === entry.id && t.phase !== 'leaving'
     );
 
     if (live.length === 0) {
-      // Dead means dead: every presentation of this record is leaving; the
-      // updated record gets a fresh one while the ghosts play out.
-      return [this.#enter(toast)];
+      // Dead means dead: every toast of this entry is leaving; the
+      // updated entry gets a fresh toast while the ghosts play out.
+      return [this.#enter(entry)];
     }
 
     // The clock belongs to the duration: an explicit touch (even with the
     // same value) or a type change rewinds it; content-only updates never do.
     const restart =
-      patch.duration !== undefined || toast.type !== previous.type;
+      patch.duration !== undefined || entry.type !== previous.type;
 
-    return live.map((presentation) => {
-      const next: Presentation<ToastContent> = { ...presentation, toast };
+    return live.map((toast) => {
+      const next: Toast<Content> = { ...toast, entry };
       this.#store.set(next);
       if (restart && next.phase === 'active') {
         this.#startExpiry(next);
       }
 
-      return { type: 'updated', presentation: next, previous: presentation };
+      return { type: 'updated', toast: next, previous: toast };
     });
   }
 
-  #orphan(id: ToastId): PresenterEvent<ToastContent>[] {
-    // The record is gone: live presentations start leaving (as ghosts of
-    // the last record they saw), ones already leaving are untouched.
+  #orphan(id: ToastId): ToastEvent<Content>[] {
+    // The entry is gone: live toasts start leaving (as ghosts of the
+    // last entry they saw), ones already leaving are untouched.
     return this.#store
-      .select((p) => p.toast.id === id && p.phase !== 'leaving')
-      .map((presentation) => this.#leave(presentation));
+      .select((t) => t.entry.id === id && t.phase !== 'leaving')
+      .map((toast) => this.#leave(toast));
   }
 
-  #leave(presentation: Presentation<ToastContent>): LeavingEvent<ToastContent> {
-    this.#expiryTimers.cancel(presentation.key);
+  #leave(toast: Toast<Content>): ToastLeavingEvent<Content> {
+    this.#expiryTimers.cancel(toast.key);
 
-    const next: Presentation<ToastContent> = {
-      ...presentation,
-      phase: 'leaving',
-    };
+    const next: Toast<Content> = { ...toast, phase: 'leaving' };
     this.#store.set(next);
 
     // Safety net: if nobody finishes the exit, we do. Capture only the key.
@@ -180,72 +179,68 @@ class Presenter<ToastContent extends {} = string>
       this.finish(key)
     );
 
-    return { type: 'leaving', presentation: next };
+    return { type: 'leaving', toast: next };
   }
 
-  #pauseOne(
-    presentation: Presentation<ToastContent>
-  ): UpdatedEvent<ToastContent> | null {
+  #pauseOne(toast: Toast<Content>): ToastUpdatedEvent<Content> | null {
     // Active and queued pause (a paused queued one gets promoted frozen);
     // leaving is excluded: the safety net must keep ticking.
-    if (presentation.phase === 'leaving' || presentation.paused) {
+    if (toast.phase === 'leaving' || toast.paused) {
       return null;
     }
 
-    this.#expiryTimers.pause(presentation.key);
-    const next: Presentation<ToastContent> = { ...presentation, paused: true };
+    this.#expiryTimers.pause(toast.key);
+    const next: Toast<Content> = { ...toast, paused: true };
     this.#store.set(next);
 
-    return { type: 'updated', presentation: next, previous: presentation };
+    return { type: 'updated', toast: next, previous: toast };
   }
 
-  #resumeOne(
-    presentation: Presentation<ToastContent>
-  ): UpdatedEvent<ToastContent> | null {
-    if (!presentation.paused) {
+  #resumeOne(toast: Toast<Content>): ToastUpdatedEvent<Content> | null {
+    if (!toast.paused) {
       return null;
     }
 
-    this.#expiryTimers.resume(presentation.key);
-    const next: Presentation<ToastContent> = { ...presentation, paused: false };
+    this.#expiryTimers.resume(toast.key);
+    const next: Toast<Content> = { ...toast, paused: false };
     this.#store.set(next);
 
-    return { type: 'updated', presentation: next, previous: presentation };
+    return { type: 'updated', toast: next, previous: toast };
   }
 
   // --- commands ---
 
   dismiss(): void;
-  dismiss(key: PresentationKey): void;
-  dismiss(keys: PresentationKey[]): void;
-  dismiss(target?: PresentationKey | PresentationKey[]): void {
-    this.#command('dismiss', arguments.length, target, (presentation) =>
-      presentation.phase === 'leaving' ? null : this.#leave(presentation)
+  dismiss(key: ToastKey): void;
+  dismiss(keys: ToastKey[]): void;
+  dismiss(target?: ToastKey | ToastKey[]): void {
+    this.#command('dismiss', arguments.length, target, (toast) =>
+      toast.phase === 'leaving' ? null : this.#leave(toast)
     );
   }
 
   pause(): void;
-  pause(key: PresentationKey): void;
-  pause(keys: PresentationKey[]): void;
-  pause(target?: PresentationKey | PresentationKey[]): void {
-    this.#command('pause', arguments.length, target, (presentation) =>
-      this.#pauseOne(presentation)
+  pause(key: ToastKey): void;
+  pause(keys: ToastKey[]): void;
+  pause(target?: ToastKey | ToastKey[]): void {
+    this.#command('pause', arguments.length, target, (toast) =>
+      this.#pauseOne(toast)
     );
   }
 
   resume(): void;
-  resume(key: PresentationKey): void;
-  resume(keys: PresentationKey[]): void;
-  resume(target?: PresentationKey | PresentationKey[]): void {
-    this.#command('resume', arguments.length, target, (presentation) =>
-      this.#resumeOne(presentation)
+  resume(key: ToastKey): void;
+  resume(keys: ToastKey[]): void;
+  resume(target?: ToastKey | ToastKey[]): void {
+    this.#command('resume', arguments.length, target, (toast) =>
+      this.#resumeOne(toast)
     );
   }
 
   /** The renderer finished the exit (or the safety net did). */
-  finish(key: PresentationKey): void {
-    const presentation = this.#store.get(key);
-    if (presentation === undefined) {
+  finish(key: ToastKey): void {
+    const toast = this.#store.get(key);
+    if (toast === undefined) {
       // A finish on a gone key is routine (safety net racing the renderer).
       return;
     }
@@ -254,26 +249,26 @@ class Presenter<ToastContent extends {} = string>
     this.#expiryTimers.cancel(key);
     this.#store.delete(key);
     // Publish `left` before touching the toaster: its `removed` comes back
-    // through #orphan and must find this presentation already gone.
-    this.#commit({ type: 'left', presentation });
+    // through #orphan and must find this toast already gone.
+    this.#commit({ type: 'left', toast });
 
-    // The presenter owns removal: once no presentation of the record remains
-    // here, the record goes. A remove on an already-gone record is a no-op.
-    const id = presentation.toast.id;
-    if (this.#store.count((p) => p.toast.id === id) === 0) {
+    // The presenter owns removal: once no toast of the entry remains here,
+    // the entry goes. A remove on an already-gone entry is a no-op.
+    const id = toast.entry.id;
+    if (this.#store.count((t) => t.entry.id === id) === 0) {
       this.#toaster.remove(id);
     }
   }
 
-  getRemainingMs(key: PresentationKey): number {
-    const presentation = this.#store.get(key);
-    if (presentation === undefined || presentation.phase === 'leaving') {
+  getRemainingMs(key: ToastKey): number {
+    const toast = this.#store.get(key);
+    if (toast === undefined || toast.phase === 'leaving') {
       return 0;
     }
 
-    if (presentation.phase === 'queued') {
+    if (toast.phase === 'queued') {
       // Life has not started yet: the full duration is still ahead.
-      return presentation.toast.duration;
+      return toast.entry.duration;
     }
 
     return this.#expiryTimers.remaining(key);
@@ -284,35 +279,31 @@ class Presenter<ToastContent extends {} = string>
   #command(
     name: string,
     arity: number,
-    target: PresentationKey | PresentationKey[] | undefined,
-    applyOne: (
-      presentation: Presentation<ToastContent>
-    ) => PresenterEvent<ToastContent> | null
+    target: ToastKey | ToastKey[] | undefined,
+    applyOne: (toast: Toast<Content>) => ToastEvent<Content> | null
   ): void {
     if (arity > 0 && target === undefined) {
-      devWarn(
-        `presenter.${name}: called with undefined key, did you mean ${name}()?`
-      );
+      devWarn(`${name}: called with undefined key, did you mean ${name}()?`);
       return;
     }
 
-    const targets: Presentation<ToastContent>[] = [];
+    const targets: Toast<Content>[] = [];
     if (target === undefined) {
       targets.push(...this.#store.values());
     } else {
       for (const key of new Set(Array.isArray(target) ? target : [target])) {
-        const presentation = this.#store.get(key);
-        if (presentation === undefined) {
-          devWarn(`presenter.${name}: presentation not found`, key);
+        const toast = this.#store.get(key);
+        if (toast === undefined) {
+          devWarn(`${name}: toast not found`, key);
           continue;
         }
-        targets.push(presentation);
+        targets.push(toast);
       }
     }
 
-    const events: PresenterEvent<ToastContent>[] = [];
-    for (const presentation of targets) {
-      const event = applyOne(presentation);
+    const events: ToastEvent<Content>[] = [];
+    for (const toast of targets) {
+      const event = applyOne(toast);
       if (event !== null) {
         events.push(event);
       }
@@ -321,51 +312,51 @@ class Presenter<ToastContent extends {} = string>
     this.#commit(...events);
   }
 
-  #startExpiry(presentation: Presentation<ToastContent>): void {
-    if (presentation.toast.duration === Infinity || presentation.paused) {
+  #startExpiry(toast: Toast<Content>): void {
+    if (toast.entry.duration === Infinity || toast.paused) {
       return;
     }
 
-    const key = presentation.key;
-    this.#expiryTimers.start(key, presentation.toast.duration, () =>
+    const key = toast.key;
+    this.#expiryTimers.start(key, toast.entry.duration, () =>
       this.dismiss(key)
     );
   }
 
   #hasFreeSlot(): boolean {
-    return this.#store.count((p) => p.phase === 'active') < this.config.max;
+    return this.#store.count((t) => t.phase === 'active') < this.config.max;
   }
 
   /**
    * The only publication point. Promotion lands in the same batch as its
-   * cause: while a slot is free and a queued presentation exists, the
-   * oldest one activates (frozen if it was paused).
+   * cause: while a slot is free and a queued toast exists, the oldest
+   * one activates (frozen if it was paused).
    */
-  #commit(...events: PresenterEvent<ToastContent>[]): void {
+  #commit(...events: ToastEvent<Content>[]): void {
     if (events.length === 0) {
       return;
     }
 
     while (this.#hasFreeSlot()) {
-      const queued = this.#store.select((p) => p.phase === 'queued')[0];
+      const queued = this.#store.select((t) => t.phase === 'queued')[0];
       if (queued === undefined) {
         break;
       }
 
-      const active: Presentation<ToastContent> = { ...queued, phase: 'active' };
+      const active: Toast<Content> = { ...queued, phase: 'active' };
       this.#store.set(active);
       this.#startExpiry(active);
-      events.push({ type: 'updated', presentation: active, previous: queued });
+      events.push({ type: 'updated', toast: active, previous: queued });
     }
 
     this.#store.commit(...events);
   }
 }
 
-function createPresenter<ToastContent extends {} = string>(
-  toaster: Toaster<ToastContent>,
+function createPresenter<Content extends {} = string>(
+  toaster: Toaster<Content>,
   config?: PresenterConfig
-): PresenterContract<ToastContent> {
+): PresenterContract<Content> {
   return new Presenter(toaster, config);
 }
 

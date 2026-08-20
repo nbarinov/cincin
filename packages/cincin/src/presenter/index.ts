@@ -1,14 +1,14 @@
 export { createPresenter } from './presenter';
 
 export type {
-  Presentation,
-  PresentationKey,
+  Toast,
+  ToastKey,
   Phase,
-  EnteredEvent,
-  UpdatedEvent,
-  LeavingEvent,
-  LeftEvent,
-  PresenterEvent,
+  ToastEnteredEvent,
+  ToastUpdatedEvent,
+  ToastLeavingEvent,
+  ToastLeftEvent,
+  ToastEvent,
   PresenterConfig,
   Presenter,
 } from './types';

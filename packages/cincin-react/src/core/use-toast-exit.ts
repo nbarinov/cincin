@@ -1,12 +1,12 @@
 import { prefersReducedMotion } from 'cincin/dom';
-import type { PresentationKey, Presenter } from 'cincin/presenter';
+import type { ToastKey, Presenter } from 'cincin/presenter';
 import type { TransitionEvent, AnimationEvent } from 'react';
 import { useCallback, useEffect } from 'react';
 
 type ToastExitEvent = TransitionEvent | AnimationEvent;
 
 function useToastExit<Content extends {}>(
-  key: PresentationKey,
+  key: ToastKey,
   presenter: Presenter<Content>
 ): (event: ToastExitEvent) => void {
   useEffect(
@@ -15,7 +15,7 @@ function useToastExit<Content extends {}>(
         if (
           prefersReducedMotion() &&
           e.type === 'leaving' &&
-          e.presentation.key === key
+          e.toast.key === key
         ) {
           queueMicrotask(() => presenter.finish(key));
         }

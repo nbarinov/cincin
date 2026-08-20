@@ -2,7 +2,7 @@ type ToastId = string | number;
 type ToastType =
   'success' | 'error' | 'warning' | 'info' | 'loading' | 'message';
 
-interface Toast<Content extends {} = string> {
+interface ToastEntry<Content extends {} = string> {
   readonly id: ToastId;
   readonly type: ToastType;
   readonly duration: number;
@@ -27,33 +27,37 @@ type UpdatePatch<Content extends {} = string> = Partial<{
   dismissible: boolean;
 }>;
 
-interface NotifyEvent {
+interface EntryEvent {
   type: 'added' | 'updated' | 'removed';
 }
 
-interface AddedNotifyEvent<Content extends {} = string> extends NotifyEvent {
+interface ToastEntryAddedEvent<Content extends {} = string> extends EntryEvent {
   type: 'added';
-  toast: Toast<Content>;
+  entry: ToastEntry<Content>;
 }
 
-interface UpdatedNotifyEvent<Content extends {} = string> extends NotifyEvent {
+interface ToastEntryUpdatedEvent<
+  Content extends {} = string,
+> extends EntryEvent {
   type: 'updated';
-  toast: Toast<Content>;
-  previous: Toast<Content>;
+  entry: ToastEntry<Content>;
+  previous: ToastEntry<Content>;
   /** What the caller asked to change: a presenter restarts its expiry clock
    * on an explicit duration touch even when the value is the same. */
   patch: UpdatePatch<Content>;
 }
 
-interface RemovedNotifyEvent<Content extends {} = string> extends NotifyEvent {
+interface ToastEntryRemovedEvent<
+  Content extends {} = string,
+> extends EntryEvent {
   type: 'removed';
-  toast: Toast<Content>;
+  entry: ToastEntry<Content>;
 }
 
-type ToastNotifyEvent<Content extends {} = string> =
-  | AddedNotifyEvent<Content>
-  | UpdatedNotifyEvent<Content>
-  | RemovedNotifyEvent<Content>;
+type ToastEntryEvent<Content extends {} = string> =
+  | ToastEntryAddedEvent<Content>
+  | ToastEntryUpdatedEvent<Content>
+  | ToastEntryRemovedEvent<Content>;
 
 interface PromisePhase<T, Content extends {} = string> {
   loading: Content;
@@ -99,22 +103,22 @@ interface Toaster<Content extends {} = string> {
     options?: PromiseOptions
   ): Promise<T>;
 
-  getSnapshot(): ReadonlyArray<Toast<Content>>;
-  subscribe(listener: (event: ToastNotifyEvent<Content>) => void): () => void;
+  getSnapshot(): ReadonlyArray<ToastEntry<Content>>;
+  subscribe(listener: (event: ToastEntryEvent<Content>) => void): () => void;
 
   destroy(): void;
 }
 
 export type {
-  Toast,
+  ToastEntry,
   ToastId,
   ToastType,
   CreateOptions,
   UpdatePatch,
-  AddedNotifyEvent,
-  UpdatedNotifyEvent,
-  RemovedNotifyEvent,
-  ToastNotifyEvent,
+  ToastEntryAddedEvent,
+  ToastEntryUpdatedEvent,
+  ToastEntryRemovedEvent,
+  ToastEntryEvent,
   PromisePhase,
   PromiseOptions,
   ToasterConfig,

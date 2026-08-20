@@ -1,17 +1,17 @@
 import { EntityStore } from '../shared/entity-store';
-import type { Presentation, PresentationKey, PresenterEvent } from './types';
+import type { Toast, ToastKey, ToastEvent } from './types';
 
-type PresentationStore<ToastContent extends {} = string> = EntityStore<
-  PresentationKey,
-  Presentation<ToastContent>,
-  PresenterEvent<ToastContent>
+type PresenterStore<Content extends {} = string> = EntityStore<
+  ToastKey,
+  Toast<Content>,
+  ToastEvent<Content>
 >;
 
-function createPresentationStore<
-  ToastContent extends {} = string,
->(): PresentationStore<ToastContent> {
+function createPresenterStore<
+  Content extends {} = string,
+>(): PresenterStore<Content> {
   return new EntityStore({ selectId: (p) => p.key });
 }
 
-export { createPresentationStore };
-export type { PresentationStore };
+export { createPresenterStore };
+export type { PresenterStore };

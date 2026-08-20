@@ -3,16 +3,16 @@ import { createToaster } from 'cincin';
 import { createPresenter } from 'cincin/presenter';
 import { useToastExit } from './use-toast-exit';
 import type { Toaster } from 'cincin';
-import type { Presenter, PresentationKey } from 'cincin/presenter';
+import type { Presenter, ToastKey } from 'cincin/presenter';
 
 function ExitHost({
-  presentationKey,
+  toastKey,
   presenter,
 }: {
-  presentationKey: PresentationKey;
+  toastKey: ToastKey;
   presenter: Presenter;
 }) {
-  const onExitEnd = useToastExit(presentationKey, presenter);
+  const onExitEnd = useToastExit(toastKey, presenter);
   return (
     <li data-testid="toast" onTransitionEnd={onExitEnd}>
       <button data-testid="child" type="button" />
@@ -25,7 +25,7 @@ let reduceMotion = false;
 function setup(): {
   toaster: Toaster;
   presenter: Presenter;
-  key: PresentationKey;
+  key: ToastKey;
 } {
   const toaster = createToaster();
   const presenter = createPresenter(toaster);
@@ -56,7 +56,7 @@ afterEach(() => {
 describe('useToastExit', () => {
   it('should finish a leaving presentation when its exit ends', () => {
     const { toaster, presenter, key } = setup();
-    render(<ExitHost presentationKey={key} presenter={presenter} />);
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     presenter.dismiss(key);
     fireEvent.transitionEnd(getToast());
@@ -69,7 +69,7 @@ describe('useToastExit', () => {
 
   it('should ignore end events bubbling from children', () => {
     const { presenter, key } = setup();
-    render(<ExitHost presentationKey={key} presenter={presenter} />);
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     presenter.dismiss(key);
     fireEvent.transitionEnd(
@@ -82,7 +82,7 @@ describe('useToastExit', () => {
 
   it('should not finish a live presentation', () => {
     const { presenter, key } = setup();
-    render(<ExitHost presentationKey={key} presenter={presenter} />);
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     fireEvent.transitionEnd(getToast());
 
@@ -92,7 +92,7 @@ describe('useToastExit', () => {
 
   it('should leave a swiped exit to the controller', () => {
     const { presenter, key } = setup();
-    render(<ExitHost presentationKey={key} presenter={presenter} />);
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     getToast().setAttribute('data-swipe-direction', 'right');
     presenter.dismiss(key);
@@ -105,7 +105,7 @@ describe('useToastExit', () => {
   it('should finish synchronously under reduced motion', async () => {
     reduceMotion = true;
     const { presenter, key } = setup();
-    render(<ExitHost presentationKey={key} presenter={presenter} />);
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     presenter.dismiss(key);
     await Promise.resolve();
@@ -117,7 +117,7 @@ describe('useToastExit', () => {
   it('should finish a ghost of a removed record under reduced motion', async () => {
     reduceMotion = true;
     const { toaster, presenter, key } = setup();
-    render(<ExitHost presentationKey={key} presenter={presenter} />);
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     // A programmatic remove turns the presentation into a leaving ghost;
     // without motion there is no exit to wait for.
@@ -131,9 +131,7 @@ describe('useToastExit', () => {
   it('should drop the subscription on unmount', async () => {
     reduceMotion = true;
     const { presenter, key } = setup();
-    const view = render(
-      <ExitHost presentationKey={key} presenter={presenter} />
-    );
+    const view = render(<ExitHost toastKey={key} presenter={presenter} />);
 
     view.unmount();
     presenter.dismiss(key);

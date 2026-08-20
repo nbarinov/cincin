@@ -76,12 +76,12 @@ describe('createToasterContext', () => {
     });
   });
 
-  describe('useToasts', () => {
+  describe('useToastEntries', () => {
     it('should expose the snapshot and rerender on commits', () => {
       const toaster = createToaster();
-      const { useToasts } = createToasterContext(toaster);
+      const { useToastEntries } = createToasterContext(toaster);
 
-      const { result } = renderHook(() => useToasts());
+      const { result } = renderHook(() => useToastEntries());
       expect(result.current).toEqual([]);
 
       act(() => {
@@ -97,9 +97,9 @@ describe('createToasterContext', () => {
 
     it('should keep the same array reference between renders without commits', () => {
       const toaster = createToaster();
-      const { useToasts } = createToasterContext(toaster);
+      const { useToastEntries } = createToasterContext(toaster);
 
-      const { result, rerender } = renderHook(() => useToasts());
+      const { result, rerender } = renderHook(() => useToastEntries());
       act(() => {
         toaster.info('hi');
       });
@@ -112,9 +112,9 @@ describe('createToasterContext', () => {
 
     it('should rerender on dismiss and remove phases', () => {
       const toaster = createToaster();
-      const { useToasts } = createToasterContext(toaster);
+      const { useToastEntries } = createToasterContext(toaster);
 
-      const { result } = renderHook(() => useToasts());
+      const { result } = renderHook(() => useToastEntries());
 
       let id!: ReturnType<typeof toaster.create>;
       act(() => {

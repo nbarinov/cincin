@@ -1,13 +1,13 @@
 'use client';
 
-import type { Toaster as ToasterContract, Toast } from 'cincin';
+import type { Toaster as ToasterContract } from 'cincin';
 import type { SwipeDirection } from 'cincin/dom';
-import type { Presentation, Presenter } from 'cincin/presenter';
+import type { Toast, Presenter } from 'cincin/presenter';
 import { useMemo } from 'react';
 import type { Ref } from 'react';
 import { useComposedRefs } from '../shared/use-composed-refs';
 import { usePresenter } from '../core/use-presenter';
-import { usePresentations } from '../core/use-presentations';
+import { useToasts } from '../core/use-toasts';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import { useToastExit } from '../core/use-toast-exit';
 import type { ToastContent } from './content';
@@ -34,10 +34,10 @@ function Toaster({
   max = Infinity,
 }: ToasterProps) {
   const presenter = usePresenter(toaster, { max });
-  const presentations = usePresentations(presenter);
+  const toasts = useToasts(presenter);
   const shown = useMemo(
-    () => presentations.filter((p) => p.phase !== 'queued'),
-    [presentations]
+    () => toasts.filter((toast) => toast.phase !== 'queued'),
+    [toasts]
   );
 
   const region = useRegion(presenter);
@@ -53,55 +53,55 @@ function Toaster({
       ref={region.ref}
       {...region.handlers}
     >
-      {shown.map((p) => (
-        <Toast
-          key={p.key}
-          presentation={p}
+      {shown.map((toast) => (
+        <ToastCard
+          key={toast.key}
+          toast={toast}
           presenter={presenter}
           swipeDirection={swipeDirection}
-          ref={stack.measureRef(p.key)}
+          ref={stack.measureRef(toast.key)}
         />
       ))}
     </ol>
   );
 }
 
-type ToastProps = {
-  presentation: Presentation<ToastContent>;
+type ToastCardProps = {
+  toast: Toast<ToastContent>;
   presenter: Presenter<ToastContent>;
   swipeDirection: SwipeDirection;
   ref?: Ref<HTMLLIElement>;
 };
 
-function Toast({
-  presentation,
+function ToastCard({
+  toast,
   presenter,
   swipeDirection,
   ref: forwardedRef,
-}: ToastProps) {
-  const { key, toast, phase } = presentation;
+}: ToastCardProps) {
+  const { key, entry, phase } = toast;
   const onExitToast = useToastExit(key, presenter);
   const swipeRef = useToastSwipe(key, presenter, {
     direction: swipeDirection,
-    enabled: toast.dismissible,
+    enabled: entry.dismissible,
   });
   const composedRef = useComposedRefs(swipeRef, forwardedRef);
 
-  const { title, description, action } = toast.content;
+  const { title, description, action } = entry.content;
 
   return (
     <li
       role={
-        toast.type === 'error' || toast.type === 'warning' ? 'alert' : 'status'
+        entry.type === 'error' || entry.type === 'warning' ? 'alert' : 'status'
       }
       data-cincin-toast
-      data-type={toast.type}
+      data-type={entry.type}
       data-phase={phase}
-      data-dismissible={toast.dismissible}
+      data-dismissible={entry.dismissible}
       ref={composedRef}
       onTransitionEnd={onExitToast}
     >
-      {TYPE_ICONS[toast.type]}
+      {TYPE_ICONS[entry.type]}
 
       <div data-cincin-content>
         {description === undefined ? (
@@ -130,7 +130,7 @@ function Toast({
         </button>
       )}
 
-      {toast.dismissible && (
+      {entry.dismissible && (
         <button
           type="button"
           data-cincin-close

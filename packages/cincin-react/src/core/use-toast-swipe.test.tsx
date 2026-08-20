@@ -3,24 +3,24 @@ import { cleanup, render } from '@testing-library/react';
 import { createToaster } from 'cincin';
 import { createPresenter } from 'cincin/presenter';
 import { useToastSwipe } from './use-toast-swipe';
-import type { Presenter, PresentationKey } from 'cincin/presenter';
+import type { Presenter, ToastKey } from 'cincin/presenter';
 import type { ToastSwipeOptions } from './use-toast-swipe';
 
 function SwipeHost({
-  presentationKey,
+  toastKey,
   presenter,
   options,
 }: {
-  presentationKey: PresentationKey;
+  toastKey: ToastKey;
   presenter: Presenter;
   options?: ToastSwipeOptions;
 }) {
-  const ref = useToastSwipe(presentationKey, presenter, options);
+  const ref = useToastSwipe(toastKey, presenter, options);
   return <li data-testid="toast" ref={ref} />;
 }
 
 /** A mounted presenter over a fresh toaster with one shown toast. */
-function setup(): { presenter: Presenter; key: PresentationKey } {
+function setup(): { presenter: Presenter; key: ToastKey } {
   const toaster = createToaster();
   const presenter = createPresenter(toaster);
   presenter.mount();
@@ -86,9 +86,7 @@ describe('useToastSwipe', () => {
   it('should attach the controller on mount and detach it on unmount', () => {
     const { presenter, key } = setup();
 
-    const view = render(
-      <SwipeHost presentationKey={key} presenter={presenter} />
-    );
+    const view = render(<SwipeHost toastKey={key} presenter={presenter} />);
     expect(getToastElement().style.touchAction).toBe('pan-y');
 
     view.unmount();
@@ -100,7 +98,7 @@ describe('useToastSwipe', () => {
 
     render(
       <StrictMode>
-        <SwipeHost presentationKey={key} presenter={presenter} />
+        <SwipeHost toastKey={key} presenter={presenter} />
       </StrictMode>
     );
 
@@ -112,7 +110,7 @@ describe('useToastSwipe', () => {
     const { presenter, key } = setup();
 
     const view = render(
-      <SwipeHost presentationKey={key} presenter={presenter} options={{}} />
+      <SwipeHost toastKey={key} presenter={presenter} options={{}} />
     );
     expect(getToastElement().style.touchAction).toBe('pan-y');
 
@@ -120,7 +118,7 @@ describe('useToastSwipe', () => {
     // a lagging latest-ref would reattach with the previous direction.
     view.rerender(
       <SwipeHost
-        presentationKey={key}
+        toastKey={key}
         presenter={presenter}
         options={{ direction: 'down' }}
       />
@@ -134,14 +132,14 @@ describe('useToastSwipe', () => {
     const { presenter, key } = setup();
 
     const view = render(
-      <SwipeHost presentationKey={key} presenter={presenter} options={{}} />
+      <SwipeHost toastKey={key} presenter={presenter} options={{}} />
     );
     const element = getToastElement();
     const listen = vi.spyOn(element, 'addEventListener');
 
     view.rerender(
       <SwipeHost
-        presentationKey={key}
+        toastKey={key}
         presenter={presenter}
         options={{ drag: { damping: 0.5 } }}
       />
@@ -154,7 +152,7 @@ describe('useToastSwipe', () => {
   it('should wire dismiss and finish to the presenter on a passing gesture', async () => {
     const { presenter, key } = setup();
 
-    render(<SwipeHost presentationKey={key} presenter={presenter} />);
+    render(<SwipeHost toastKey={key} presenter={presenter} />);
     const element = getToastElement();
     stubGestureSurface(element);
 
@@ -177,7 +175,7 @@ describe('useToastSwipe', () => {
 
     render(
       <SwipeHost
-        presentationKey={key}
+        toastKey={key}
         presenter={presenter}
         options={{ enabled: false }}
       />
@@ -201,7 +199,7 @@ describe('useToastSwipe', () => {
 
     const view = render(
       <SwipeHost
-        presentationKey={key}
+        toastKey={key}
         presenter={presenter}
         options={{ enabled: false }}
       />
@@ -212,7 +210,7 @@ describe('useToastSwipe', () => {
 
     view.rerender(
       <SwipeHost
-        presentationKey={key}
+        toastKey={key}
         presenter={presenter}
         options={{ enabled: true }}
       />
@@ -228,15 +226,13 @@ describe('useToastSwipe', () => {
   it('should detach and release its claims once disabled', () => {
     const { presenter, key } = setup();
 
-    const view = render(
-      <SwipeHost presentationKey={key} presenter={presenter} />
-    );
+    const view = render(<SwipeHost toastKey={key} presenter={presenter} />);
     const element = getToastElement();
     expect(element.style.touchAction).toBe('pan-y');
 
     view.rerender(
       <SwipeHost
-        presentationKey={key}
+        toastKey={key}
         presenter={presenter}
         options={{ enabled: false }}
       />

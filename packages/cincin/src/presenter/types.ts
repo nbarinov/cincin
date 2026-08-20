@@ -1,94 +1,97 @@
-import type { Toast } from '../core/types';
+import type { ToastEntry } from '../core/types';
 
-type PresentationKey = string;
+type ToastKey = string;
 type Phase = 'queued' | 'active' | 'leaving';
 
-interface Presentation<ToastContent extends {} = string> {
-  readonly key: PresentationKey;
-  readonly toast: Toast<ToastContent>;
+/**
+ * A toast as the user sees it: one showing of an entry. It references
+ * the entry and outlives it as a ghost (entries are immutable, so a
+ * leaving toast keeps the last one it saw).
+ */
+interface Toast<Content extends {} = string> {
+  readonly key: ToastKey;
+  readonly entry: ToastEntry<Content>;
   readonly phase: Phase;
   readonly paused: boolean;
 }
 
-interface NotifyEvent {
+interface ShowEvent {
   type: 'entered' | 'updated' | 'leaving' | 'left';
 }
 
-interface EnteredEvent<ToastContent extends {} = string> extends NotifyEvent {
+interface ToastEnteredEvent<Content extends {} = string> extends ShowEvent {
   type: 'entered';
-  presentation: Presentation<ToastContent>;
+  toast: Toast<Content>;
 }
 
-interface UpdatedEvent<ToastContent extends {} = string> extends NotifyEvent {
+interface ToastUpdatedEvent<Content extends {} = string> extends ShowEvent {
   type: 'updated';
-  presentation: Presentation<ToastContent>;
-  previous: Presentation<ToastContent>;
+  toast: Toast<Content>;
+  previous: Toast<Content>;
 }
 
-interface LeavingEvent<ToastContent extends {} = string> extends NotifyEvent {
+interface ToastLeavingEvent<Content extends {} = string> extends ShowEvent {
   type: 'leaving';
-  presentation: Presentation<ToastContent>;
+  toast: Toast<Content>;
 }
 
-interface LeftEvent<ToastContent extends {} = string> extends NotifyEvent {
+interface ToastLeftEvent<Content extends {} = string> extends ShowEvent {
   type: 'left';
-  presentation: Presentation<ToastContent>;
+  toast: Toast<Content>;
 }
 
-type PresenterEvent<ToastContent extends {} = string> =
-  | EnteredEvent<ToastContent>
-  | UpdatedEvent<ToastContent>
-  | LeavingEvent<ToastContent>
-  | LeftEvent<ToastContent>;
+type ToastEvent<Content extends {} = string> =
+  | ToastEnteredEvent<Content>
+  | ToastUpdatedEvent<Content>
+  | ToastLeavingEvent<Content>
+  | ToastLeftEvent<Content>;
 
 interface PresenterConfig {
-  /** Visible (active) presentations at once; the rest queue. @default Infinity */
+  /** Active toasts at once; the rest queue. @default Infinity */
   max?: number;
-  /** Ceiling for a leaving presentation nobody finishes, ms. @default 2000 */
+  /** Ceiling for a leaving toast nobody finishes, ms. @default 2000 */
   removeTimeout?: number;
 }
 
-interface Presenter<ToastContent extends {} = string> {
+interface Presenter<Content extends {} = string> {
   readonly config: Readonly<Required<PresenterConfig>>;
 
   dismiss(): void;
-  dismiss(key: PresentationKey): void;
-  dismiss(keys: PresentationKey[]): void;
+  dismiss(key: ToastKey): void;
+  dismiss(keys: ToastKey[]): void;
 
-  getRemainingMs(key: PresentationKey): number;
+  getRemainingMs(key: ToastKey): number;
 
   pause(): void;
-  pause(key: PresentationKey): void;
-  pause(keys: PresentationKey[]): void;
+  pause(key: ToastKey): void;
+  pause(keys: ToastKey[]): void;
 
   resume(): void;
-  resume(key: PresentationKey): void;
-  resume(keys: PresentationKey[]): void;
+  resume(key: ToastKey): void;
+  resume(keys: ToastKey[]): void;
 
-  finish(key: PresentationKey): void;
+  finish(key: ToastKey): void;
 
-  getSnapshot(): ReadonlyArray<Presentation<ToastContent>>;
-  subscribe(
-    listener: (event: PresenterEvent<ToastContent>) => void
-  ): () => void;
+  getSnapshot(): ReadonlyArray<Toast<Content>>;
+  subscribe(listener: (event: ToastEvent<Content>) => void): () => void;
 
-  /** Starts showing: the toaster's current records enter, the clocks run.
+  /** Starts showing: the toaster's current entries enter, the clocks run.
    * Mounts are counted; the last unmount stops the clocks, drops every
-   * presentation at once (no exits: there is no region to animate) and
-   * leaves the record store untouched. */
+   * toast at once (no exits: there is no region to animate) and leaves
+   * the entry store untouched. */
   mount(): void;
   unmount(): void;
 }
 
 export type {
-  Presentation,
-  PresentationKey,
+  Toast,
+  ToastKey,
   Phase,
-  EnteredEvent,
-  UpdatedEvent,
-  LeavingEvent,
-  LeftEvent,
-  PresenterEvent,
+  ToastEnteredEvent,
+  ToastUpdatedEvent,
+  ToastLeavingEvent,
+  ToastLeftEvent,
+  ToastEvent,
   PresenterConfig,
   Presenter,
 };

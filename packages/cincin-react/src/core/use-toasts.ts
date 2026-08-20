@@ -1,13 +1,13 @@
-import type { Toast, Toaster } from 'cincin';
+import type { Toast, Presenter } from 'cincin/presenter';
 import { useSyncExternalStore } from 'react';
 import { getServerSnapshot } from '../shared/ssr';
 
 function useToasts<Content extends {}>(
-  toaster: Toaster<Content>
+  presenter: Presenter<Content>
 ): ReadonlyArray<Toast<Content>> {
   return useSyncExternalStore(
-    toaster.subscribe,
-    toaster.getSnapshot,
+    presenter.subscribe,
+    presenter.getSnapshot,
     getServerSnapshot
   );
 }

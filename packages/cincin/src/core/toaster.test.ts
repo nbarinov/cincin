@@ -189,7 +189,7 @@ describe('store', () => {
         type: 'updated',
         patch: { duration: 4000 },
         previous: { content: 'a' },
-        toast: { content: 'a', duration: 4000 },
+        entry: { content: 'a', duration: 4000 },
       });
     });
 
