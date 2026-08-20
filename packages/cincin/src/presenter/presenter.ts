@@ -80,9 +80,7 @@ class Presenter<Content extends {} = string>
           return;
 
         case 'updated':
-          this.#commit(
-            ...this.#refresh(event.entry, event.previous, event.patch)
-          );
+          this.#commit(...this.#refresh(event.entry, event.prev, event.patch));
           return;
 
         case 'removed':
@@ -130,7 +128,7 @@ class Presenter<Content extends {} = string>
 
   #refresh(
     entry: ToastEntry<Content>,
-    previous: ToastEntry<Content>,
+    prev: ToastEntry<Content>,
     patch: UpdatePatch<Content>
   ): ToastEvent<Content>[] {
     const live = this.#store.select(
@@ -145,17 +143,17 @@ class Presenter<Content extends {} = string>
 
     // The clock belongs to the duration: an explicit touch (even with the
     // same value) or a type change rewinds it; content-only updates never do.
-    const restart =
-      patch.duration !== undefined || entry.type !== previous.type;
+    const shouldRestart =
+      patch.duration !== undefined || entry.type !== prev.type;
 
     return live.map((toast) => {
       const next: Toast<Content> = { ...toast, entry };
       this.#store.set(next);
-      if (restart && next.phase === 'active') {
+      if (shouldRestart && next.phase === 'active') {
         this.#startExpiry(next);
       }
 
-      return { type: 'updated', toast: next, previous: toast };
+      return { type: 'updated', toast: next, prev: toast, patch };
     });
   }
 
@@ -193,7 +191,7 @@ class Presenter<Content extends {} = string>
     const next: Toast<Content> = { ...toast, paused: true };
     this.#store.set(next);
 
-    return { type: 'updated', toast: next, previous: toast };
+    return { type: 'updated', toast: next, prev: toast };
   }
 
   #resumeOne(toast: Toast<Content>): ToastUpdatedEvent<Content> | null {
@@ -205,7 +203,7 @@ class Presenter<Content extends {} = string>
     const next: Toast<Content> = { ...toast, paused: false };
     this.#store.set(next);
 
-    return { type: 'updated', toast: next, previous: toast };
+    return { type: 'updated', toast: next, prev: toast };
   }
 
   // --- commands ---
@@ -346,7 +344,7 @@ class Presenter<Content extends {} = string>
       const active: Toast<Content> = { ...queued, phase: 'active' };
       this.#store.set(active);
       this.#startExpiry(active);
-      events.push({ type: 'updated', toast: active, previous: queued });
+      events.push({ type: 'updated', toast: active, prev: queued });
     }
 
     this.#store.commit(...events);

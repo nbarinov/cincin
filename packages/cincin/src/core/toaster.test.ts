@@ -188,7 +188,7 @@ describe('store', () => {
       expect(events.at(0)).toMatchObject({
         type: 'updated',
         patch: { duration: 4000 },
-        previous: { content: 'a' },
+        prev: { content: 'a' },
         entry: { content: 'a', duration: 4000 },
       });
     });

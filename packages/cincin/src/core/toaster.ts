@@ -143,7 +143,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     };
 
     this.#store.set(next);
-    this.#store.commit({ type: 'updated', entry: next, previous: prev, patch });
+    this.#store.commit({ type: 'updated', entry: next, prev, patch });
   }
 
   remove(): void;

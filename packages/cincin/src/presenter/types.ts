@@ -1,4 +1,4 @@
-import type { ToastEntry } from '../core/types';
+import type { ToastEntry, UpdatePatch } from '../core/types';
 
 type ToastKey = string;
 type Phase = 'queued' | 'active' | 'leaving';
@@ -27,7 +27,8 @@ interface ToastEnteredEvent<Content extends {} = string> extends ShowEvent {
 interface ToastUpdatedEvent<Content extends {} = string> extends ShowEvent {
   type: 'updated';
   toast: Toast<Content>;
-  previous: Toast<Content>;
+  prev: Toast<Content>;
+  patch?: UpdatePatch<Content>;
 }
 
 interface ToastLeavingEvent<Content extends {} = string> extends ShowEvent {

@@ -41,7 +41,7 @@ interface ToastEntryUpdatedEvent<
 > extends EntryEvent {
   type: 'updated';
   entry: ToastEntry<Content>;
-  previous: ToastEntry<Content>;
+  prev: ToastEntry<Content>;
   /** What the caller asked to change: a presenter restarts its expiry clock
    * on an explicit duration touch even when the value is the same. */
   patch: UpdatePatch<Content>;

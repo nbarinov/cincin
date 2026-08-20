@@ -133,7 +133,7 @@ describe('presenter', () => {
       expect(events.at(-1)).toMatchObject({
         type: 'updated',
         toast: { entry: { content: 'b' } },
-        previous: { entry: { content: 'a' } },
+        prev: { entry: { content: 'a' } },
       });
     });
   });
