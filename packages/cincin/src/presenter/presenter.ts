@@ -367,7 +367,11 @@ class Presenter<Content extends {} = string>
   }
 
   #hasFreeSlot(): boolean {
-    return this.#store.count((t) => t.phase === 'active') < this.#config.max;
+    // The default Infinity max short-circuits: no scan per enter.
+    return (
+      this.#config.max === Infinity ||
+      this.#store.count((t) => t.phase === 'active') < this.#config.max
+    );
   }
 
   /**
@@ -384,18 +388,30 @@ class Presenter<Content extends {} = string>
   }
 
   #promote(): ToastEvent<Content>[] {
-    const events: ToastEvent<Content>[] = [];
+    // One pass over the store per commit, not per promoted toast: the
+    // queue is selected once (insertion order = promotion order) and
+    // the free-slot budget is computed once.
+    const queued = this.#store.select((t) => t.phase === 'queued');
+    if (queued.length === 0) {
+      return [];
+    }
 
-    while (this.#hasFreeSlot()) {
-      const queued = this.#store.select((t) => t.phase === 'queued')[0];
-      if (queued === undefined) {
+    let free =
+      this.#config.max === Infinity
+        ? Infinity
+        : this.#config.max - this.#store.count((t) => t.phase === 'active');
+
+    const events: ToastEvent<Content>[] = [];
+    for (const toast of queued) {
+      if (free < 1) {
         break;
       }
 
-      const active: Toast<Content> = { ...queued, phase: 'active' };
+      const active: Toast<Content> = { ...toast, phase: 'active' };
       this.#store.set(active);
       this.#startExpiry(active);
-      events.push({ type: 'updated', toast: active, prev: queued });
+      events.push({ type: 'updated', toast: active, prev: toast });
+      free--;
     }
 
     return events;
