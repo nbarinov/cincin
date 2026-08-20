@@ -32,8 +32,8 @@ function App() {
 
 `<Toaster />` renders a swipeable stack that expands on hover or tap
 and pauses its timers while open; the stylesheet comes along with the
-import. `toast` is a package-wide instance callable from anywhere on
-the client (calls on the server do nothing useful).
+import. `toast` is a package-wide store callable from anywhere on the
+client (calls on the server do nothing useful).
 
 ```ts
 toast.error({
@@ -47,31 +47,58 @@ toast.promise(upload(), {
   success: (ms) => ({ title: `Uploaded in ${ms}ms` }),
   error: () => ({ title: 'Upload failed' }),
 });
+
+// Closing from app code: the entry goes at once, the exit still plays.
+const id = toast.info({ title: 'Connected' });
+toast.remove(id);
 ```
 
-Several regions or custom wiring: create your own instance with
-`createToaster` from `cincin` (add it to your dependencies when you
-import it directly) and pass it via `<Toaster toaster={...} />`.
+`<Toaster />` props: `toaster` (your own store instead of the
+singleton; read once, remount to switch), `max` (active toasts at once,
+the rest queue; live), `visible` (how many peek out of the collapsed
+stack), `swipeDirection`.
 
 ## Headless
 
 ```tsx
-import { useToastSwipe, useToastExit } from 'cincin-react/core';
+import {
+  usePresenter,
+  useToasts,
+  useToastSwipe,
+  useToastExit,
+} from 'cincin-react/core';
 
-function ToastCard({ toast, toaster }) {
-  const swipeRef = useToastSwipe(toast.id, toaster);
-  const onExitEnd = useToastExit(toast.id, toaster);
+function Region({ toaster }) {
+  const presenter = usePresenter(toaster, { max: 5 });
+  const toasts = useToasts(presenter);
+
   return (
-    <li ref={swipeRef} onTransitionEnd={onExitEnd}>
-      …
+    <ol>
+      {toasts.map((toast) => (
+        <Card key={toast.key} toast={toast} presenter={presenter} />
+      ))}
+    </ol>
+  );
+}
+
+function Card({ toast, presenter }) {
+  const swipeRef = useToastSwipe(toast.key, presenter, {
+    enabled: toast.entry.dismissible,
+  });
+  const onExitEnd = useToastExit(toast.key, presenter);
+
+  return (
+    <li ref={swipeRef} data-phase={toast.phase} onTransitionEnd={onExitEnd}>
+      {String(toast.entry.content)}
     </li>
   );
 }
 ```
 
-`useToasts(toaster)` subscribes to the snapshot; `createToasterContext<MyContent>()`
-returns a `ToasterProvider` with context-aware `useToaster` / `useToasts`
-for a typed content payload. The primitives take the instance
+`useToastEntries(toaster)` subscribes to the store records instead of
+the showings; `createToasterContext<MyContent>()` returns a
+`ToasterProvider` with context-aware `useToaster` / `useToastEntries`
+for a typed content payload. The primitives take their instances
 explicitly and carry no CSS.
 
 ## Documentation and source

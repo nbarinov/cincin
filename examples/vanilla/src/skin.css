@@ -85,6 +85,9 @@ main header {
 
 #toasts {
   position: fixed;
+  /* The region owns selection: a drag that starts on a card must not
+   * pull a text selection across the cards or the page. */
+  user-select: none;
   /* The region's distance from the viewport edges: the base inset plus
    * the device safe area (home indicator, rotated notch; needs
    * viewport-fit=cover in the meta). Every rule that moves a toast
@@ -146,11 +149,11 @@ main header {
   align-items: center;
   gap: 0.75rem;
   padding: 0.9rem 1rem;
+  border-left: 4px solid var(--toast-accent);
   border-radius: 0.6rem;
   background: var(--toast-surface);
   box-shadow: var(--shadow-rest);
   cursor: grab;
-  user-select: none;
   transform-origin: center bottom;
   transform: translateY(calc(var(--index) * -0.875rem))
     scale(calc(1 - var(--index) * 0.05));
@@ -158,15 +161,6 @@ main header {
     transform 400ms,
     opacity 400ms,
     box-shadow 200ms;
-}
-
-.toast::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border-left: 4px solid var(--toast-accent);
-  pointer-events: none;
 }
 
 /* Collapsed: only the front toasts peek out. */
@@ -205,13 +199,13 @@ main header {
   }
 }
 
-.toast[data-status='dismissing']:not([data-swipe-direction]) {
+.toast[data-phase='leaving']:not([data-swipe-direction]) {
   transform: translateY(calc(100% + var(--inset-bottom)));
   opacity: 0;
 }
 
 #toasts[data-expanded='true']
-  .toast[data-status='dismissing']:not([data-swipe-direction]) {
+  .toast[data-phase='leaving']:not([data-swipe-direction]) {
   transform: translateY(calc(-1 * var(--offset) + 100%));
   opacity: 0;
 }

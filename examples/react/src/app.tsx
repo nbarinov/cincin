@@ -60,7 +60,7 @@ const scenarios: Array<[label: string, run: () => void]> = [
       }
     },
   ],
-  ['Dismiss all', () => toast.dismiss()],
+  ['Dismiss all', () => toast.remove()],
 ];
 
 function App() {

@@ -1,4 +1,4 @@
-import type { Toaster } from 'cincin';
+import type { Presenter } from 'cincin/presenter';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ToastContent } from './content';
 
@@ -7,7 +7,7 @@ type RegionOptions = {
 };
 
 function useRegion(
-  toaster: Toaster<ToastContent>,
+  presenter: Presenter<ToastContent>,
   options: RegionOptions = {}
 ) {
   const { collapseDelay = 200 } = options;
@@ -19,8 +19,8 @@ function useRegion(
   const expand = useCallback(() => {
     clearTimeout(collapseTimer.current);
     setExpanded(true);
-    toaster.pause();
-  }, [toaster]);
+    presenter.pause();
+  }, [presenter]);
 
   const collapse = useCallback(() => {
     if (interacting.current) {
@@ -31,9 +31,9 @@ function useRegion(
     clearTimeout(collapseTimer.current);
     collapseTimer.current = setTimeout(() => {
       setExpanded(false);
-      toaster.resume();
+      presenter.resume();
     }, collapseDelay);
-  }, [toaster, collapseDelay]);
+  }, [presenter, collapseDelay]);
 
   useEffect(
     function subscribeRegionResets() {
@@ -49,11 +49,11 @@ function useRegion(
 
       // An emptied region has nothing to hover: reset right away so the
       // next toast arrives into a fresh, unpaused stack.
-      const unsubscribe = toaster.subscribe(() => {
-        if (toaster.getSnapshot().length === 0) {
+      const unsubscribe = presenter.subscribe(() => {
+        if (presenter.getSnapshot().length === 0) {
           clearTimeout(collapseTimer.current);
           setExpanded(false);
-          toaster.resume();
+          presenter.resume();
         }
       });
 
@@ -63,10 +63,10 @@ function useRegion(
         clearTimeout(collapseTimer.current);
         // Unmounting an expanded region must not strand paused timers on
         // a shared toaster instance.
-        toaster.resume();
+        presenter.resume();
       };
     },
-    [toaster, collapse]
+    [presenter, collapse]
   );
 
   return {

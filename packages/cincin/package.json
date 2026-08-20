@@ -31,6 +31,11 @@
       "types": "./dist/dom/index.d.mts",
       "import": "./dist/dom/index.mjs"
     },
+    "./presenter": {
+      "source": "./src/presenter/index.ts",
+      "types": "./dist/presenter/index.d.mts",
+      "import": "./dist/presenter/index.mjs"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

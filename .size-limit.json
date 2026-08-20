@@ -2,11 +2,16 @@
   {
     "name": "cincin (core)",
     "path": "packages/cincin/dist/index.mjs",
-    "limit": "2.5 kB"
+    "limit": "1.5 kB"
   },
   {
     "name": "cincin/dom",
     "path": "packages/cincin/dist/dom/index.mjs",
+    "limit": "2 kB"
+  },
+  {
+    "name": "cincin/presenter",
+    "path": "packages/cincin/dist/presenter/index.mjs",
     "limit": "2 kB"
   },
   {

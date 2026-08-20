@@ -2,7 +2,7 @@ import { createToaster } from 'cincin';
 import { mountToastRegion } from './renderer';
 import { mountThemeToggle } from './theme';
 
-const toaster = createToaster({ max: 5 });
+const toaster = createToaster();
 
 mountToastRegion(toaster, document.querySelector('#toasts')!);
 mountThemeToggle(document.querySelector('#theme-toggle')!);
@@ -57,7 +57,7 @@ document.querySelector('#toast-burst')!.addEventListener('click', () => {
 
 document
   .querySelector('#toast-dismiss-all')!
-  .addEventListener('click', () => toaster.dismiss());
+  .addEventListener('click', () => toaster.remove());
 
 function fakeRequest(): Promise<number> {
   const duration = 800 + Math.random() * 1200;

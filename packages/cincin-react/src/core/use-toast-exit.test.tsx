@@ -1,16 +1,18 @@
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { createToaster } from 'cincin';
+import { createPresenter } from 'cincin/presenter';
 import { useToastExit } from './use-toast-exit';
-import type { Toaster, ToastId } from 'cincin';
+import type { Toaster } from 'cincin';
+import type { Presenter, ToastKey } from 'cincin/presenter';
 
 function ExitHost({
-  toastId,
-  toaster,
+  toastKey,
+  presenter,
 }: {
-  toastId: ToastId;
-  toaster: Toaster;
+  toastKey: ToastKey;
+  presenter: Presenter;
 }) {
-  const onExitEnd = useToastExit(toastId, toaster);
+  const onExitEnd = useToastExit(toastKey, presenter);
   return (
     <li data-testid="toast" onTransitionEnd={onExitEnd}>
       <button data-testid="child" type="button" />
@@ -19,6 +21,18 @@ function ExitHost({
 }
 
 let reduceMotion = false;
+
+function setup(): {
+  toaster: Toaster;
+  presenter: Presenter;
+  key: ToastKey;
+} {
+  const toaster = createToaster();
+  const presenter = createPresenter(toaster);
+  presenter.mount();
+  toaster.message('leaving soon');
+  return { toaster, presenter, key: presenter.getSnapshot()[0]!.key };
+}
 
 function getToast(): HTMLElement {
   return document.querySelector('[data-testid="toast"]') as HTMLElement;
@@ -40,81 +54,91 @@ afterEach(() => {
 });
 
 describe('useToastExit', () => {
-  it('should remove a dismissing toast when its exit ends', () => {
-    const toaster = createToaster();
-    const id = toaster.message('leaving');
-    render(<ExitHost toastId={id} toaster={toaster} />);
+  it('should finish a leaving presentation when its exit ends', () => {
+    const { toaster, presenter, key } = setup();
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
-    toaster.dismiss(id);
+    presenter.dismiss(key);
     fireEvent.transitionEnd(getToast());
 
+    expect(presenter.getSnapshot()).toHaveLength(0);
+    // The presenter owned the record: it is gone from the store too.
     expect(toaster.getSnapshot()).toHaveLength(0);
-    toaster.destroy();
+    presenter.unmount();
   });
 
   it('should ignore end events bubbling from children', () => {
-    const toaster = createToaster();
-    const id = toaster.message('stay');
-    render(<ExitHost toastId={id} toaster={toaster} />);
+    const { presenter, key } = setup();
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
-    toaster.dismiss(id);
+    presenter.dismiss(key);
     fireEvent.transitionEnd(
       document.querySelector('[data-testid="child"]') as HTMLElement
     );
 
-    expect(toaster.getSnapshot()[0]?.status).toBe('dismissing');
-    toaster.destroy();
+    expect(presenter.getSnapshot()[0]?.phase).toBe('leaving');
+    presenter.unmount();
   });
 
-  it('should not remove a live toast', () => {
-    const toaster = createToaster();
-    const id = toaster.message('alive');
-    render(<ExitHost toastId={id} toaster={toaster} />);
+  it('should not finish a live presentation', () => {
+    const { presenter, key } = setup();
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     fireEvent.transitionEnd(getToast());
 
-    expect(toaster.getSnapshot()[0]?.status).toBe('active');
-    toaster.destroy();
+    expect(presenter.getSnapshot()[0]?.phase).toBe('active');
+    presenter.unmount();
   });
 
   it('should leave a swiped exit to the controller', () => {
-    const toaster = createToaster();
-    const id = toaster.message('flung');
-    render(<ExitHost toastId={id} toaster={toaster} />);
+    const { presenter, key } = setup();
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
     getToast().setAttribute('data-swipe-direction', 'right');
-    toaster.dismiss(id);
+    presenter.dismiss(key);
     fireEvent.transitionEnd(getToast());
 
-    expect(toaster.getSnapshot()[0]?.status).toBe('dismissing');
-    toaster.destroy();
+    expect(presenter.getSnapshot()[0]?.phase).toBe('leaving');
+    presenter.unmount();
   });
 
-  it('should remove synchronously under reduced motion', async () => {
+  it('should finish synchronously under reduced motion', async () => {
     reduceMotion = true;
-    const toaster = createToaster();
-    const id = toaster.message('instant');
-    render(<ExitHost toastId={id} toaster={toaster} />);
+    const { presenter, key } = setup();
+    render(<ExitHost toastKey={key} presenter={presenter} />);
 
-    toaster.dismiss(id);
+    presenter.dismiss(key);
     await Promise.resolve();
 
-    expect(toaster.getSnapshot()).toHaveLength(0);
-    toaster.destroy();
+    expect(presenter.getSnapshot()).toHaveLength(0);
+    presenter.unmount();
+  });
+
+  it('should finish a ghost of a removed record under reduced motion', async () => {
+    reduceMotion = true;
+    const { toaster, presenter, key } = setup();
+    render(<ExitHost toastKey={key} presenter={presenter} />);
+
+    // A programmatic remove turns the presentation into a leaving ghost;
+    // without motion there is no exit to wait for.
+    toaster.remove(toaster.getSnapshot()[0]!.id);
+    await Promise.resolve();
+
+    expect(presenter.getSnapshot()).toHaveLength(0);
+    presenter.unmount();
   });
 
   it('should drop the subscription on unmount', async () => {
     reduceMotion = true;
-    const toaster = createToaster();
-    const id = toaster.message('orphan');
-    const view = render(<ExitHost toastId={id} toaster={toaster} />);
+    const { presenter, key } = setup();
+    const view = render(<ExitHost toastKey={key} presenter={presenter} />);
 
     view.unmount();
-    toaster.dismiss(id);
+    presenter.dismiss(key);
     await Promise.resolve();
 
-    // Nobody completes the dismissal anymore: the safety net will.
-    expect(toaster.getSnapshot()[0]?.status).toBe('dismissing');
-    toaster.destroy();
+    // Nobody finishes the exit anymore: the safety net will.
+    expect(presenter.getSnapshot()[0]?.phase).toBe('leaving');
+    presenter.unmount();
   });
 });

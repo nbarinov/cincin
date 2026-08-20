@@ -10,7 +10,11 @@
   "ignorePatterns": ["**/dist/**"],
   "overrides": [
     {
-      "files": ["packages/cincin/src/core/**/*.ts"],
+      "files": [
+        "packages/cincin/src/core/**/*.ts",
+        "packages/cincin/src/shared/**/*.ts",
+        "packages/cincin/src/presenter/**/*.ts"
+      ],
       "rules": {
         "no-restricted-globals": [
           "error",

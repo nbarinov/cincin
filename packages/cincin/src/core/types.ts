@@ -1,15 +1,12 @@
 type ToastId = string | number;
 type ToastType =
   'success' | 'error' | 'warning' | 'info' | 'loading' | 'message';
-type ToastStatus = 'queued' | 'active' | 'dismissing';
 
-interface Toast<Content extends {} = string> {
+interface ToastEntry<Content extends {} = string> {
   readonly id: ToastId;
   readonly type: ToastType;
-  readonly status: ToastStatus;
   readonly duration: number;
   readonly dismissible: boolean;
-  readonly paused: boolean;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly content: Content;
@@ -30,38 +27,41 @@ type UpdatePatch<Content extends {} = string> = Partial<{
   dismissible: boolean;
 }>;
 
-interface NotifyEvent {
-  type: 'added' | 'updated' | 'dismissed' | 'removed';
+interface EntryEvent {
+  type: 'added' | 'updated' | 'removed';
 }
 
-interface AddedNotifyEvent<Content extends {} = string> extends NotifyEvent {
+interface ToastEntryAddedEvent<Content extends {} = string> extends EntryEvent {
   type: 'added';
-  toast: Toast<Content>;
+  entry: ToastEntry<Content>;
 }
 
-interface UpdatedNotifyEvent<Content extends {} = string> extends NotifyEvent {
-  type: 'updated';
-  toast: Toast<Content>;
-  previous: Toast<Content>;
-}
-
-interface DismissedNotifyEvent<
+interface ToastEntryUpdatedEvent<
   Content extends {} = string,
-> extends NotifyEvent {
-  type: 'dismissed';
-  toast: Toast<Content>;
+> extends EntryEvent {
+  type: 'updated';
+  entry: ToastEntry<Content>;
+  prev: ToastEntry<Content>;
+  /** What the caller asked to change: a presenter restarts its expiry clock
+   * on an explicit duration touch even when the value is the same. */
+  patch: UpdatePatch<Content>;
+  /** Which facade call produced this update: a create over a live id (an
+   * upsert, the caller wants the toast shown) or a plain update. A
+   * presenter reopens a leaving toast only for 'create'. */
+  via: 'create' | 'update';
 }
 
-interface RemovedNotifyEvent<Content extends {} = string> extends NotifyEvent {
+interface ToastEntryRemovedEvent<
+  Content extends {} = string,
+> extends EntryEvent {
   type: 'removed';
-  toast: Toast<Content>;
+  entry: ToastEntry<Content>;
 }
 
-type ToastNotifyEvent<Content extends {} = string> =
-  | AddedNotifyEvent<Content>
-  | UpdatedNotifyEvent<Content>
-  | DismissedNotifyEvent<Content>
-  | RemovedNotifyEvent<Content>;
+type ToastEntryEvent<Content extends {} = string> =
+  | ToastEntryAddedEvent<Content>
+  | ToastEntryUpdatedEvent<Content>
+  | ToastEntryRemovedEvent<Content>;
 
 interface PromisePhase<T, Content extends {} = string> {
   loading: Content;
@@ -80,12 +80,8 @@ interface PromisePhase<T, Content extends {} = string> {
 type PromiseOptions = Pick<CreateOptions, 'id' | 'dismissible'>;
 
 interface ToasterConfig {
-  /** @default Infinity */
-  max?: number;
   /** @default 4000 */
   duration?: number;
-  /** @default 2000 */
-  removeTimeout?: number;
 }
 
 interface Toaster<Content extends {} = string> {
@@ -101,21 +97,9 @@ interface Toaster<Content extends {} = string> {
   create(content: Content, options?: CreateOptions): ToastId;
   update(id: ToastId, patch: UpdatePatch<Content>): void;
 
-  dismiss(): void;
-  dismiss(id: ToastId): void;
-  dismiss(ids: ToastId[]): void;
-
   remove(): void;
   remove(id: ToastId): void;
   remove(ids: ToastId[]): void;
-
-  pause(): void;
-  pause(id: ToastId): void;
-  pause(ids: ToastId[]): void;
-
-  resume(): void;
-  resume(id: ToastId): void;
-  resume(ids: ToastId[]): void;
 
   promise<T>(
     promise: Promise<T>,
@@ -123,25 +107,22 @@ interface Toaster<Content extends {} = string> {
     options?: PromiseOptions
   ): Promise<T>;
 
-  getSnapshot(): ReadonlyArray<Toast<Content>>;
-  subscribe(listener: (event: ToastNotifyEvent<Content>) => void): () => void;
-  getRemainingMs(id: ToastId): number;
+  getSnapshot(): ReadonlyArray<ToastEntry<Content>>;
+  subscribe(listener: (event: ToastEntryEvent<Content>) => void): () => void;
 
   destroy(): void;
 }
 
 export type {
-  Toast,
+  ToastEntry,
   ToastId,
   ToastType,
-  ToastStatus,
   CreateOptions,
   UpdatePatch,
-  AddedNotifyEvent,
-  UpdatedNotifyEvent,
-  DismissedNotifyEvent,
-  RemovedNotifyEvent,
-  ToastNotifyEvent,
+  ToastEntryAddedEvent,
+  ToastEntryUpdatedEvent,
+  ToastEntryRemovedEvent,
+  ToastEntryEvent,
   PromisePhase,
   PromiseOptions,
   ToasterConfig,
