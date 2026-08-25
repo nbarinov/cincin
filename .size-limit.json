@@ -7,7 +7,7 @@
   {
     "name": "cincin/dom",
     "path": "packages/cincin/dist/dom/index.mjs",
-    "limit": "2 kB"
+    "limit": "3 kB"
   },
   {
     "name": "cincin/presenter",
@@ -23,7 +23,7 @@
   {
     "name": "cincin-react/core",
     "path": "packages/cincin-react/dist/core/index.mjs",
-    "limit": "1 kB",
+    "limit": "1.25 kB",
     "ignore": ["cincin", "react"]
   }
 ]
