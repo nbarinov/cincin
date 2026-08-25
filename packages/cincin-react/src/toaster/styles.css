@@ -143,7 +143,9 @@
   color: var(--toast-accent);
 }
 
-[data-cincin-toast][data-type='loading'] [data-cincin-body] > [data-cincin-icon] {
+[data-cincin-toast][data-type='loading']
+  [data-cincin-body]
+  > [data-cincin-icon] {
   animation: cincin-spin 900ms linear infinite;
 }
 
