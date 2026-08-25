@@ -62,7 +62,7 @@ function Toaster({
           toast={toast}
           presenter={presenter}
           swipeDirection={swipeDirection}
-          ref={stack.measureRef(toast.key)}
+          ref={stack.cardRef(toast.key)}
         />
       ))}
     </ol>
@@ -104,45 +104,51 @@ function ToastCard({
       ref={composedRef}
       onTransitionEnd={onExitToast}
     >
-      {TYPE_ICONS[entry.type]}
+      {/* The body carries the slots and the padding; the card box above
+          renders at an explicit height, while the body always keeps
+          the natural one; the stack layout measures it (as the card's
+          first element child). */}
+      <div data-cincin-body>
+        {TYPE_ICONS[entry.type]}
 
-      <div data-cincin-content>
-        {description === undefined ? (
-          // A lone title reads better in body type: it takes the
-          // description slot, and the bold title style stays reserved
-          // for two-line toasts.
-          <div data-cincin-description>{title}</div>
-        ) : (
-          <>
-            <div data-cincin-title>{title}</div>
-            <div data-cincin-description>{description}</div>
-          </>
+        <div data-cincin-content>
+          {description === undefined ? (
+            // A lone title reads better in body type: it takes the
+            // description slot, and the bold title style stays reserved
+            // for two-line toasts.
+            <div data-cincin-description>{title}</div>
+          ) : (
+            <>
+              <div data-cincin-title>{title}</div>
+              <div data-cincin-description>{description}</div>
+            </>
+          )}
+        </div>
+
+        {action !== undefined && (
+          <button
+            type="button"
+            data-cincin-action
+            onClick={() => {
+              action.onClick();
+              presenter.dismiss(key);
+            }}
+          >
+            {action.label}
+          </button>
+        )}
+
+        {entry.dismissible && (
+          <button
+            type="button"
+            data-cincin-close
+            aria-label="Dismiss"
+            onClick={() => presenter.dismiss(key)}
+          >
+            {CLOSE_ICON}
+          </button>
         )}
       </div>
-
-      {action !== undefined && (
-        <button
-          type="button"
-          data-cincin-action
-          onClick={() => {
-            action.onClick();
-            presenter.dismiss(key);
-          }}
-        >
-          {action.label}
-        </button>
-      )}
-
-      {entry.dismissible && (
-        <button
-          type="button"
-          data-cincin-close
-          aria-label="Dismiss"
-          onClick={() => presenter.dismiss(key)}
-        >
-          {CLOSE_ICON}
-        </button>
-      )}
     </li>
   );
 }

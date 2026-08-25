@@ -69,22 +69,25 @@
   bottom: 0;
   box-sizing: border-box;
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.8rem 0.9rem;
   border-left: 4px solid var(--toast-accent);
   border-radius: 0.6rem;
   background: var(--toast-surface);
   box-shadow: var(--shadow-rest);
   cursor: grab;
   -webkit-tap-highlight-color: transparent;
+  /* Always the explicit measured height (the hook publishes it), never
+   * `auto`: every state change (promotion, demotion, expand, content
+   * update) is then px→px and rides the height transition. An `auto`
+   * endpoint anywhere would snap instead. The measurement itself still
+   * reads truth through an inline `height: auto` swap each pass. */
+  height: var(--toast-height, auto);
   transform-origin: center bottom;
   transform: translateY(calc(var(--index) * -0.875rem))
     scale(calc(1 - var(--index) * 0.05));
   transition:
     transform 400ms,
     opacity 400ms,
+    height 400ms,
     box-shadow 200ms;
 }
 
@@ -115,14 +118,27 @@
 
 /* --- slots --------------------------------------------------------- */
 
-[data-cincin-toast] > [data-cincin-icon] {
+/* The card's body: the slot row and the padding live here, the box
+ * chrome (background, border, shadow, the forced height) stays on the
+ * card. A block child is never clamped by its parent's height, so the
+ * body always renders at the natural size; the stack's
+ * ResizeObserver watches it, and with the padding on board its border
+ * box IS the card's natural height. */
+[data-cincin-body] {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.8rem 0.9rem;
+}
+
+[data-cincin-body] > [data-cincin-icon] {
   flex: none;
   width: 1.15rem;
   height: 1.15rem;
   color: var(--toast-accent);
 }
 
-[data-cincin-toast][data-type='loading'] > [data-cincin-icon] {
+[data-cincin-toast][data-type='loading'] [data-cincin-body] > [data-cincin-icon] {
   animation: cincin-spin 900ms linear infinite;
 }
 
@@ -211,6 +227,39 @@
 }
 
 /* --- stack states -------------------------------------------------- */
+
+/* Collapsed, the peeking cards borrow the front card's height (the
+ * hook publishes it as --front-height): mixed natural heights would
+ * otherwise peek unevenly from behind the front toast. */
+[data-cincin-toaster]:not([data-expanded='true'])
+  [data-cincin-toast][data-front='false'] {
+  height: var(--front-height, auto);
+  /* No overflow clip, deliberately (reviewed by eye): the slot fade
+   * hides the content before the clamped edge could expose it. If a
+   * stray sliver ever shows up here, reach for `overflow: hidden`
+   * first. */
+}
+
+/* The peek strip must read as clean surface: the borrowed height can
+ * run the card's top edge straight through its text, so collapsed
+ * back cards fade their slots out. 200ms, half the height transition:
+ * on collapse the content must be gone before the clamping edge
+ * reaches the text (a slower fade shows the clipping, and its reveal
+ * reads as a stack of empty cards while expanding). Slots are named;
+ * a bare `> *` is avoided deliberately, though the close button's
+ * hover opacity now eases over the same 200ms. */
+[data-cincin-body] > [data-cincin-icon],
+[data-cincin-content],
+[data-cincin-action],
+[data-cincin-close] {
+  transition: opacity 200ms;
+}
+
+[data-cincin-toaster]:not([data-expanded='true'])
+  [data-cincin-toast][data-front='false']
+  :is([data-cincin-icon], [data-cincin-content], [data-cincin-action], [data-cincin-close]) {
+  opacity: 0;
+}
 
 [data-cincin-toast][data-hidden='true'] {
   opacity: 0;

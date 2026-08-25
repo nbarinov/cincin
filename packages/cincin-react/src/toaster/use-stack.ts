@@ -1,88 +1,65 @@
-import { useLayoutEffect, useRef } from 'react';
-import { useRefMap } from '../shared/use-ref-map';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { createStackLayout } from 'cincin/dom';
+import type { StackLayoutConfig } from 'cincin/dom';
 import type { Toast, ToastKey } from 'cincin/presenter';
+import { useRefMap } from '../shared/use-ref-map';
 
-type ToastSlot = {
-  index: number;
-  offset: number;
-  zIndex: number;
-  hidden: boolean;
-};
+type StackOptions = StackLayoutConfig;
 
-type StackOptions = {
-  order?: 'stack' | 'queue';
-  visible?: number;
-  gap?: number;
-};
-
+/** A thin binding over the `cincin/dom` stack layout: the controller
+ * owns the geometry (slots, heights, the ResizeObserver); the hook
+ * feeds it commits and hands out stable card refs. */
 function useStack(
   entries: ReadonlyArray<Pick<Toast, 'key' | 'phase'>>,
   options: StackOptions = {}
 ) {
   const { order = 'stack', visible = 3, gap = 12 } = options;
-  const elements = useRefMap<ToastKey, HTMLElement>();
-  const slots = useRef(new Map<ToastKey, ToastSlot>());
+  const [layout] = useState(() => createStackLayout({ order, visible, gap }));
+  const cards = useRefMap<ToastKey, HTMLElement>({
+    onChange: (key, element) => layout.setCard(key, element),
+  });
   const aliveIds = useRef(new Set<ToastKey>());
 
   useLayoutEffect(
-    function layoutStack() {
-      const next = new Map<ToastKey, ToastSlot>();
-      let offset = 0;
-      let depth = 0;
+    function syncConfig() {
+      layout.setConfig({ order, visible, gap });
+    },
+    [layout, order, visible, gap]
+  );
 
-      const isStack = order === 'stack';
-      const front = isStack ? entries.length - 1 : 0;
-      const step = isStack ? -1 : 1;
+  useLayoutEffect(
+    function syncEntries() {
+      layout.setEntries(
+        entries.map((toast) => ({
+          key: toast.key,
+          leaving: toast.phase === 'leaving',
+        }))
+      );
 
-      for (let i = front; i >= 0 && i < entries.length; i += step) {
-        const toast = entries[i]!;
-        const element = elements.get(toast.key);
-
-        if (element === undefined) {
-          continue;
-        }
-
-        const leaving = toast.phase === 'leaving';
-        const slot = leaving
-          ? slots.current.get(toast.key)
-          : {
-              index: depth,
-              offset,
-              zIndex: entries.length - depth,
-              hidden: depth >= visible,
-            };
-
-        if (slot !== undefined) {
-          next.set(toast.key, slot);
-          element.style.setProperty('--index', String(slot.index));
-          element.style.setProperty('--offset', `${slot.offset}px`);
-          element.style.zIndex = String(slot.zIndex);
-          element.dataset.hidden = String(slot.hidden);
-        }
-
-        if (!leaving) {
-          offset += element.offsetHeight + gap;
-          depth += 1;
-        }
-      }
-
-      slots.current = next;
-
-      // The data pass is the only reliable "truly gone" signal, so the
+      // The data pass is the only reliable "truly gone" signal: the
       // registry entries of departed toasts are released here, never
       // from ref cleanups (those re-run while the toast is alive).
       const alive = new Set(entries.map((toast) => toast.key));
       for (const key of aliveIds.current) {
         if (!alive.has(key)) {
-          elements.release(key);
+          cards.release(key);
         }
       }
       aliveIds.current = alive;
     },
-    [entries, order, elements, visible, gap]
+    [layout, cards, entries]
   );
 
-  return { measureRef: elements.getRef };
+  useLayoutEffect(
+    function destroyOnUnmount() {
+      return () => {
+        layout.destroy();
+      };
+    },
+    [layout]
+  );
+
+  return { cardRef: cards.getRef };
 }
 
 export { useStack };

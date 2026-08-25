@@ -73,9 +73,9 @@ function useRegion(
     expanded,
     ref: regionRef,
     handlers: {
-      // Hover rides MOUSE events, sonner-style: touch browsers emulate
-      // them, so a tap expands and mouseleave arrives only from a tap
-      // outside. mousemove re-arms after lost boundary events.
+      // Hover rides MOUSE events: touch browsers emulate them, so a
+      // tap expands and mouseleave arrives only from a tap outside.
+      // mousemove re-arms after lost boundary events.
       onMouseEnter: expand,
       onMouseMove: expand,
       onMouseLeave: collapse,
