@@ -287,6 +287,14 @@ main header {
  * mounting on a settling promise toast never sets the card's height.
  * The comfortable hit target and the hover/active plate live on the
  * ::before overhang instead. */
+/* The renderer hides non-dismissible close buttons via the `hidden`
+ * attribute, and the author-origin `display: grid` below outranks the
+ * UA's `[hidden] { display: none }`: the attribute needs an author
+ * ally. */
+.toast-close[hidden] {
+  display: none;
+}
+
 .toast-close {
   position: relative;
   flex: none;
