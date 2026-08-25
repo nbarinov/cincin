@@ -13,14 +13,8 @@ import { useStack } from '../core/use-stack';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent } from './content';
 import { toast as defaultToaster } from './toast';
-import { useStack } from './use-stack';
 import { useRegion } from './use-region';
 import { CLOSE_ICON, TYPE_ICONS } from './icons';
-
-/** Started in the same commit as the leaving phase, while the CSS
- * transition starts a render frame later: the margin keeps the
- * presenter's exit clock from clipping the last frames of the slide. */
-const EXIT_MARGIN = 50;
 
 type ToasterProps = {
   /** @default package singleton */
@@ -32,8 +26,8 @@ type ToasterProps = {
   /** Active presentations at once; the rest queue. @default Infinity */
   max?: number;
   /** The exit animation's length, ms. One value drives both sides: the
-   * presenter's exit clock (`removeTimeout`) and, published as
-   * `--cincin-exit-duration`, the skin's motion durations. @default 400 */
+   * presenter's exit clock and, published as `--cincin-exit-duration`,
+   * the skin's motion durations. @default 400 */
   exitDuration?: number;
 };
 
@@ -44,10 +38,7 @@ function Toaster({
   max = Infinity,
   exitDuration = 400,
 }: ToasterProps) {
-  const presenter = usePresenter(toaster, {
-    max,
-    removeTimeout: exitDuration + EXIT_MARGIN,
-  });
+  const presenter = usePresenter(toaster, { max, exitDuration });
   const toasts = useToasts(presenter);
   const shown = useMemo(
     () => toasts.filter((toast) => toast.phase !== 'queued'),

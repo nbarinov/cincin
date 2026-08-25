@@ -1,7 +1,7 @@
-import type { ToastEntry, UpdatePatch } from '../core/types';
+import type { ToastEntry, ToastUpdatePatch } from '../core/types';
 
 type ToastKey = string;
-type Phase = 'queued' | 'active' | 'leaving';
+type ToastPhase = 'queued' | 'active' | 'leaving';
 
 /**
  * A toast as the user sees it: one showing of an entry. It references
@@ -11,7 +11,7 @@ type Phase = 'queued' | 'active' | 'leaving';
 interface Toast<Content extends {} = string> {
   readonly key: ToastKey;
   readonly entry: ToastEntry<Content>;
-  readonly phase: Phase;
+  readonly phase: ToastPhase;
   readonly paused: boolean;
 }
 
@@ -28,7 +28,7 @@ interface ToastUpdatedEvent<Content extends {} = string> extends ShowEvent {
   type: 'updated';
   toast: Toast<Content>;
   prev: Toast<Content>;
-  patch?: UpdatePatch<Content>;
+  patch?: ToastUpdatePatch<Content>;
 }
 
 interface ToastLeavingEvent<Content extends {} = string> extends ShowEvent {
@@ -50,8 +50,10 @@ type ToastEvent<Content extends {} = string> =
 interface PresenterConfig {
   /** Active toasts at once; the rest queue. @default Infinity */
   max?: number;
-  /** Ceiling for a leaving toast nobody finishes, ms. @default 2000 */
-  removeTimeout?: number;
+  /** Declared length of the skin's exit animation, ms. A leaving toast
+   * nobody finishes is finished for them a small grace past it. The
+   * default is a conservative fallback: declare your own. @default 2000 */
+  exitDuration?: number;
 }
 
 interface Presenter<Content extends {} = string> {
@@ -89,7 +91,7 @@ interface Presenter<Content extends {} = string> {
 export type {
   Toast,
   ToastKey,
-  Phase,
+  ToastPhase,
   ToastEnteredEvent,
   ToastUpdatedEvent,
   ToastLeavingEvent,

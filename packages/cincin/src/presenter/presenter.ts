@@ -2,7 +2,12 @@ import { TimerManager } from './timer-manager';
 import { Mountable } from '../shared/mountable';
 import { counter, devWarn } from '../shared/utils';
 import { createPresenterStore } from './store';
-import type { ToastEntry, Toaster, ToastId, UpdatePatch } from '../core/types';
+import type {
+  ToastEntry,
+  Toaster,
+  ToastId,
+  ToastUpdatePatch,
+} from '../core/types';
 import type {
   Toast,
   ToastKey,
@@ -13,6 +18,11 @@ import type {
   Presenter as PresenterContract,
   PresenterConfig,
 } from './types';
+
+/** The exit clock starts in the same commit as the leaving phase, while
+ * a skin's CSS transition starts a render frame later: the grace keeps
+ * the clock from clipping the last frames of the exit. */
+const EXIT_GRACE = 50;
 
 /**
  * Shows a toaster's entries: one toast per showing, with a queue (max),
@@ -51,7 +61,7 @@ class Presenter<Content extends {} = string>
     this.#toaster = toaster;
     this.#config = Object.freeze({
       max: resolveMax(config.max),
-      removeTimeout: config.removeTimeout ?? 2000,
+      exitDuration: config.exitDuration ?? 2000,
     });
 
     this.subscribe = this.#store.subscribe;
@@ -68,18 +78,18 @@ class Presenter<Content extends {} = string>
   setConfig(config: Partial<PresenterConfig>): void {
     const max =
       config.max !== undefined ? resolveMax(config.max) : this.#config.max;
-    const removeTimeout = config.removeTimeout ?? this.#config.removeTimeout;
+    const exitDuration = config.exitDuration ?? this.#config.exitDuration;
 
     // Idempotent: a caller re-applying the current values (a React
     // effect firing right after mount) costs nothing.
     if (
       max === this.#config.max &&
-      removeTimeout === this.#config.removeTimeout
+      exitDuration === this.#config.exitDuration
     ) {
       return;
     }
 
-    this.#config = Object.freeze({ max, removeTimeout });
+    this.#config = Object.freeze({ max, exitDuration });
 
     this.#store.commit(...this.#promote());
   }
@@ -167,7 +177,7 @@ class Presenter<Content extends {} = string>
   #refresh(
     entry: ToastEntry<Content>,
     prev: ToastEntry<Content>,
-    patch: UpdatePatch<Content>,
+    patch: ToastUpdatePatch<Content>,
     via: 'create' | 'update'
   ): ToastEvent<Content>[] {
     const live = this.#store.select(
@@ -215,7 +225,7 @@ class Presenter<Content extends {} = string>
 
     // Safety net: if nobody finishes the exit, we do. Capture only the key.
     const key = next.key;
-    this.#leaveTimers.start(key, this.#config.removeTimeout, () =>
+    this.#leaveTimers.start(key, this.#config.exitDuration + EXIT_GRACE, () =>
       this.finish(key)
     );
 

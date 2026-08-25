@@ -14,14 +14,14 @@ function usePresenter<ToastContent extends {} = string>(
   toaster: Toaster<ToastContent>,
   config?: PresenterConfig
 ): Presenter<ToastContent> {
-  const { max, removeTimeout } = config ?? {};
+  const { max, exitDuration } = config ?? {};
 
   const resolvedConfig = useMemo<PresenterConfig>(
     () => ({
       ...(max !== undefined && { max }),
-      ...(removeTimeout !== undefined && { removeTimeout }),
+      ...(exitDuration !== undefined && { exitDuration }),
     }),
-    [max, removeTimeout]
+    [max, exitDuration]
   );
 
   const [presenter] = useState(() => createPresenter(toaster, resolvedConfig));

@@ -9,10 +9,6 @@ const MAX = 5;
 const COLLAPSE_DELAY = 200;
 /** Published as --cincin-exit-duration; the skin's motion rides it. */
 const EXIT_DURATION = 400;
-/* The presenter's exit clock starts in the same commit as the leaving
- * phase, while the CSS transition starts a render frame later: the
- * margin keeps the clock from clipping the last frames of the slide. */
-const EXIT_MARGIN = 50;
 
 interface MountedToast {
   element: HTMLLIElement;
@@ -25,7 +21,7 @@ interface MountedToast {
 function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   const presenter = createPresenter(toaster, {
     max: MAX,
-    removeTimeout: EXIT_DURATION + EXIT_MARGIN,
+    exitDuration: EXIT_DURATION,
   });
   const mounted = new Map<ToastKey, MountedToast>();
 

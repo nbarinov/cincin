@@ -66,9 +66,9 @@ ms; one value drives the presenter's exit clock and, published as
 import { usePresenter, useToasts, useToastSwipe } from 'cincin-react/core';
 
 function Region({ toaster }) {
-  // The exit clock (`removeTimeout`) finishes leaving toasts on time:
-  // match it to your exit animation, no transitionend listeners needed.
-  const presenter = usePresenter(toaster, { max: 5, removeTimeout: 450 });
+  // The exit clock finishes leaving toasts on time: declare your exit
+  // animation's length, no transitionend listeners needed.
+  const presenter = usePresenter(toaster, { max: 5, exitDuration: 400 });
   const toasts = useToasts(presenter);
 
   return (
@@ -81,7 +81,9 @@ function Region({ toaster }) {
 }
 
 function Card({ toast, presenter }) {
-  const swipeRef = useToastSwipe(toast.key, presenter, {
+  const swipeRef = useToastSwipe({
+    key: toast.key,
+    presenter,
     enabled: toast.entry.dismissible,
   });
 

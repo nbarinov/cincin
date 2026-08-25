@@ -3,7 +3,7 @@ export { createPresenter } from './presenter';
 export type {
   Toast,
   ToastKey,
-  Phase,
+  ToastPhase,
   ToastEnteredEvent,
   ToastUpdatedEvent,
   ToastLeavingEvent,

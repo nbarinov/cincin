@@ -66,7 +66,8 @@ presenter.setConfig({ max: 3 }); // live config; a raised max promotes
 
 A removed entry does not vanish from the screen: its toast becomes a
 leaving ghost and plays the exit. A leaving toast nobody finishes is
-finished by a safety net (`removeTimeout`).
+finished by a safety net, a small grace past the declared
+`exitDuration`.
 
 ### Swipe to dismiss
 

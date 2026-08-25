@@ -227,11 +227,11 @@ describe('presenter', () => {
     });
 
     it('should treat re-applying the current config as a no-op', () => {
-      const { p, events } = setup({ max: 2, removeTimeout: 500 });
+      const { p, events } = setup({ max: 2, exitDuration: 500 });
       const before = p.config;
       events.length = 0;
 
-      p.setConfig({ max: 2, removeTimeout: 500 });
+      p.setConfig({ max: 2, exitDuration: 500 });
       p.setConfig({});
 
       // Same reference, no events: the effect firing after mount with
@@ -241,11 +241,11 @@ describe('presenter', () => {
     });
 
     it('should keep an omitted field on setConfig', () => {
-      const { p } = setup({ max: 2, removeTimeout: 500 });
+      const { p } = setup({ max: 2, exitDuration: 500 });
 
       p.setConfig({ max: 4 });
 
-      expect(p.config).toEqual({ max: 4, removeTimeout: 500 });
+      expect(p.config).toEqual({ max: 4, exitDuration: 500 });
     });
 
     it('should warn and fall back to Infinity when max cannot show any toast', () => {
@@ -455,7 +455,7 @@ describe('presenter', () => {
     });
 
     it('should not pause a leaving presentation so the safety net keeps ticking', () => {
-      const { t, p } = setup({ removeTimeout: 500 });
+      const { t, p } = setup({ exitDuration: 500 });
       t.message('a');
       const [key] = keys(p);
       p.dismiss(key!);
@@ -463,7 +463,7 @@ describe('presenter', () => {
       p.pause(key!);
       expect(p.getSnapshot().at(0)!.paused).toBe(false);
 
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(550);
       expect(p.getSnapshot()).toEqual([]);
     });
   });
@@ -511,12 +511,14 @@ describe('presenter', () => {
       ]);
     });
 
-    it('should finish a leaving presentation on its own after removeTimeout', () => {
-      const { t, p } = setup({ removeTimeout: 500 });
+    it('should finish a leaving presentation on its own past exitDuration', () => {
+      const { t, p } = setup({ exitDuration: 500 });
       t.message('a');
       p.dismiss(keys(p)[0]!);
 
-      vi.advanceTimersByTime(499);
+      // The exit clock allows a small grace beyond the declared
+      // duration before finishing for the skin.
+      vi.advanceTimersByTime(549);
       expect(phases(p)).toEqual(['leaving']);
       vi.advanceTimersByTime(1);
       expect(p.getSnapshot()).toEqual([]);
