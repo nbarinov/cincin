@@ -1,5 +1,10 @@
 import type { RefCallback } from 'react';
 import { useMemo, useRef } from 'react';
+import { useLatestRef } from './use-latest-ref';
+
+type RefMapOptions<Key, Value> = {
+  onChange?: (key: Key, value: Value | null) => void;
+};
 
 interface RefMap<Key, Value> {
   /** A stable ref callback per key, cached for the key's lifetime. */
@@ -18,9 +23,10 @@ interface RefMap<Key, Value> {
  * very re-run that pruned it. Only the owner of the data knows a key
  * is truly gone: it calls release explicitly.
  */
-function useRefMap<Key, Value>() {
+function useRefMap<Key, Value>(options: RefMapOptions<Key, Value> = {}) {
   const values = useRef(new Map<Key, Value>());
   const refs = useRef(new Map<Key, RefCallback<Value>>());
+  const onChangeRef = useLatestRef(options.onChange);
 
   return useMemo<RefMap<Key, Value>>(
     () => ({
@@ -36,9 +42,11 @@ function useRefMap<Key, Value>() {
           }
 
           values.current.set(key, value);
+          onChangeRef.current?.(key, value);
 
           return () => {
             values.current.delete(key);
+            onChangeRef.current?.(key, null);
           };
         };
 
@@ -48,13 +56,21 @@ function useRefMap<Key, Value>() {
       },
       get: (key: Key) => values.current.get(key),
       release: (key: Key) => {
-        values.current.delete(key);
+        const shouldNotify = values.current.delete(key);
         refs.current.delete(key);
+
+        // Releasing a still-attached value is the consumer detaching
+        // data before DOM: the mirror behind onChange must hear the
+        // null. After a ref cleanup the value is already gone and the
+        // null was already reported — stay silent.
+        if (shouldNotify) {
+          onChangeRef.current?.(key, null);
+        }
       },
     }),
-    []
+    [onChangeRef]
   );
 }
 
 export { useRefMap };
-export type { RefMap };
+export type { RefMap, RefMapOptions };

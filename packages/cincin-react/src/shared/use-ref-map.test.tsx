@@ -38,6 +38,44 @@ describe('useRefMap', () => {
     expect(map.get('b')).toBeUndefined();
   });
 
+  it('should report attaches and detaches through onChange', () => {
+    let map!: RefMap<string, HTMLElement>;
+    const changes: Array<[string, boolean]> = [];
+
+    function Host({ keys }: { keys: string[] }) {
+      map = useRefMap<string, HTMLElement>({
+        onChange: (key, value) => {
+          changes.push([key, value !== null]);
+        },
+      });
+      return (
+        <>
+          {keys.map((key) => (
+            <div key={key} ref={map.getRef(key)} />
+          ))}
+        </>
+      );
+    }
+
+    const view = render(<Host keys={['a', 'b']} />);
+    expect(changes).toContainEqual(['a', true]);
+    expect(changes).toContainEqual(['b', true]);
+
+    changes.length = 0;
+    view.rerender(<Host keys={['b']} />);
+    expect(changes).toContainEqual(['a', false]);
+
+    // after a cleanup the null was already reported: release is silent
+    changes.length = 0;
+    map.release('a');
+    expect(changes).toHaveLength(0);
+
+    // releasing a still-mounted value reports the null itself
+    changes.length = 0;
+    map.release('b');
+    expect(changes).toEqual([['b', false]]);
+  });
+
   it('should keep the ref callback stable across a StrictMode double mount', () => {
     let map!: RefMap<string, HTMLElement>;
     const seen = new Set<unknown>();
