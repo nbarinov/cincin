@@ -56,20 +56,19 @@ toast.remove(id);
 `<Toaster />` props: `toaster` (your own store instead of the
 singleton; read once, remount to switch), `max` (active toasts at once,
 the rest queue; live), `visible` (how many peek out of the collapsed
-stack), `swipeDirection`.
+stack), `swipeDirection`, `exitDuration` (the exit animation's length,
+ms; one value drives the presenter's exit clock and, published as
+`--cincin-exit-duration`, the skin's motion durations).
 
 ## Headless
 
 ```tsx
-import {
-  usePresenter,
-  useToasts,
-  useToastSwipe,
-  useToastExit,
-} from 'cincin-react/core';
+import { usePresenter, useToasts, useToastSwipe } from 'cincin-react/core';
 
 function Region({ toaster }) {
-  const presenter = usePresenter(toaster, { max: 5 });
+  // The exit clock (`removeTimeout`) finishes leaving toasts on time:
+  // match it to your exit animation, no transitionend listeners needed.
+  const presenter = usePresenter(toaster, { max: 5, removeTimeout: 450 });
   const toasts = useToasts(presenter);
 
   return (
@@ -85,10 +84,9 @@ function Card({ toast, presenter }) {
   const swipeRef = useToastSwipe(toast.key, presenter, {
     enabled: toast.entry.dismissible,
   });
-  const onExitEnd = useToastExit(toast.key, presenter);
 
   return (
-    <li ref={swipeRef} data-phase={toast.phase} onTransitionEnd={onExitEnd}>
+    <li ref={swipeRef} data-phase={toast.phase}>
       {String(toast.entry.content)}
     </li>
   );
@@ -100,6 +98,12 @@ the showings; `createToasterContext<MyContent>()` returns a
 `ToasterProvider` with context-aware `useToaster` / `useToastEntries`
 for a typed content payload. The primitives take their instances
 explicitly and carry no CSS.
+
+## Browser support
+
+Ships untranspiled ES2023 over `ResizeObserver` (Chrome 110+, Safari
+16.4+, Firefox 115+, Node 20+ for SSR), and the bundled skin's CSS
+(`@starting-style`, `light-dark()`) wants 2024-class browsers.
 
 ## Documentation and source
 

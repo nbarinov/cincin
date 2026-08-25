@@ -85,6 +85,14 @@ element and marks `data-swiping` / `data-swipe-direction`; skins style
 off those and declare `user-select: none` on the region. Reduced motion
 is respected.
 
+## Browser support
+
+The package ships untranspiled ES2023 (the stack layout leans on
+`Array.prototype.toReversed`, sizes come from `ResizeObserver`):
+Chrome 110+, Safari 16.4+, Firefox 115+, Node 20+. Skins may raise the
+bar further with their CSS — the react skin's stylesheet uses
+`@starting-style` and `light-dark()`, which want 2024-class browsers.
+
 ## Documentation and source
 
 [github.com/nbarinov/cincin](https://github.com/nbarinov/cincin)
