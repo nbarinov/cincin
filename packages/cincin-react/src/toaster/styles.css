@@ -85,10 +85,14 @@
   transform-origin: center bottom;
   transform: translateY(calc(var(--index) * -0.875rem))
     scale(calc(1 - var(--index) * 0.05));
+  /* One value drives the whole exit story: the Toaster publishes its
+   * exitDuration as --cincin-exit-duration and hands the same number
+   * (plus a margin) to the presenter's exit clock, which finishes
+   * leaving toasts on time — no transitionend listeners anywhere. */
   transition:
-    transform 400ms,
-    opacity 400ms,
-    height 400ms,
+    transform var(--cincin-exit-duration, 400ms),
+    opacity var(--cincin-exit-duration, 400ms),
+    height var(--cincin-exit-duration, 400ms),
     box-shadow 200ms;
 }
 
@@ -347,14 +351,14 @@
   }
 }
 
-/* Reduced motion: crossfades stay, movement snaps. The exit hook
- * removes dismissed toasts synchronously in this mode, so nothing here
- * waits for a transition to end. The loading spin stays: it signals
- * state, not decoration. */
+/* Reduced motion: crossfades stay, movement snaps. The presenter's
+ * exit clock runs the same either way, and the kept opacity crossfade
+ * fills its window. The loading spin stays: it signals state, not
+ * decoration. */
 @media (prefers-reduced-motion: reduce) {
   [data-cincin-toast] {
     transition:
-      opacity 400ms,
+      opacity var(--cincin-exit-duration, 400ms),
       box-shadow 200ms;
   }
 

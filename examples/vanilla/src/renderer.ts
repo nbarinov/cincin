@@ -7,6 +7,12 @@ const GAP = 12;
 const VISIBLE = 3;
 const MAX = 5;
 const COLLAPSE_DELAY = 200;
+/** Published as --cincin-exit-duration; the skin's motion rides it. */
+const EXIT_DURATION = 400;
+/* The presenter's exit clock starts in the same commit as the leaving
+ * phase, while the CSS transition starts a render frame later: the
+ * margin keeps the clock from clipping the last frames of the slide. */
+const EXIT_MARGIN = 50;
 
 interface MountedToast {
   element: HTMLLIElement;
@@ -17,8 +23,16 @@ interface MountedToast {
 }
 
 function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
-  const presenter = createPresenter(toaster, { max: MAX });
+  const presenter = createPresenter(toaster, {
+    max: MAX,
+    removeTimeout: EXIT_DURATION + EXIT_MARGIN,
+  });
   const mounted = new Map<ToastKey, MountedToast>();
+
+  // One value drives the whole exit story: the same number feeds the
+  // presenter's exit clock above and, through this variable, every
+  // motion duration in the skin. No transitionend listeners anywhere.
+  region.style.setProperty('--cincin-exit-duration', `${EXIT_DURATION}ms`);
 
   const createCard = (key: ToastKey): MountedToast => {
     const element = document.createElement('li');
@@ -37,19 +51,6 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     close.addEventListener('click', () => presenter.dismiss(key));
 
     element.append(content, close);
-
-    // The regular exit is a CSS transition. It plays while the toast is
-    // leaving, unless the fling owns the exit (data-swipe-direction).
-    element.addEventListener('transitionend', (event) => {
-      if (
-        event.target === element &&
-        event.propertyName === 'transform' &&
-        element.dataset.phase === 'leaving' &&
-        !element.hasAttribute('data-swipe-direction')
-      ) {
-        presenter.finish(key);
-      }
-    });
 
     return {
       element,
@@ -215,25 +216,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     { signal }
   );
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  const unsubscribe = presenter.subscribe((event) => {
-    // Mirrors the swipe controller's reduced-motion path: without an
-    // exit transition there is no transitionend to wait for, so the
-    // exit completes right away. Swiped toasts are skipped: the
-    // controller already reports their finish itself. The microtask
-    // keeps the finish out of the current notification pass.
-    if (
-      event.type === 'leaving' &&
-      reducedMotion.matches &&
-      !mounted
-        .get(event.toast.key)
-        ?.element.hasAttribute('data-swipe-direction')
-    ) {
-      const key = event.toast.key;
-      queueMicrotask(() => presenter.finish(key));
-    }
-
+  const unsubscribe = presenter.subscribe(() => {
     render();
   });
   presenter.mount();
@@ -247,6 +230,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     clearTimeout(collapseTimer);
     controller.abort();
     delete region.dataset.expanded;
+    region.style.removeProperty('--cincin-exit-duration');
 
     for (const [key, card] of mounted) {
       dropCard(key, card);

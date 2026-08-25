@@ -4,18 +4,22 @@ import type { Toaster as ToasterContract } from 'cincin';
 import type { SwipeDirection } from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
 import { useMemo } from 'react';
-import type { Ref } from 'react';
+import type { CSSProperties, Ref } from 'react';
 import { useComposedRefs } from '../shared/use-composed-refs';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useToastSwipe } from '../core/use-toast-swipe';
-import { useToastExit } from '../core/use-toast-exit';
 import type { ToastContent } from './content';
 import { toast as defaultToaster } from './toast';
 import { useStack } from './use-stack';
 import { useRegion } from './use-region';
 import { CLOSE_ICON, TYPE_ICONS } from './icons';
+
+/** Started in the same commit as the leaving phase, while the CSS
+ * transition starts a render frame later: the margin keeps the
+ * presenter's exit clock from clipping the last frames of the slide. */
+const EXIT_MARGIN = 50;
 
 type ToasterProps = {
   /** @default package singleton */
@@ -26,6 +30,10 @@ type ToasterProps = {
   visible?: number;
   /** Active presentations at once; the rest queue. @default Infinity */
   max?: number;
+  /** The exit animation's length, ms. One value drives both sides: the
+   * presenter's exit clock (`removeTimeout`) and, published as
+   * `--cincin-exit-duration`, the skin's motion durations. @default 400 */
+  exitDuration?: number;
 };
 
 function Toaster({
@@ -33,8 +41,12 @@ function Toaster({
   swipeDirection = 'right',
   visible = 3,
   max = Infinity,
+  exitDuration = 400,
 }: ToasterProps) {
-  const presenter = usePresenter(toaster, { max });
+  const presenter = usePresenter(toaster, {
+    max,
+    removeTimeout: exitDuration + EXIT_MARGIN,
+  });
   const toasts = useToasts(presenter);
   const shown = useMemo(
     () => toasts.filter((toast) => toast.phase !== 'queued'),
@@ -53,6 +65,7 @@ function Toaster({
       tabIndex={-1}
       data-cincin-toaster
       data-expanded={region.expanded}
+      style={{ '--cincin-exit-duration': `${exitDuration}ms` } as CSSProperties}
       ref={region.ref}
       {...region.handlers}
     >
@@ -83,7 +96,6 @@ function ToastCard({
   ref: forwardedRef,
 }: ToastCardProps) {
   const { key, entry, phase } = toast;
-  const onExitToast = useToastExit(key, presenter);
   const swipeRef = useToastSwipe(key, presenter, {
     direction: swipeDirection,
     enabled: entry.dismissible,
@@ -102,7 +114,6 @@ function ToastCard({
       data-phase={phase}
       data-dismissible={entry.dismissible}
       ref={composedRef}
-      onTransitionEnd={onExitToast}
     >
       {/* The body carries the slots and the padding; the card box above
           renders at an explicit height, while the body always keeps

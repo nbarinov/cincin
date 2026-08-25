@@ -158,8 +158,8 @@ main header {
   transform: translateY(calc(var(--index) * -0.875rem))
     scale(calc(1 - var(--index) * 0.05));
   transition:
-    transform 400ms,
-    opacity 400ms,
+    transform var(--cincin-exit-duration, 400ms),
+    opacity var(--cincin-exit-duration, 400ms),
     box-shadow 200ms;
 }
 
@@ -263,13 +263,13 @@ main header {
   transition: background-size 300ms ease-out;
 }
 
-/* Reduced motion: crossfades stay, movement snaps. The renderer
- * removes dismissed toasts synchronously in this mode (mirroring the
- * swipe controller), so nothing here waits for a transition to end. */
+/* Reduced motion: crossfades stay, movement snaps. The presenter's
+ * exit clock runs the same either way, and the kept opacity crossfade
+ * fills its window. */
 @media (prefers-reduced-motion: reduce) {
   .toast {
     transition:
-      opacity 400ms,
+      opacity var(--cincin-exit-duration, 400ms),
       box-shadow 200ms;
   }
 
