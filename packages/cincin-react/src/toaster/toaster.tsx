@@ -96,7 +96,9 @@ function ToastCard({
   ref: forwardedRef,
 }: ToastCardProps) {
   const { key, entry, phase } = toast;
-  const swipeRef = useToastSwipe(key, presenter, {
+  const swipeRef = useToastSwipe({
+    key,
+    presenter,
     direction: swipeDirection,
     enabled: entry.dismissible,
   });

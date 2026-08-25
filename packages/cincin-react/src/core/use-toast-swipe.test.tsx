@@ -13,9 +13,9 @@ function SwipeHost({
 }: {
   toastKey: ToastKey;
   presenter: Presenter;
-  options?: ToastSwipeOptions;
+  options?: Omit<ToastSwipeOptions, 'key' | 'presenter'>;
 }) {
-  const ref = useToastSwipe(toastKey, presenter, options);
+  const ref = useToastSwipe({ key: toastKey, presenter, ...options });
   return <li data-testid="toast" ref={ref} />;
 }
 

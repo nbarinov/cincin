@@ -5,7 +5,12 @@ import type { RefCallback } from 'react';
 import { useLatestRef } from '../shared/use-latest-ref';
 import type { Presenter, ToastKey } from 'cincin/presenter';
 
-type ToastSwipeOptions = Omit<SwipeOptions, 'onDismiss' | 'onRemove'> & {
+type ToastSwipeOptions<Content extends {} = string> = Omit<
+  SwipeOptions,
+  'onDismiss' | 'onRemove'
+> & {
+  key: ToastKey;
+  presenter: Presenter<Content>;
   /**
    * Whether the gesture is attached at all. A non-dismissible toast
    * gets no controller: no swipe, and no touch-action claim either.
@@ -15,11 +20,9 @@ type ToastSwipeOptions = Omit<SwipeOptions, 'onDismiss' | 'onRemove'> & {
 };
 
 function useToastSwipe<T extends HTMLElement, Content extends {}>(
-  key: ToastKey,
-  presenter: Presenter<Content>,
-  options: ToastSwipeOptions = {}
+  options: ToastSwipeOptions<Content>
 ): RefCallback<T> {
-  const { enabled = true, ...swipeOptions } = options;
+  const { key, presenter, enabled = true, ...swipeOptions } = options;
   const swipeOptionsRef = useLatestRef(swipeOptions);
 
   return useCallback(
@@ -34,7 +37,7 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
         onRemove: () => presenter.finish(key),
       });
     },
-    [swipeOptionsRef, presenter, key, options?.direction, enabled]
+    [swipeOptionsRef, presenter, key, options.direction, enabled]
   );
 }
 
