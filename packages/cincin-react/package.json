@@ -1,6 +1,6 @@
 {
   "name": "cincin-react",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-beta.0",
   "description": "🥂 React bindings for cincin: headless hook, primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
