@@ -74,9 +74,9 @@ describe('createStackLayout', () => {
     ]);
 
     // stack order: the last entry is the front
-    expect(b.card.style.getPropertyValue('--index')).toBe('0');
+    expect(b.card.style.getPropertyValue('--cincin-toast-index')).toBe('0');
     expect(b.card.dataset.front).toBe('true');
-    expect(a.card.style.getPropertyValue('--index')).toBe('1');
+    expect(a.card.style.getPropertyValue('--cincin-toast-index')).toBe('1');
     expect(a.card.dataset.front).toBe('false');
     expect(Number(b.card.style.zIndex)).toBeGreaterThan(
       Number(a.card.style.zIndex)
@@ -89,12 +89,12 @@ describe('createStackLayout', () => {
     layout.setCard(key('a'), a.card);
     layout.setEntries([{ key: key('a'), leaving: false }]);
 
-    expect(a.card.style.getPropertyValue('--toast-height')).toBe('');
+    expect(a.card.style.getPropertyValue('--cincin-toast-height')).toBe('');
 
     ObserverStub.instance!.deliver(new Map([[a.body, 46]]));
 
-    expect(a.card.style.getPropertyValue('--toast-height')).toBe('46px');
-    expect(a.card.style.getPropertyValue('--front-height')).toBe('46px');
+    expect(a.card.style.getPropertyValue('--cincin-toast-height')).toBe('46px');
+    expect(a.card.style.getPropertyValue('--cincin-front-height')).toBe('46px');
   });
 
   it('sizes the peeking cards with the front card and offsets with naturals', () => {
@@ -115,10 +115,16 @@ describe('createStackLayout', () => {
       ])
     );
 
-    expect(back.card.style.getPropertyValue('--toast-height')).toBe('46px');
-    expect(back.card.style.getPropertyValue('--front-height')).toBe('88px');
+    expect(back.card.style.getPropertyValue('--cincin-toast-height')).toBe(
+      '46px'
+    );
+    expect(back.card.style.getPropertyValue('--cincin-front-height')).toBe(
+      '88px'
+    );
     // the back card's expanded offset clears the front card plus gap
-    expect(back.card.style.getPropertyValue('--offset')).toBe('98px');
+    expect(back.card.style.getPropertyValue('--cincin-toast-offset')).toBe(
+      '98px'
+    );
   });
 
   it('freezes a leaving card and reflows the survivors into its slot', () => {
@@ -144,12 +150,18 @@ describe('createStackLayout', () => {
     ]);
 
     // frozen: the exiting front keeps its slot and height
-    expect(front.card.style.getPropertyValue('--index')).toBe('0');
-    expect(front.card.style.getPropertyValue('--toast-height')).toBe('88px');
+    expect(front.card.style.getPropertyValue('--cincin-toast-index')).toBe('0');
+    expect(front.card.style.getPropertyValue('--cincin-toast-height')).toBe(
+      '88px'
+    );
     // the survivor takes the front slot with its own height
     expect(back.card.dataset.front).toBe('true');
-    expect(back.card.style.getPropertyValue('--offset')).toBe('0px');
-    expect(back.card.style.getPropertyValue('--front-height')).toBe('46px');
+    expect(back.card.style.getPropertyValue('--cincin-toast-offset')).toBe(
+      '0px'
+    );
+    expect(back.card.style.getPropertyValue('--cincin-front-height')).toBe(
+      '46px'
+    );
   });
 
   it('re-observes a replaced body on the next pass', () => {
@@ -168,10 +180,10 @@ describe('createStackLayout', () => {
     expect(observer.observed.has(replacement)).toBe(true);
     // the written value survives until the new body reports: clearing
     // it would snap the card through `auto` for a frame
-    expect(a.card.style.getPropertyValue('--toast-height')).toBe('46px');
+    expect(a.card.style.getPropertyValue('--cincin-toast-height')).toBe('46px');
 
     observer.deliver(new Map([[replacement, 60]]));
-    expect(a.card.style.getPropertyValue('--toast-height')).toBe('60px');
+    expect(a.card.style.getPropertyValue('--cincin-toast-height')).toBe('60px');
   });
 
   it('supports a custom body locator', () => {
@@ -243,7 +255,7 @@ describe('createStackLayout', () => {
     const fresh = makeCard();
     layout.setCard(key('a'), fresh.card);
     layout.setEntries([{ key: key('a'), leaving: false }]);
-    expect(fresh.card.style.getPropertyValue('--toast-height')).toBe('');
+    expect(fresh.card.style.getPropertyValue('--cincin-toast-height')).toBe('');
   });
 
   it('applies live config changes and ignores no-op ones', () => {
@@ -262,13 +274,19 @@ describe('createStackLayout', () => {
         [front.body, 88],
       ])
     );
-    expect(back.card.style.getPropertyValue('--offset')).toBe('98px');
+    expect(back.card.style.getPropertyValue('--cincin-toast-offset')).toBe(
+      '98px'
+    );
 
     layout.setConfig({ gap: 20 });
-    expect(back.card.style.getPropertyValue('--offset')).toBe('108px');
+    expect(back.card.style.getPropertyValue('--cincin-toast-offset')).toBe(
+      '108px'
+    );
 
     layout.setConfig({ gap: 20 }); // no-op re-apply
-    expect(back.card.style.getPropertyValue('--offset')).toBe('108px');
+    expect(back.card.style.getPropertyValue('--cincin-toast-offset')).toBe(
+      '108px'
+    );
   });
 
   it('hides cards beyond the visible depth', () => {
@@ -301,7 +319,7 @@ describe('createStackLayout', () => {
     expect(observer.observed.has(a.body)).toBe(true);
 
     observer.deliver(new Map([[a.body, 46]]));
-    expect(a.card.style.getPropertyValue('--toast-height')).toBe('46px');
+    expect(a.card.style.getPropertyValue('--cincin-toast-height')).toBe('46px');
   });
 
   it('ignores zero-size deliveries and keeps the last real reading', () => {
@@ -314,7 +332,7 @@ describe('createStackLayout', () => {
     // a display:none skin reports "no box", not a flat card
     ObserverStub.instance!.deliver(new Map([[a.body, 0]]));
 
-    expect(a.card.style.getPropertyValue('--toast-height')).toBe('46px');
+    expect(a.card.style.getPropertyValue('--cincin-toast-height')).toBe('46px');
   });
 
   it('disconnects the observer on destroy', () => {

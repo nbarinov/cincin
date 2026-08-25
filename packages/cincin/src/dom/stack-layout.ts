@@ -40,9 +40,9 @@ type Slot = {
 /**
  * The stack's geometry engine. Consumers register card elements and
  * mirror their rendered list through `setEntries`; the layout writes
- * the CSS protocol back onto the cards: `--index`, `--offset`,
- * `z-index`, `data-hidden`, `data-front`, `--toast-height` (the card's
- * measured natural height) and `--front-height` (the front card's).
+ * the CSS protocol back onto the cards: `--cincin-toast-index`, `--cincin-toast-offset`,
+ * `z-index`, `data-hidden`, `data-front`, `--cincin-toast-height` (the card's
+ * measured natural height) and `--cincin-front-height` (the front card's).
  *
  * Heights come from a ResizeObserver watching each card's body, so
  * content updates, viewport resizes and late fonts re-measure without
@@ -252,8 +252,8 @@ class StackLayout {
 
       if (slot !== undefined) {
         next.set(entry.key, slot);
-        card.style.setProperty('--index', String(slot.index));
-        card.style.setProperty('--offset', `${slot.offset}px`);
+        card.style.setProperty('--cincin-toast-index', String(slot.index));
+        card.style.setProperty('--cincin-toast-offset', `${slot.offset}px`);
         card.style.zIndex = String(slot.zIndex);
         card.dataset.hidden = String(slot.hidden);
 
@@ -285,9 +285,9 @@ class StackLayout {
             frontHeight = height;
           }
 
-          card.style.setProperty('--toast-height', `${height}px`);
+          card.style.setProperty('--cincin-toast-height', `${height}px`);
           if (frontHeight !== undefined) {
-            card.style.setProperty('--front-height', `${frontHeight}px`);
+            card.style.setProperty('--cincin-front-height', `${frontHeight}px`);
           }
           offset += height;
         }
@@ -305,8 +305,9 @@ function createStackLayout(options?: StackLayoutOptions): StackLayout {
   return new StackLayout(options);
 }
 
-export { StackLayout, createStackLayout };
+export { createStackLayout };
 export type {
+  StackLayout,
   StackLayoutEntry,
   StackLayoutOrder,
   StackLayoutConfig,

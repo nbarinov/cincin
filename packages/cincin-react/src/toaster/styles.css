@@ -81,10 +81,10 @@
    * transition. An `auto` endpoint anywhere would snap instead. The
    * heights come from the layout observing the card's body, which
    * always renders at the natural size. */
-  height: var(--toast-height, auto);
+  height: var(--cincin-toast-height, auto);
   transform-origin: center bottom;
-  transform: translateY(calc(var(--index) * -0.875rem))
-    scale(calc(1 - var(--index) * 0.05));
+  transform: translateY(calc(var(--cincin-toast-index) * -0.875rem))
+    scale(calc(1 - var(--cincin-toast-index) * 0.05));
   /* One value drives the whole exit story: the Toaster publishes its
    * exitDuration as --cincin-exit-duration and hands the same number
    * (plus a margin) to the presenter's exit clock, which finishes
@@ -236,11 +236,11 @@
 /* --- stack states -------------------------------------------------- */
 
 /* Collapsed, the peeking cards borrow the front card's height (the
- * stack layout publishes it as --front-height): mixed natural heights
+ * stack layout publishes it as --cincin-front-height): mixed natural heights
  * would otherwise peek unevenly from behind the front toast. */
 [data-cincin-toaster]:not([data-expanded='true'])
   [data-cincin-toast][data-front='false'] {
-  height: var(--front-height, auto);
+  height: var(--cincin-front-height, auto);
   /* No overflow clip, deliberately (reviewed by eye): the body fade
    * hides the content before the clamped edge could expose it. If a
    * stray sliver ever shows up here, reach for `overflow: hidden`
@@ -272,7 +272,7 @@
 }
 
 [data-cincin-toaster][data-expanded='true'] [data-cincin-toast] {
-  transform: translateY(calc(-1 * var(--offset)));
+  transform: translateY(calc(-1 * var(--cincin-toast-offset)));
 }
 
 [data-cincin-toaster][data-expanded='true']
@@ -314,7 +314,7 @@
  * while the survivors reflow into the vacated slot. */
 [data-cincin-toaster][data-expanded='true']
   [data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
-  transform: translateY(calc(-1 * var(--offset) + 100%));
+  transform: translateY(calc(-1 * var(--cincin-toast-offset) + 100%));
   opacity: 0;
 }
 
