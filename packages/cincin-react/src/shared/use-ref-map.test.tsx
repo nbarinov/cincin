@@ -1,6 +1,6 @@
 import { cleanup, render, renderHook } from '@testing-library/react';
 import { StrictMode } from 'react';
-import { useRefMap } from './use-ref-map';
+import { BURIAL_DELAY, useRefMap } from './use-ref-map';
 import type { RefMap } from './use-ref-map';
 
 afterEach(() => {
@@ -63,17 +63,7 @@ describe('useRefMap', () => {
 
     changes.length = 0;
     view.rerender(<Host keys={['b']} />);
-    expect(changes).toContainEqual(['a', false]);
-
-    // after a cleanup the null was already reported: release is silent
-    changes.length = 0;
-    map.release('a');
-    expect(changes).toHaveLength(0);
-
-    // releasing a still-mounted value reports the null itself
-    changes.length = 0;
-    map.release('b');
-    expect(changes).toEqual([['b', false]]);
+    expect(changes).toEqual([['a', false]]);
   });
 
   it('should keep the ref callback stable across a StrictMode double mount', () => {
@@ -101,7 +91,7 @@ describe('useRefMap', () => {
     expect(map.get('a')).toBeDefined();
   });
 
-  it('should return the same callback after the ref cleanup ran', () => {
+  it('should keep the callback right after a cleanup, then bury it', async () => {
     let map!: RefMap<string, HTMLElement>;
 
     function Host({ mounted }: { mounted: boolean }) {
@@ -112,27 +102,38 @@ describe('useRefMap', () => {
     const view = render(<Host mounted />);
     const before = map.getRef('a');
 
-    // Unmount runs the cleanup: the value goes, the callback stays, so a
-    // remount of the same key reattaches without a new identity.
+    // Unmount runs the cleanup: the value goes, but the callback
+    // survives until the deferred check confirms the key stayed
+    // detached past the commit.
     view.rerender(<Host mounted={false} />);
     expect(map.get('a')).toBeUndefined();
     expect(map.getRef('a')).toBe(before);
+
+    await new Promise((resolve) => setTimeout(resolve, BURIAL_DELAY + 20));
+
+    // The key never came back: the cache entry is buried, a future
+    // remount mints a fresh callback.
+    expect(map.getRef('a')).not.toBe(before);
   });
 
-  it('should drop both the value and the callback on release', () => {
+  it('should keep the callback identity across a same-commit remount', async () => {
     let map!: RefMap<string, HTMLElement>;
 
-    function Host() {
+    function Host({ generation }: { generation: number }) {
       map = useRefMap<string, HTMLElement>();
-      return <div ref={map.getRef('a')} />;
+      return <div key={generation} ref={map.getRef('a')} />;
     }
 
-    render(<Host />);
+    const view = render(<Host generation={1} />);
     const before = map.getRef('a');
 
-    map.release('a');
+    // The keyed remount detaches and reattaches within one commit: the
+    // flush finds the key alive and leaves the cache alone, even past
+    // the burial grace.
+    view.rerender(<Host generation={2} />);
+    await new Promise((resolve) => setTimeout(resolve, BURIAL_DELAY + 20));
 
-    expect(map.get('a')).toBeUndefined();
-    expect(map.getRef('a')).not.toBe(before);
+    expect(map.getRef('a')).toBe(before);
+    expect(map.get('a')).toBeDefined();
   });
 });

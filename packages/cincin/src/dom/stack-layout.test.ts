@@ -192,6 +192,19 @@ describe('createStackLayout', () => {
     expect(ObserverStub.instance!.observed.has(decoy)).toBe(false);
   });
 
+  it('releases keys that left without ever earning a slot', () => {
+    const layout = createStackLayout();
+    const a = makeCard();
+    layout.setCard(key('a'), a.card);
+    // leaving from the very first pass: observed, but never slotted
+    layout.setEntries([{ key: key('a'), leaving: true }]);
+    expect(ObserverStub.instance!.observed.has(a.body)).toBe(true);
+
+    layout.setEntries([]);
+
+    expect(ObserverStub.instance!.observed.size).toBe(0);
+  });
+
   it('releases departed keys and their observations', () => {
     const layout = createStackLayout();
     const a = makeCard();

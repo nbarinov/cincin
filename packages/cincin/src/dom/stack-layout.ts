@@ -83,11 +83,14 @@ class StackLayout {
   setEntries(entries: ReadonlyArray<StackLayoutEntry>): void {
     // Departure is decided here, by the data, never by node lifecycles:
     // ref cleanups re-run while a card is alive, the rendered list
-    // disappearing a key is the only reliable "truly gone".
+    // dropping a key is the only reliable "truly gone". The sweep walks
+    // the previous composition, not #slots: a card that was leaving
+    // from its very first pass never earned a slot, yet its body is
+    // already under observation and must be let go with the rest.
     const alive = new Set(entries.map((entry) => entry.key));
-    for (const key of this.#slots.keys()) {
-      if (!alive.has(key)) {
-        this.#release(key);
+    for (const entry of this.#entries) {
+      if (!alive.has(entry.key)) {
+        this.#release(entry.key);
       }
     }
 

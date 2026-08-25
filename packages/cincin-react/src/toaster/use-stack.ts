@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { createStackLayout } from 'cincin/dom';
 import type { StackLayoutConfig } from 'cincin/dom';
 import type { Toast, ToastKey } from 'cincin/presenter';
@@ -8,7 +8,10 @@ type StackOptions = StackLayoutConfig;
 
 /** A thin binding over the `cincin/dom` stack layout: the controller
  * owns the geometry (slots, heights, the ResizeObserver); the hook
- * feeds it commits and hands out stable card refs. */
+ * feeds it commits and hands out stable card refs. Cleanup is split by
+ * signal: the layout sweeps its per-key state when a key leaves the
+ * rendered list, the ref registry buries dead callbacks on its own
+ * deferred node-lifecycle check. */
 function useStack(
   entries: ReadonlyArray<Pick<Toast, 'key' | 'phase'>>,
   options: StackOptions = {}
@@ -18,7 +21,6 @@ function useStack(
   const cards = useRefMap<ToastKey, HTMLElement>({
     onChange: (key, element) => layout.setCard(key, element),
   });
-  const aliveIds = useRef(new Set<ToastKey>());
 
   useLayoutEffect(
     function syncConfig() {
@@ -35,19 +37,8 @@ function useStack(
           leaving: toast.phase === 'leaving',
         }))
       );
-
-      // The data pass is the only reliable "truly gone" signal: the
-      // registry entries of departed toasts are released here, never
-      // from ref cleanups (those re-run while the toast is alive).
-      const alive = new Set(entries.map((toast) => toast.key));
-      for (const key of aliveIds.current) {
-        if (!alive.has(key)) {
-          cards.release(key);
-        }
-      }
-      aliveIds.current = alive;
     },
-    [layout, cards, entries]
+    [layout, entries]
   );
 
   useLayoutEffect(
