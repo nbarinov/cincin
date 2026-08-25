@@ -256,7 +256,18 @@ class StackLayout {
         card.style.setProperty('--offset', `${slot.offset}px`);
         card.style.zIndex = String(slot.zIndex);
         card.dataset.hidden = String(slot.hidden);
-        card.dataset.front = String(slot.index === 0);
+
+        // A leaving card is past the live stack, so the front marker
+        // comes off entirely: [data-front='true'] stays exclusive to
+        // the one live front (an exiting front and its successor would
+        // otherwise both carry it), and [data-front='false'] styling
+        // (the collapsed clamp and fade) releases the ghost to its
+        // frozen inline geometry.
+        if (entry.leaving) {
+          delete card.dataset.front;
+        } else {
+          card.dataset.front = String(slot.index === 0);
+        }
       }
 
       if (!entry.leaving) {

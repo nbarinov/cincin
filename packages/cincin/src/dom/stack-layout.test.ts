@@ -192,6 +192,29 @@ describe('createStackLayout', () => {
     expect(ObserverStub.instance!.observed.has(decoy)).toBe(false);
   });
 
+  it('keeps the front marker exclusive: a leaving card sheds it', () => {
+    const layout = createStackLayout();
+    const back = makeCard();
+    const front = makeCard();
+    layout.setCard(key('back'), back.card);
+    layout.setCard(key('front'), front.card);
+    layout.setEntries([
+      { key: key('back'), leaving: false },
+      { key: key('front'), leaving: false },
+    ]);
+    expect(front.card.dataset.front).toBe('true');
+
+    layout.setEntries([
+      { key: key('back'), leaving: false },
+      { key: key('front'), leaving: true },
+    ]);
+
+    // the ghost leaves the live hierarchy entirely; its successor is
+    // the one and only front
+    expect(front.card.dataset.front).toBeUndefined();
+    expect(back.card.dataset.front).toBe('true');
+  });
+
   it('releases keys that left without ever earning a slot', () => {
     const layout = createStackLayout();
     const a = makeCard();
