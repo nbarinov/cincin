@@ -4,8 +4,8 @@ The framework-agnostic core of the cincin toast library: an observable
 entry store, a presenter that shows it (`cincin/presenter`), and
 framework-free DOM controllers (`cincin/dom`).
 
-> **Alpha.** The API is settling; expect breaking changes between alpha
-> releases.
+> **Beta.** The public names are settled; the path to 0.1.0 is
+> additions and fixes.
 
 Looking for the React quick start? See [`cincin-react`](https://www.npmjs.com/package/cincin-react).
 
@@ -45,7 +45,7 @@ explicitly. Showing is not the store's business.
 ```ts
 import { createPresenter } from 'cincin/presenter';
 
-const presenter = createPresenter(toaster, { max: 5 });
+const presenter = createPresenter(toaster, { max: 5, exitDuration: 400 });
 
 presenter.subscribe(render);
 presenter.mount(); // entries enter, clocks run; unmount() stops it all
@@ -85,6 +85,38 @@ The controller writes `translate` and `--cincin-swipe-x/y` on the
 element and marks `data-swiping` / `data-swipe-direction`; skins style
 off those and declare `user-select: none` on the region. Reduced motion
 is respected.
+
+### Stack layout
+
+```ts
+import { createStackLayout } from 'cincin/dom';
+
+const layout = createStackLayout({ visible: 3, gap: 12 });
+
+layout.setCard(key, element); // register cards, null on unmount
+layout.setEntries(
+  toasts.map((t) => ({ key: t.key, leaving: t.phase === 'leaving' }))
+);
+// later: layout.destroy()
+```
+
+The layout measures each card's body with a `ResizeObserver` and writes
+the stack's geometry onto the cards: `--cincin-toast-index`,
+`--cincin-toast-offset`, `--cincin-toast-height`,
+`--cincin-front-height`, `z-index`, `data-hidden` and the tri-state
+`data-front`. The skin turns the numbers into motion with its own
+transitions; mixed natural heights collapse into one clean edge.
+
+### Visibility pause
+
+```ts
+import { attachVisibilityPause } from 'cincin/dom';
+
+const detach = attachVisibilityPause(presenter);
+```
+
+Pauses every toast while the document is hidden and resumes its own on
+return, composing with other pause sources (hover).
 
 ## Browser support
 

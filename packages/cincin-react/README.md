@@ -4,8 +4,8 @@ React bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and
 headless building blocks under `cincin-react/core`.
 
-> **Alpha.** The API is settling; expect breaking changes between alpha
-> releases.
+> **Beta.** The public names are settled; the path to 0.1.0 is
+> additions and fixes.
 
 ## Install
 
@@ -30,9 +30,9 @@ function App() {
 }
 ```
 
-`<Toaster />` renders a swipeable stack that expands on hover or tap
-and pauses its timers while open; the stylesheet comes along with the
-import. `toast` is a package-wide store callable from anywhere on the
+`<Toaster />` renders a swipeable stack that collapses to a clean edge,
+expands on hover or tap, and pauses its timers while open and while the
+tab is hidden; the stylesheet comes along with the import. `toast` is a package-wide store callable from anywhere on the
 client (calls on the server do nothing useful).
 
 ```ts
@@ -95,11 +95,14 @@ function Card({ toast, presenter }) {
 }
 ```
 
-`useToastEntries(toaster)` subscribes to the store records instead of
-the showings; `createToasterContext<MyContent>()` returns a
-`ToasterProvider` with context-aware `useToaster` / `useToastEntries`
-for a typed content payload. The primitives take their instances
-explicitly and carry no CSS.
+The rest of the toolbox: `useStack(toasts, { visible, gap })` mirrors
+the rendered list into the `cincin/dom` stack layout and hands out card
+refs; `useVisibilityPause(presenter)` pauses the toasts while the
+document is hidden; `useToastEntries(toaster)` subscribes to the store
+records instead of the showings; `createToasterContext<MyContent>()`
+returns a `ToasterProvider` with context-aware `useToaster` /
+`useToastEntries` for a typed content payload. The primitives take
+their instances explicitly and carry no CSS.
 
 ## Browser support
 

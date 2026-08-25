@@ -3,8 +3,8 @@
 Framework-agnostic toast library: an entry store, a presenter that
 shows it, thin adapters, polished UX.
 
-> **Alpha.** The API is settling; expect breaking changes between alpha
-> releases. Feedback is welcome in the issues.
+> **Beta.** The public names are settled; the path to 0.1.0 is
+> additions and fixes. Feedback is welcome in the issues.
 
 ## Quick start (React)
 
@@ -28,8 +28,9 @@ function App() {
 That is the whole setup: `<Toaster />` renders a ready-to-use stack, its
 stylesheet comes along with the import, and `toast` is a package-wide
 store you can call from anywhere on the client. Toasts are swipeable,
-the stack expands on hover (or on tap), timers pause while it is open,
-and reduced motion is respected.
+the stack collapses to a clean edge and expands on hover (or on tap),
+timers pause while it is open and while the tab is hidden, and reduced
+motion is respected.
 
 ```ts
 toast.error({
@@ -61,13 +62,13 @@ Two objects with one job each:
   a queue (`max`), an expiry clock per toast, pauses, and exits the
   renderer finishes. It removes an entry once its last toast is gone.
 
-| Package             | What it is                                                                                   |
-| ------------------- | -------------------------------------------------------------------------------------------- |
-| `cincin`            | The entry store. DOM-free, platform-neutral.                                                 |
-| `cincin/presenter`  | The showing half: phases, queue, clocks, mount/unmount. Still DOM-free.                      |
-| `cincin/dom`        | Framework-free DOM controllers, starting with the swipe-to-dismiss gesture.                  |
-| `cincin-react`      | The ready-to-use `<Toaster />` and the `toast` store singleton.                              |
-| `cincin-react/core` | Headless React bindings: `usePresenter`, `useToasts`, `useToastSwipe`, `useToastExit`, more. |
+| Package             | What it is                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| `cincin`            | The entry store. DOM-free, platform-neutral.                                               |
+| `cincin/presenter`  | The showing half: phases, queue, clocks, mount/unmount. Still DOM-free.                    |
+| `cincin/dom`        | Framework-free DOM controllers: the swipe gesture, the stack layout, the visibility pause. |
+| `cincin-react`      | The ready-to-use `<Toaster />` and the `toast` store singleton.                            |
+| `cincin-react/core` | Headless React bindings: `usePresenter`, `useToasts`, `useToastSwipe`, `useStack`, more.   |
 
 ## Going headless
 
@@ -110,8 +111,9 @@ payload type; the skin fixes it to `{ title, description?, action? }`.
 
 - ESM only.
 - `cincin-react` needs React 19 (ref callback cleanups).
-- Modern evergreen browsers; the newest platform APIs in use are
-  `AbortSignal.any` and `@starting-style` (2024).
+- Ships untranspiled modern JS (`AbortSignal.any`, ES2023): Chrome
+  116+, Safari 17.4+, Firefox 124+. The bundled skin's CSS
+  (`@starting-style`, `light-dark()`) wants 2024-class browsers.
 
 ## License
 
