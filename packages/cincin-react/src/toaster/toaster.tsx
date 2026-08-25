@@ -9,6 +9,7 @@ import { useComposedRefs } from '../shared/use-composed-refs';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
+import { useStack } from '../core/use-stack';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent } from './content';
 import { toast as defaultToaster } from './toast';

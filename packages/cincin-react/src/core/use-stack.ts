@@ -54,3 +54,4 @@ function useStack(
 }
 
 export { useStack };
+export type { StackOptions };
