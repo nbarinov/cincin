@@ -101,9 +101,10 @@ explicitly and carry no CSS.
 
 ## Browser support
 
-Ships untranspiled ES2023 over `ResizeObserver` (Chrome 110+, Safari
-16.4+, Firefox 115+, Node 20+ for SSR), and the bundled skin's CSS
-(`@starting-style`, `light-dark()`) wants 2024-class browsers.
+Ships untranspiled modern JS (`AbortSignal.any`, ES2023 array methods)
+over `ResizeObserver`: Chrome 116+, Safari 17.4+, Firefox 124+,
+Node 20.3+ for SSR. The bundled skin's CSS (`@starting-style`,
+`light-dark()`) wants 2024-class browsers.
 
 ## Documentation and source
 

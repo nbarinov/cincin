@@ -87,11 +87,13 @@ is respected.
 
 ## Browser support
 
-The package ships untranspiled ES2023 (the stack layout leans on
-`Array.prototype.toReversed`, sizes come from `ResizeObserver`):
-Chrome 110+, Safari 16.4+, Firefox 115+, Node 20+. Skins may raise the
-bar further with their CSS — the react skin's stylesheet uses
-`@starting-style` and `light-dark()`, which want 2024-class browsers.
+The package ships untranspiled modern JS — the newest APIs are
+`AbortSignal.any` (the swipe controller) and ES2023's
+`Array.prototype.toReversed` (the stack layout), with sizes coming
+from `ResizeObserver`: Chrome 116+, Safari 17.4+, Firefox 124+,
+Node 20.3+. Skins may raise the bar further with their CSS — the react
+skin's stylesheet uses `@starting-style` and `light-dark()`, which
+want 2024-class browsers.
 
 ## Documentation and source
 
