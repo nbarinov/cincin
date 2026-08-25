@@ -1,9 +1,9 @@
 import { createToastStore } from './store';
 import { counter, devWarn } from '../shared/utils';
 import type {
-  CreateOptions,
-  UpdatePatch,
-  PromisePhase,
+  ToastCreateOptions,
+  ToastUpdatePatch,
+  PromisePhases,
   PromiseOptions,
   ToastEntry,
   Toaster as ToasterContract,
@@ -50,31 +50,43 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     this.destroy = this.destroy.bind(this);
   }
 
-  success(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
+  success(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId {
     return this.create(content, { ...options, type: 'success' });
   }
 
-  error(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
+  error(content: Content, options?: Omit<ToastCreateOptions, 'type'>): ToastId {
     return this.create(content, { ...options, type: 'error' });
   }
 
-  warning(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
+  warning(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId {
     return this.create(content, { ...options, type: 'warning' });
   }
 
-  info(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
+  info(content: Content, options?: Omit<ToastCreateOptions, 'type'>): ToastId {
     return this.create(content, { ...options, type: 'info' });
   }
 
-  loading(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
+  loading(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId {
     return this.create(content, { ...options, type: 'loading' });
   }
 
-  message(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId {
+  message(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId {
     return this.create(content, { ...options, type: 'message' });
   }
 
-  create(content: Content, options: CreateOptions = {}): ToastId {
+  create(content: Content, options: ToastCreateOptions = {}): ToastId {
     // No destructuring defaults here: the upsert path must still see the
     // difference between an omitted option and an explicitly provided one.
     const { id, type, duration, dismissible } = options;
@@ -115,13 +127,13 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     return toastId;
   }
 
-  update(id: ToastId, patch: UpdatePatch<Content>): void {
+  update(id: ToastId, patch: ToastUpdatePatch<Content>): void {
     this.#applyUpdate(id, patch, 'update');
   }
 
   #applyUpdate(
     id: ToastId,
-    patch: UpdatePatch<Content>,
+    patch: ToastUpdatePatch<Content>,
     via: 'create' | 'update'
   ): void {
     const prev = this.#store.get(id);
@@ -191,7 +203,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
 
   promise<T>(
     promise: Promise<T>,
-    phases: PromisePhase<T, Content>,
+    phases: PromisePhases<T, Content>,
     options?: PromiseOptions
   ): Promise<T> {
     // The options only shape the pending toast: create handles id

@@ -4,6 +4,7 @@ export { usePresenter } from './use-presenter';
 export { useToastSwipe } from './use-toast-swipe';
 export { useVisibilityPause } from './use-visibility-pause';
 export type { ToastSwipeOptions } from './use-toast-swipe';
+export type { StackOptions } from './use-stack';
 
 export { createToasterContext } from './context';
 
@@ -13,6 +14,6 @@ export type {
   PresenterConfig,
   Toast,
   ToastKey,
-  Phase,
+  ToastPhase,
   ToastEvent,
 } from 'cincin/presenter';

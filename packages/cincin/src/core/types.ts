@@ -12,7 +12,7 @@ interface ToastEntry<Content extends {} = string> {
   readonly content: Content;
 }
 
-type CreateOptions = {
+type ToastCreateOptions = {
   id?: ToastId;
   type?: ToastType;
   duration?: number;
@@ -20,7 +20,7 @@ type CreateOptions = {
   dismissible?: boolean;
 };
 
-type UpdatePatch<Content extends {} = string> = Partial<{
+type ToastUpdatePatch<Content extends {} = string> = Partial<{
   content: Content;
   type: ToastType;
   duration: number;
@@ -44,7 +44,7 @@ interface ToastEntryUpdatedEvent<
   prev: ToastEntry<Content>;
   /** What the caller asked to change: a presenter restarts its expiry clock
    * on an explicit duration touch even when the value is the same. */
-  patch: UpdatePatch<Content>;
+  patch: ToastUpdatePatch<Content>;
   /** Which facade call produced this update: a create over a live id (an
    * upsert, the caller wants the toast shown) or a plain update. A
    * presenter reopens a leaving toast only for 'create'. */
@@ -63,7 +63,7 @@ type ToastEntryEvent<Content extends {} = string> =
   | ToastEntryUpdatedEvent<Content>
   | ToastEntryRemovedEvent<Content>;
 
-interface PromisePhase<T, Content extends {} = string> {
+interface PromisePhases<T, Content extends {} = string> {
   loading: Content;
   success?: Content | ((data: T) => Content | Promise<Content>);
   error?: Content | ((error: unknown) => Content | Promise<Content>);
@@ -77,7 +77,7 @@ interface PromisePhase<T, Content extends {} = string> {
  * loading phase is open-ended by definition and the settled phase takes
  * the type default.
  */
-type PromiseOptions = Pick<CreateOptions, 'id' | 'dismissible'>;
+type PromiseOptions = Pick<ToastCreateOptions, 'id' | 'dismissible'>;
 
 interface ToasterConfig {
   /** @default 4000 */
@@ -87,15 +87,27 @@ interface ToasterConfig {
 interface Toaster<Content extends {} = string> {
   readonly config: Readonly<Required<ToasterConfig>>;
 
-  success(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
-  error(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
-  warning(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
-  info(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
-  loading(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
-  message(content: Content, options?: Omit<CreateOptions, 'type'>): ToastId;
+  success(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId;
+  error(content: Content, options?: Omit<ToastCreateOptions, 'type'>): ToastId;
+  warning(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId;
+  info(content: Content, options?: Omit<ToastCreateOptions, 'type'>): ToastId;
+  loading(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId;
+  message(
+    content: Content,
+    options?: Omit<ToastCreateOptions, 'type'>
+  ): ToastId;
 
-  create(content: Content, options?: CreateOptions): ToastId;
-  update(id: ToastId, patch: UpdatePatch<Content>): void;
+  create(content: Content, options?: ToastCreateOptions): ToastId;
+  update(id: ToastId, patch: ToastUpdatePatch<Content>): void;
 
   remove(): void;
   remove(id: ToastId): void;
@@ -103,7 +115,7 @@ interface Toaster<Content extends {} = string> {
 
   promise<T>(
     promise: Promise<T>,
-    phases: PromisePhase<T, Content>,
+    phases: PromisePhases<T, Content>,
     options?: PromiseOptions
   ): Promise<T>;
 
@@ -117,13 +129,13 @@ export type {
   ToastEntry,
   ToastId,
   ToastType,
-  CreateOptions,
-  UpdatePatch,
+  ToastCreateOptions,
+  ToastUpdatePatch,
   ToastEntryAddedEvent,
   ToastEntryUpdatedEvent,
   ToastEntryRemovedEvent,
   ToastEntryEvent,
-  PromisePhase,
+  PromisePhases,
   PromiseOptions,
   ToasterConfig,
   Toaster,
