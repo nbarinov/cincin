@@ -7,12 +7,12 @@ import type { FlingConfig } from './swipe-exits';
 type SwipeOptions = {
   /** Physical swipe direction. @default 'right' */
   direction?: SwipeDirection;
-  /** Successful release. Map to `toaster.dismiss(id)`. */
+  /** Successful release. Map to `presenter.dismiss(key)`. */
   onDismiss: () => void;
   /**
    * The fling finished, the toast is fully off screen. Map to
-   * `toaster.remove(id)`. The core safety net still guards a fling
-   * that never finishes (a detached controller, a dropped frame).
+   * `presenter.finish(key)`. The presenter's exit clock still guards a
+   * fling that never finishes (a detached controller, a dropped frame).
    */
   onRemove: () => void;
 
