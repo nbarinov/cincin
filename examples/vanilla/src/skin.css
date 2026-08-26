@@ -155,8 +155,8 @@ main header {
   box-shadow: var(--shadow-rest);
   cursor: grab;
   transform-origin: center bottom;
-  transform: translateY(calc(var(--index) * -0.875rem))
-    scale(calc(1 - var(--index) * 0.05));
+  transform: translateY(calc(var(--cincin-toast-index) * -0.875rem))
+    scale(calc(1 - var(--cincin-toast-index) * 0.05));
   transition:
     transform var(--cincin-exit-duration, 400ms),
     opacity var(--cincin-exit-duration, 400ms),
@@ -170,7 +170,7 @@ main header {
 }
 
 #toasts[data-expanded='true'] .toast {
-  transform: translateY(calc(-1 * var(--offset)));
+  transform: translateY(calc(-1 * var(--cincin-toast-offset)));
 }
 
 #toasts[data-expanded='true'] .toast[data-hidden='true'] {
@@ -206,7 +206,7 @@ main header {
 
 #toasts[data-expanded='true']
   .toast[data-phase='leaving']:not([data-swipe-direction]) {
-  transform: translateY(calc(-1 * var(--offset) + 100%));
+  transform: translateY(calc(-1 * var(--cincin-toast-offset) + 100%));
   opacity: 0;
 }
 

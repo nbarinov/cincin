@@ -1,6 +1,12 @@
-import { attachSwipe, attachVisibilityPause } from 'cincin/dom';
+import {
+  attachSwipe,
+  attachVisibilityPause,
+  createSlotObserver,
+  createStackLayout,
+} from 'cincin/dom';
 import { createPresenter } from 'cincin/presenter';
 import type { Toaster } from 'cincin';
+import type { StackSlot } from 'cincin/dom';
 import type { Toast, ToastKey } from 'cincin/presenter';
 
 const GAP = 12;
@@ -16,12 +22,22 @@ interface MountedToast {
   close: HTMLButtonElement;
   dismissible: boolean;
   detachSwipe: (() => void) | undefined;
+  unobserve: () => void;
+  unsubscribe: () => void;
 }
 
 function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   const presenter = createPresenter(toaster, {
     max: MAX,
     exitDuration: EXIT_DURATION,
+  });
+  // The stack's geometry engine: it measures the cards (the card box
+  // itself here, this skin keeps natural heights) and publishes a slot
+  // per key; the subscriptions below put the slots onto the cards.
+  const layout = createStackLayout({
+    visible: VISIBLE,
+    gap: GAP,
+    body: (card) => card,
   });
   const mounted = new Map<ToastKey, MountedToast>();
 
@@ -48,12 +64,48 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
 
     element.append(content, close);
 
+    // The card applies its slot on itself, in the CSS protocol's
+    // vocabulary (docs/protocol.md): geometry as variables, the
+    // tri-state front shedding the attribute on a leaving ghost, and
+    // semantics (`inert`) straight from the data. A swept slot needs no
+    // cleanup: the card leaves the DOM with it.
+    const observer = createSlotObserver(layout, { key });
+    const unobserve = observer.observe(element);
+    const unsubscribe = observer.subscribe((slot) => {
+      if (slot === undefined) {
+        return;
+      }
+
+      element.style.setProperty('--cincin-toast-index', String(slot.index));
+      element.style.setProperty('--cincin-toast-offset', `${slot.offset}px`);
+      element.style.zIndex = String(slot.zIndex);
+      if (slot.height !== undefined) {
+        element.style.setProperty('--cincin-toast-height', `${slot.height}px`);
+      }
+      if (slot.frontHeight !== undefined) {
+        element.style.setProperty(
+          '--cincin-front-height',
+          `${slot.frontHeight}px`
+        );
+      }
+      element.dataset.hidden = String(slot.hidden);
+      if (slot.leaving) {
+        delete element.dataset.front;
+      } else {
+        element.dataset.front = String(slot.front);
+      }
+
+      applyInert(element, slot);
+    });
+
     return {
       element,
       content,
       close,
       dismissible: false,
       detachSwipe: undefined,
+      unobserve,
+      unsubscribe,
     };
   };
 
@@ -80,26 +132,28 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
 
   const dropCard = (key: ToastKey, card: MountedToast) => {
     card.detachSwipe?.();
+    card.unsubscribe();
+    card.unobserve();
     card.element.remove();
     mounted.delete(key);
   };
 
   // Collapsed backs and leaving ghosts are non-interactive: `inert`
   // states it for the tab order and the AT tree in one place, the CSS
-  // only paints the same fact. Mirrors the react skin.
-  const applyInert = () => {
+  // only paints the same fact. The rule reads the layout's slot, so
+  // the front marker comes with its exclusivity guarantees. Mirrors
+  // the react skin.
+  const applyInert = (element: HTMLElement, slot: StackSlot | undefined) => {
     const expanded = region.dataset.expanded === 'true';
-    const shown = presenter
-      .getSnapshot()
-      .filter((toast: Toast) => toast.phase !== 'queued');
-    const frontKey = shown.findLast((toast) => toast.phase !== 'leaving')?.key;
+    element.inert =
+      slot === undefined || slot.leaving || (!expanded && !slot.front);
+  };
 
-    for (const toast of shown) {
-      const card = mounted.get(toast.key);
-      if (card) {
-        card.element.inert =
-          toast.phase === 'leaving' || (!expanded && toast.key !== frontKey);
-      }
+  // Expansion is region state the slots know nothing about: on a flip,
+  // re-run the rule over the mounted cards with their current slots.
+  const applyInertAll = () => {
+    for (const [key, card] of mounted) {
+      applyInert(card.element, layout.getSlot(key));
     }
   };
 
@@ -124,7 +178,9 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     }
 
     // DOM keeps the snapshot order (oldest first) for reading order;
-    // the visual stack is driven by --index / --offset / z-index.
+    // the visual stack is the layout's business: the entries mirror
+    // below hands it the composition, and each card's subscription
+    // puts the resulting slot onto its element.
     shown.forEach((toast, index) => {
       let card = mounted.get(toast.key);
 
@@ -135,7 +191,6 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
 
       card.element.dataset.type = toast.entry.type;
       card.element.dataset.phase = toast.phase;
-      card.element.style.zIndex = String(index + 1);
       card.content.textContent = toast.entry.content;
       applyDismissible(toast.key, card, toast.entry.dismissible);
 
@@ -145,27 +200,12 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
       }
     });
 
-    // Second pass, front to back: stack geometry from measured heights.
-    // A leaving toast keeps its frozen slot (it exits in place) and
-    // vacates it for the rest, so the survivors reflow immediately.
-    let offset = 0;
-    let depth = 0;
-    for (let index = shown.length - 1; index >= 0; index -= 1) {
-      const toast = shown[index]!;
-      const { element } = mounted.get(toast.key)!;
-
-      if (toast.phase === 'leaving') {
-        continue;
-      }
-
-      element.dataset.hidden = String(depth >= VISIBLE);
-      element.style.setProperty('--index', String(depth));
-      element.style.setProperty('--offset', `${offset}px`);
-      offset += element.offsetHeight + GAP;
-      depth += 1;
-    }
-
-    applyInert();
+    layout.setEntries(
+      shown.map((toast) => ({
+        key: toast.key,
+        leaving: toast.phase === 'leaving',
+      }))
+    );
   };
 
   const controller = new AbortController();
@@ -179,7 +219,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     collapseTimer = undefined;
     if (region.dataset.expanded !== 'true') {
       region.dataset.expanded = 'true';
-      applyInert();
+      applyInertAll();
     }
     presenter.pause();
   };
@@ -192,7 +232,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     clearTimeout(collapseTimer);
     collapseTimer = setTimeout(() => {
       region.dataset.expanded = 'false';
-      applyInert();
+      applyInertAll();
       presenter.resume();
     }, COLLAPSE_DELAY);
   };
@@ -277,6 +317,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
       dropCard(key, card);
     }
 
+    layout.destroy();
     presenter.unmount();
   };
 }
