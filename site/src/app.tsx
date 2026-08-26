@@ -70,6 +70,14 @@ toast.success({ title: 'Saved' })`
         </p>
       </main>
 
+      <footer className="credits">
+        UX inspired by Emil Kowalski&apos;s{' '}
+        <a href="https://sonner.emilkowal.ski" target="_blank" rel="noreferrer">
+          sonner
+        </a>
+        .
+      </footer>
+
       <Toaster />
     </>
   );

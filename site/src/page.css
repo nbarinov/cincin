@@ -257,3 +257,24 @@ h2 {
   line-height: 1.6;
   text-wrap: pretty;
 }
+
+/* --- credits -------------------------------------------------------- */
+
+.credits {
+  margin: 0 0 2rem;
+  color: var(--faint);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.credits a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .credits a:hover {
+    color: var(--page-fg);
+  }
+}

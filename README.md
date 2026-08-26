@@ -115,6 +115,11 @@ payload type; the skin fixes it to `{ title, description?, action? }`.
   116+, Safari 17.4+, Firefox 124+. The bundled skin's CSS
   (`@starting-style`, `light-dark()`) wants 2024-class browsers.
 
+## Acknowledgements
+
+The UX — the stack, the hover expansion, the swipe — is inspired by
+Emil Kowalski's [sonner](https://sonner.emilkowal.ski).
+
 ## License
 
 [MIT](./LICENSE)
