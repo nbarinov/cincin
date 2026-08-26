@@ -68,7 +68,7 @@ Two objects with one job each:
 | `cincin/presenter`  | The showing half: phases, queue, clocks, mount/unmount. Still DOM-free.                    |
 | `cincin/dom`        | Framework-free DOM controllers: the swipe gesture, the stack layout, the visibility pause. |
 | `cincin-react`      | The ready-to-use `<Toaster />` and the `toast` store singleton.                            |
-| `cincin-react/core` | Headless React bindings: `usePresenter`, `useToasts`, `useToastSwipe`, `useStack`, more.   |
+| `cincin-react/core` | Headless React bindings: `usePresenter`, `useToasts`, `useStack`, `useSlot`, more.         |
 
 ## Going headless
 

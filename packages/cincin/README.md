@@ -89,23 +89,35 @@ is respected.
 ### Stack layout
 
 ```ts
-import { createStackLayout } from 'cincin/dom';
+import { createStackLayout, createSlotObserver } from 'cincin/dom';
 
 const layout = createStackLayout({ visible: 3, gap: 12 });
 
-layout.setCard(key, element); // register cards, null on unmount
+// the data spine: mirror the rendered list
 layout.setEntries(
   toasts.map((t) => ({ key: t.key, leaving: t.phase === 'leaving' }))
 );
+
+// per card: a lens over that card's slot
+const slot = createSlotObserver(layout, { key });
+const unobserve = slot.observe(element); // the measured node
+const unsubscribe = slot.subscribe((s) => {
+  // put the slot onto the card in the CSS protocol's vocabulary:
+  // --cincin-toast-index, --cincin-toast-offset, z-index, data-hidden,
+  // the tri-state data-front, and the measured heights
+});
 // later: layout.destroy()
 ```
 
-The layout measures each card's body with a `ResizeObserver` and writes
-the stack's geometry onto the cards: `--cincin-toast-index`,
-`--cincin-toast-offset`, `--cincin-toast-height`,
-`--cincin-front-height`, `z-index`, `data-hidden` and the tri-state
-`data-front`. The skin turns the numbers into motion with its own
-transitions; mixed natural heights collapse into one clean edge.
+The layout measures each card's body with a `ResizeObserver`, computes
+a `StackSlot` per card (`index`, `offset`, `zIndex`, `hidden`, `front`,
+`leaving` and the measured heights) and publishes changes through the
+observers; it writes nothing to the DOM itself. The consumer puts the
+slots on screen — the CSS protocol for skins, `inert` for semantics —
+and turns the numbers into motion with its own transitions; mixed
+natural heights collapse into one clean edge. Slot references are
+stable between changes, so `subscribe`/`getSnapshot` plug straight
+into `useSyncExternalStore`.
 
 ### Visibility pause
 

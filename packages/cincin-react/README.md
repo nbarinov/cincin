@@ -95,14 +95,17 @@ function Card({ toast, presenter }) {
 }
 ```
 
-The rest of the toolbox: `useStack(toasts, { visible, gap })` mirrors
-the rendered list into the `cincin/dom` stack layout and hands out card
-refs; `useVisibilityPause(presenter)` pauses the toasts while the
-document is hidden; `useToastEntries(toaster)` subscribes to the store
-records instead of the showings; `createToasterContext<MyContent>()`
-returns a `ToasterProvider` with context-aware `useToaster` /
-`useToastEntries` for a typed content payload. The primitives take
-their instances explicitly and carry no CSS.
+The rest of the toolbox: `useStack(toasts, { visible, gap })` owns a
+`cincin/dom` stack layout and mirrors the rendered list into it;
+`useSlot({ layout, key })` reads one card's live slot (geometry,
+`front`/`leaving` for the `inert` rule) and returns the ref that
+registers the card for measurement; `useVisibilityPause(presenter)`
+pauses the toasts while the document is hidden; `useToastEntries(toaster)`
+subscribes to the store records instead of the showings;
+`createToasterContext<MyContent>()` returns a `ToasterProvider` with
+context-aware `useToaster` / `useToastEntries` for a typed content
+payload. The primitives take their instances explicitly and carry no
+CSS.
 
 ## Browser support
 
