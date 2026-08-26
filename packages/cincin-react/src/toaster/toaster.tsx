@@ -44,6 +44,14 @@ function Toaster({
     () => toasts.filter((toast) => toast.phase !== 'queued'),
     [toasts]
   );
+  // The stack order's front: the newest live toast. Everything behind
+  // it is non-interactive while collapsed, and leaving ghosts always
+  // are; `inert` states that for the tab order and the AT tree in one
+  // place, while the CSS protocol keeps painting the same fact.
+  const frontKey = useMemo(
+    () => shown.findLast((toast) => toast.phase !== 'leaving')?.key,
+    [shown]
+  );
 
   const region = useRegion(presenter);
   const stack = useStack(shown, { visible });
@@ -67,6 +75,10 @@ function Toaster({
           toast={toast}
           presenter={presenter}
           swipeDirection={swipeDirection}
+          inert={
+            toast.phase === 'leaving' ||
+            (!region.expanded && toast.key !== frontKey)
+          }
           ref={stack.cardRef(toast.key)}
         />
       ))}
@@ -78,6 +90,7 @@ type ToastCardProps = {
   toast: Toast<ToastContent>;
   presenter: Presenter<ToastContent>;
   swipeDirection: SwipeDirection;
+  inert: boolean;
   ref?: Ref<HTMLLIElement>;
 };
 
@@ -85,6 +98,7 @@ function ToastCard({
   toast,
   presenter,
   swipeDirection,
+  inert,
   ref: forwardedRef,
 }: ToastCardProps) {
   const { key, entry, phase } = toast;
@@ -107,6 +121,7 @@ function ToastCard({
       data-type={entry.type}
       data-phase={phase}
       data-dismissible={entry.dismissible}
+      inert={inert}
       ref={composedRef}
     >
       {/* The body carries the slots and the padding; the card box above
