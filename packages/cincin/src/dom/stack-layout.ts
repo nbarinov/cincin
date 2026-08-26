@@ -1,3 +1,5 @@
+import { Subscribable } from '../shared/subscribable';
+import { shallowEqual } from '../shared/utils';
 import type { ToastKey } from '../presenter';
 
 /** One rendered card, as the renderer sees it. The layout deliberately
@@ -6,8 +8,8 @@ import type { ToastKey } from '../presenter';
  * fact geometry cares about is "this card is exiting". */
 type StackLayoutEntry = {
   key: ToastKey;
-  /** The card is exiting: its slot and height variables freeze, and it
-   * vacates its slot for the survivors. */
+  /** The card is exiting: its slot freezes, and it vacates its place
+   * for the survivors. */
   leaving: boolean;
 };
 
@@ -30,28 +32,62 @@ type StackLayoutOptions = StackLayoutConfig & {
   body?: (card: HTMLElement) => HTMLElement | null;
 };
 
-type Slot = {
+/**
+ * One card's place in the stack, as computed data. The layout publishes
+ * these instead of writing styles itself; the consumer puts a slot onto
+ * its card in the CSS protocol's vocabulary (docs/protocol.md), and
+ * semantic consumers (the `inert` rule) read `front`/`leaving`
+ * directly.
+ */
+type StackSlot = {
+  /** Depth from the front, `0` on the front card. */
   index: number;
+  /** The card's expanded position: accumulated heights and gaps of the
+   * live cards in front of it, px. */
   offset: number;
   zIndex: number;
+  /** Past the collapsed peek (the `visible` config). */
   hidden: boolean;
+  /** The single live front card. Never `true` on a leaving one. */
+  front: boolean;
+  /** The slot is frozen: an exiting card must not resize or move
+   * mid-flight while the survivors reflow around it. */
+  leaving: boolean;
+  /** The card's measured natural height, px; `undefined` until the
+   * first delivery (consumers keep fallbacks for that gap). */
+  height: number | undefined;
+  /** The front card's natural height, for the collapsed clamp. */
+  frontHeight: number | undefined;
 };
+
+type StackSlotEvent = {
+  key: ToastKey;
+  /** `undefined`: the key left the composition. */
+  slot: StackSlot | undefined;
+  /** `undefined`: the slot just appeared. */
+  prev: StackSlot | undefined;
+};
+
+type StackSlotListener = (event: StackSlotEvent) => void;
 
 /**
  * The stack's geometry engine. Consumers register card elements and
- * mirror their rendered list through `setEntries`; the layout writes
- * the CSS protocol back onto the cards: `--cincin-toast-index`, `--cincin-toast-offset`,
- * `z-index`, `data-hidden`, `data-front`, `--cincin-toast-height` (the card's
- * measured natural height) and `--cincin-front-height` (the front card's).
+ * mirror their rendered list through `setEntries`; the layout computes
+ * a `StackSlot` per card and publishes changes as `StackSlotEvent`s
+ * (`subscribe`/`getSlot`). It writes nothing to the DOM itself: the
+ * consumers write the CSS protocol off the slot data, each in its own
+ * idiom. Slot objects are stable: a pass that
+ * changes nothing for a card keeps the previous reference (and stays
+ * silent), so snapshots are safe for `useSyncExternalStore`.
  *
  * Heights come from a ResizeObserver watching each card's body, so
  * content updates, viewport resizes and late fonts re-measure without
  * any consumer involvement. A just-registered card has no delivered
- * height yet: its height variables stay unwritten (skins keep `auto`
+ * height yet: its slot carries `height: undefined` (skins keep `auto`
  * fallbacks in their `var()`s), and the observer's first delivery,
  * still before paint, completes the pass.
  */
-class StackLayout {
+class StackLayout extends Subscribable<StackSlotListener> {
   #config: Required<StackLayoutConfig>;
   readonly #bodyOf: (card: HTMLElement) => HTMLElement | null;
 
@@ -60,10 +96,12 @@ class StackLayout {
   readonly #bodies = new Map<ToastKey, HTMLElement>();
   /** Natural heights, written by the observer alone. */
   readonly #naturals = new Map<ToastKey, number>();
-  #slots = new Map<ToastKey, Slot>();
+  #slots = new Map<ToastKey, StackSlot>();
   #observer: ResizeObserver | null = null;
 
   constructor(options: StackLayoutOptions = {}) {
+    super();
+
     this.#config = {
       order: options.order ?? 'stack',
       visible: options.visible ?? 3,
@@ -74,7 +112,12 @@ class StackLayout {
     this.setEntries = this.setEntries.bind(this);
     this.setConfig = this.setConfig.bind(this);
     this.setCard = this.setCard.bind(this);
+    this.getSlot = this.getSlot.bind(this);
     this.destroy = this.destroy.bind(this);
+  }
+
+  getSlot(key: ToastKey): StackSlot | undefined {
+    return this.#slots.get(key);
   }
 
   /** Mirrors the rendered list. Call it after the current composition's
@@ -141,13 +184,15 @@ class StackLayout {
     this.#bodies.clear();
     this.#naturals.clear();
     this.#slots.clear();
+    this.clearListeners();
   }
 
   #release(key: ToastKey): void {
+    // The slot itself stays until the pass: its removal is published as
+    // a `slot: undefined` event by the diff, not silently dropped here.
     this.#cards.delete(key);
     this.#unobserve(key);
     this.#naturals.delete(key);
-    this.#slots.delete(key);
   }
 
   #unobserve(key: ToastKey): void {
@@ -175,9 +220,11 @@ class StackLayout {
       this.#bodies.set(key, body);
       this.#observer ??= new ResizeObserver(this.#deliver);
       this.#observer.observe(body);
-      // The old node's reading is void; the new body's first delivery
-      // lands before paint and re-runs the pass.
-      this.#naturals.delete(key);
+      // The old node's reading is kept until the new body's first
+      // delivery (still before paint) overwrites it: retracting the
+      // height would snap the card through `auto` for a frame. Same
+      // doctrine as zero deliveries: no reading means "keep the last
+      // real one", never "the card lost its box".
     }
   }
 
@@ -224,7 +271,8 @@ class StackLayout {
     const { order, visible, gap } = this.#config;
     const entries = this.#entries;
     const ordered = order === 'stack' ? entries.toReversed() : entries;
-    const next = new Map<ToastKey, Slot>();
+    const prev = this.#slots;
+    const next = new Map<ToastKey, StackSlot>();
     let offset = 0;
     let depth = 0;
     let frontHeight: number | undefined;
@@ -238,66 +286,84 @@ class StackLayout {
 
       this.#syncBody(entry.key, card);
 
-      // Leaving cards keep their frozen slot and frozen height
-      // variables: an exiting card must not resize mid-flight when the
-      // stack reflows around it.
-      const slot = entry.leaving
-        ? this.#slots.get(entry.key)
-        : {
-            index: depth,
-            offset,
-            zIndex: entries.length - depth,
-            hidden: depth >= visible,
-          };
-
-      if (slot !== undefined) {
-        next.set(entry.key, slot);
-        card.style.setProperty('--cincin-toast-index', String(slot.index));
-        card.style.setProperty('--cincin-toast-offset', `${slot.offset}px`);
-        card.style.zIndex = String(slot.zIndex);
-        card.dataset.hidden = String(slot.hidden);
-
-        // A leaving card is past the live stack, so the front marker
-        // comes off entirely: [data-front='true'] stays exclusive to
-        // the one live front (an exiting front and its successor would
-        // otherwise both carry it), and [data-front='false'] styling
-        // (the collapsed clamp and fade) releases the ghost to its
-        // frozen inline geometry.
-        if (entry.leaving) {
-          delete card.dataset.front;
-        } else {
-          card.dataset.front = String(slot.index === 0);
+      // A leaving card keeps its frozen slot: the live markers flip
+      // once ([data-front] exclusivity: an exiting front and its
+      // successor must never both carry it), then the object stops
+      // changing and its subscribers stay quiet.
+      if (entry.leaving) {
+        const before = prev.get(entry.key);
+        if (before !== undefined) {
+          next.set(
+            entry.key,
+            before.leaving ? before : { ...before, leaving: true, front: false }
+          );
         }
+        continue;
       }
 
-      if (!entry.leaving) {
-        const height = this.#naturals.get(entry.key);
+      const height = this.#naturals.get(entry.key);
 
-        // An unmeasured card keeps its height variables unwritten and
-        // its skin fallbacks in charge; the offsets pick its height up
-        // on the delivery pass.
-        if (height !== undefined) {
-          // Front-to-back order pays off here: the front card is the
-          // first live iteration, so its height is already on hand for
-          // every card behind it; the collapsed skin sizes the
-          // peeking cards with it.
-          if (depth === 0) {
-            frontHeight = height;
-          }
-
-          card.style.setProperty('--cincin-toast-height', `${height}px`);
-          if (frontHeight !== undefined) {
-            card.style.setProperty('--cincin-front-height', `${frontHeight}px`);
-          }
-          offset += height;
-        }
-
-        offset += gap;
-        depth += 1;
+      // Front-to-back order pays off here: the front card is the first
+      // live iteration, so its height is already on hand for every card
+      // behind it; the collapsed skin clamps the peeking cards with it.
+      if (depth === 0 && height !== undefined) {
+        frontHeight = height;
       }
+
+      const before = prev.get(entry.key);
+      const candidate: StackSlot = {
+        index: depth,
+        offset,
+        zIndex: entries.length - depth,
+        hidden: depth >= visible,
+        front: depth === 0,
+        leaving: false,
+        height,
+        // An unmeasured card publishes no heights at all (its consumers
+        // keep their fallbacks), and an unmeasured new front does not
+        // retract the clamp the backs already carry: they keep the last
+        // known front height until the delivery lands, so their height
+        // transition stays px to px instead of snapping through `auto`.
+        frontHeight:
+          height !== undefined
+            ? (frontHeight ?? before?.frontHeight)
+            : undefined,
+      };
+
+      if (height !== undefined) {
+        offset += height;
+      }
+      offset += gap;
+      depth += 1;
+
+      next.set(
+        entry.key,
+        before !== undefined && shallowEqual(before, candidate)
+          ? before
+          : candidate
+      );
     }
 
     this.#slots = next;
+
+    // The commit protocol: the state above is already in place, the
+    // collected diff goes out through the shared notify (a listener
+    // reading `getSlot` during any event sees the finished pass).
+    const events: Array<[StackSlotEvent]> = [];
+    for (const [key, slot] of next) {
+      const before = prev.get(key);
+      if (before !== slot) {
+        events.push([{ key, slot, prev: before }]);
+      }
+    }
+
+    for (const [key, before] of prev) {
+      if (!next.has(key)) {
+        events.push([{ key, slot: undefined, prev: before }]);
+      }
+    }
+
+    this.notify(events);
   }
 }
 
@@ -312,6 +378,8 @@ export type {
   StackLayoutOrder,
   StackLayoutConfig,
   StackLayoutOptions,
+  StackSlot,
+  StackSlotEvent,
 };
 
 // utils
