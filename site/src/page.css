@@ -1,0 +1,259 @@
+/*
+ * The landing's own skin. It never styles a bare `button` or `a`: the
+ * Toaster renders its close and action buttons into this document, and
+ * a page-wide selector would repaint them (the react example's
+ * page.css carries the same warning).
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --page-bg: light-dark(#f7f7f4, #131316);
+  --page-fg: light-dark(#1d1d1b, #e9e8e4);
+  --muted: light-dark(#6b6b66, #a4a39e);
+  --faint: light-dark(#9b9b94, #7c7c77);
+  --line: light-dark(#e3e3de, #2c2c31);
+  --line-strong: light-dark(#c9c9c2, #3f3f46);
+  --card: light-dark(#ffffff, #1d1d21);
+  --card-shadow: 0 1px 2px light-dark(rgb(60 60 50 / 0.06), rgb(0 0 0 / 0.3));
+
+  font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  margin: 0;
+  background-color: var(--page-bg);
+  color: var(--page-fg);
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 300ms,
+    color 300ms;
+}
+
+/* --- top bar -------------------------------------------------------- */
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.125rem 1.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.brand a {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+
+.tag {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--faint);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.top-actions a,
+.theme-toggle {
+  padding: 0.4375rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5625rem;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 150ms,
+    color 150ms;
+}
+
+@media (hover: hover) {
+  .top-actions a:hover,
+  .theme-toggle:hover {
+    border-color: var(--line-strong);
+    color: var(--page-fg);
+  }
+}
+
+/* --- hero ----------------------------------------------------------- */
+
+main {
+  box-sizing: border-box;
+  max-width: 38.75rem;
+  margin: 0 auto;
+  padding: 10vh 1.5rem 6.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.glyph {
+  margin: 0;
+  font-size: 2.625rem;
+  line-height: 1;
+}
+
+h1 {
+  margin: 0.875rem 0 0;
+  font-size: 3.25rem;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.lede {
+  max-width: 44ch;
+  margin: 1.125rem 0 0;
+  color: var(--muted);
+  font-size: 1.03125rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+h2 {
+  margin: 3.25rem 0 0;
+  color: var(--faint);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* --- controls ------------------------------------------------------- */
+
+.controls {
+  max-width: 34rem;
+  margin-top: 0.875rem;
+  display: flex;
+  flex-wrap: wrap;
+  flex-wrap: balance;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.controls button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5625rem;
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+  color: inherit;
+  font: inherit;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 150ms,
+    transform 100ms;
+}
+
+.controls button:active {
+  transform: translateY(1px);
+}
+
+@media (hover: hover) {
+  .controls button:hover {
+    border-color: var(--line-strong);
+  }
+}
+
+/* Dismiss all is the odd one out: an escape hatch, not a scenario. */
+.controls button.quiet {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--faint);
+}
+
+@media (hover: hover) {
+  .controls button.quiet:hover {
+    border-color: var(--line);
+    color: var(--page-fg);
+  }
+}
+
+/* The dots borrow the skin's accents, so a button and the toast it
+ * fires read as the same thing. Keep in sync with the skin's
+ * [data-type] accents. */
+.dot {
+  flex: none;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background: #8590a2;
+}
+
+.dot[data-type='info'] {
+  background: #388bff;
+}
+
+.dot[data-type='success'] {
+  background: #22a06b;
+}
+
+.dot[data-type='warning'] {
+  background: #e2b203;
+}
+
+.dot[data-type='error'] {
+  background: #ef5c48;
+}
+
+.dot[data-type='loading'] {
+  background: #8f7ee7;
+}
+
+/* --- snippet -------------------------------------------------------- */
+
+/* Dark in both themes: it is a terminal, not a surface. */
+.snippet {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 35rem;
+  min-height: 9.375rem;
+  margin: 1.625rem 0 0;
+  padding: 1rem 1.125rem;
+  border-radius: 0.75rem;
+  background: #141419;
+  box-shadow: inset 0 0 0 1px
+    light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.07));
+  color: #d8d8d2;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.78125rem;
+  line-height: 1.65;
+  text-align: left;
+  overflow: auto;
+}
+
+.footnote {
+  max-width: 52ch;
+  margin: 1.5rem 0 0;
+  color: var(--faint);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}

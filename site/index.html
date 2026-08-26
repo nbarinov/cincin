@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>cincin · framework-agnostic toast library</title>
+    <meta
+      name="description"
+      content="Framework-agnostic toast library: an entry store, a presenter that shows it, thin adapters, polished UX."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="cincin" />
+    <meta
+      property="og:title"
+      content="cincin · framework-agnostic toast library"
+    />
+    <meta
+      property="og:description"
+      content="Framework-agnostic toast library: an entry store, a presenter that shows it, thin adapters, polished UX."
+    />
+    <meta property="og:url" content="https://cincin.nbarinov.io/" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="theme-color"
+      content="#f7f7f4"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#131316"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="/src/page.css" />
+    <script>
+      const theme = localStorage.getItem('cincin:theme');
+      if (theme) document.documentElement.style.colorScheme = theme;
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

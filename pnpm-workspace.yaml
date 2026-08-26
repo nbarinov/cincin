@@ -2,5 +2,6 @@ packages:
   - packages/*
   - examples/*
   - e2e
+  - site
 allowBuilds:
   esbuild: true
