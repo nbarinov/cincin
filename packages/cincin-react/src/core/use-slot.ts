@@ -1,7 +1,7 @@
 import { createSlotObserver } from 'cincin/dom';
 import type { StackLayout, StackSlot } from 'cincin/dom';
 import type { ToastKey } from 'cincin/presenter';
-import { useCallback, useState, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { RefCallback } from 'react';
 
 type SlotOptions = {
@@ -14,10 +14,9 @@ type SlotOptions = {
  * `useSyncExternalStore` (layout passes run before paint, and external
  * store updates flush synchronously, so a measured height lands in the
  * same frame). The ref registers the card's element for measurement;
- * React 19 runs its cleanup on unmount. The layout is read once, like
- * the toaster in `usePresenter` (remount to switch); the `key` stays
- * live through `setOptions`, re-stated on every render before the
- * store read.
+ * React 19 runs its cleanup on unmount. The observer is a stateless
+ * lens, so `useMemo` recreation on a changed layout or key is free:
+ * the store resubscribes on the new identity, nothing is lost.
  */
 function useSlot(options: SlotOptions): {
   ref: RefCallback<HTMLElement>;
@@ -25,8 +24,10 @@ function useSlot(options: SlotOptions): {
 } {
   const { layout, key } = options;
 
-  const [observer] = useState(() => createSlotObserver(layout, { key }));
-  observer.setOptions({ key });
+  const observer = useMemo(
+    () => createSlotObserver(layout, { key }),
+    [layout, key]
+  );
 
   const slot = useSyncExternalStore(
     observer.subscribe,
@@ -35,10 +36,8 @@ function useSlot(options: SlotOptions): {
   );
 
   const ref: RefCallback<HTMLElement> = useCallback(
-    // A key change re-runs the callback: the old call's cleanup
-    // releases the old key's registration, this one claims the new.
     (element) => (element === null ? undefined : observer.observe(element)),
-    [observer, key]
+    [observer]
   );
 
   return { ref, slot };

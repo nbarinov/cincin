@@ -1,22 +1,23 @@
 import type { Toaster } from 'cincin';
 import { createPresenter } from 'cincin/presenter';
-import type { Presenter, PresenterConfig } from 'cincin/presenter';
-import { useEffect, useMemo, useState } from 'react';
+import type { Presenter, PresenterOptions } from 'cincin/presenter';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 /**
  * A presenter over the given toaster, alive as long as the component:
  * mounted on commit, unmounted on cleanup (StrictMode's double effect
  * is countered by the presenter's mount counting). The toaster is read
- * once, like a query client: remount to switch. Config stays live
- * through setConfig, the way an observer follows its options.
+ * once, like a query client: remount to switch. Options stay live and
+ * land before paint (the layout effect, like the stack's): a raised
+ * max promotes in the same frame.
  */
 function usePresenter<ToastContent extends {} = string>(
   toaster: Toaster<ToastContent>,
-  config?: PresenterConfig
+  options?: PresenterOptions
 ): Presenter<ToastContent> {
-  const { max, exitDuration } = config ?? {};
+  const { max, exitDuration } = options ?? {};
 
-  const resolvedConfig = useMemo<PresenterConfig>(
+  const resolvedOptions = useMemo<PresenterOptions>(
     () => ({
       ...(max !== undefined && { max }),
       ...(exitDuration !== undefined && { exitDuration }),
@@ -24,7 +25,7 @@ function usePresenter<ToastContent extends {} = string>(
     [max, exitDuration]
   );
 
-  const [presenter] = useState(() => createPresenter(toaster, resolvedConfig));
+  const [presenter] = useState(() => createPresenter(toaster, resolvedOptions));
 
   useEffect(() => {
     presenter.mount();
@@ -32,9 +33,9 @@ function usePresenter<ToastContent extends {} = string>(
     return () => presenter.unmount();
   }, [presenter]);
 
-  useEffect(() => {
-    presenter.setConfig(resolvedConfig);
-  }, [presenter, resolvedConfig]);
+  useLayoutEffect(() => {
+    presenter.setOptions(resolvedOptions);
+  }, [presenter, resolvedOptions]);
 
   return presenter;
 }

@@ -8,7 +8,6 @@ export type { SwipeDirection } from './gesture';
 export type {
   StackLayoutEntry,
   StackLayoutOrder,
-  StackLayoutConfig,
   StackLayoutOptions,
   StackSlot,
   StackSlotEvent,

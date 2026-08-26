@@ -16,7 +16,7 @@ import type {
   ToastUpdatedEvent,
   ToastEvent,
   Presenter as PresenterContract,
-  PresenterConfig,
+  PresenterOptions,
 } from './types';
 
 /** The exit clock starts in the same commit as the leaving phase, while
@@ -36,10 +36,10 @@ class Presenter<Content extends {} = string>
   extends Mountable
   implements PresenterContract<Content>
 {
-  #config: Readonly<Required<PresenterConfig>>;
+  #options: Readonly<Required<PresenterOptions>>;
 
-  get config(): Readonly<Required<PresenterConfig>> {
-    return this.#config;
+  get options(): Readonly<Required<PresenterOptions>> {
+    return this.#options;
   }
 
   // Delegates are pre-bound by their owners.
@@ -55,13 +55,13 @@ class Presenter<Content extends {} = string>
   #keyCounter = counter();
   #keySalt = Math.random().toString(36).slice(2, 6);
 
-  constructor(toaster: Toaster<Content>, config: PresenterConfig = {}) {
+  constructor(toaster: Toaster<Content>, options: PresenterOptions = {}) {
     super();
 
     this.#toaster = toaster;
-    this.#config = Object.freeze({
-      max: resolveMax(config.max),
-      exitDuration: config.exitDuration ?? 2000,
+    this.#options = Object.freeze({
+      max: resolveMax(options.max),
+      exitDuration: options.exitDuration ?? 2000,
     });
 
     this.subscribe = this.#store.subscribe;
@@ -72,24 +72,24 @@ class Presenter<Content extends {} = string>
     this.pause = this.pause.bind(this);
     this.resume = this.resume.bind(this);
     this.getRemainingMs = this.getRemainingMs.bind(this);
-    this.setConfig = this.setConfig.bind(this);
+    this.setOptions = this.setOptions.bind(this);
   }
 
-  setConfig(config: Partial<PresenterConfig>): void {
+  setOptions(options: Partial<PresenterOptions>): void {
     const max =
-      config.max !== undefined ? resolveMax(config.max) : this.#config.max;
-    const exitDuration = config.exitDuration ?? this.#config.exitDuration;
+      options.max !== undefined ? resolveMax(options.max) : this.#options.max;
+    const exitDuration = options.exitDuration ?? this.#options.exitDuration;
 
     // Idempotent: a caller re-applying the current values (a React
     // effect firing right after mount) costs nothing.
     if (
-      max === this.#config.max &&
-      exitDuration === this.#config.exitDuration
+      max === this.#options.max &&
+      exitDuration === this.#options.exitDuration
     ) {
       return;
     }
 
-    this.#config = Object.freeze({ max, exitDuration });
+    this.#options = Object.freeze({ max, exitDuration });
 
     this.#store.commit(...this.#promote());
   }
@@ -225,7 +225,7 @@ class Presenter<Content extends {} = string>
 
     // Safety net: if nobody finishes the exit, we do. Capture only the key.
     const key = next.key;
-    this.#leaveTimers.start(key, this.#config.exitDuration + EXIT_GRACE, () =>
+    this.#leaveTimers.start(key, this.#options.exitDuration + EXIT_GRACE, () =>
       this.finish(key)
     );
 
@@ -379,8 +379,8 @@ class Presenter<Content extends {} = string>
   #hasFreeSlot(): boolean {
     // The default Infinity max short-circuits: no scan per enter.
     return (
-      this.#config.max === Infinity ||
-      this.#store.count((t) => t.phase === 'active') < this.#config.max
+      this.#options.max === Infinity ||
+      this.#store.count((t) => t.phase === 'active') < this.#options.max
     );
   }
 
@@ -407,9 +407,9 @@ class Presenter<Content extends {} = string>
     }
 
     let free =
-      this.#config.max === Infinity
+      this.#options.max === Infinity
         ? Infinity
-        : this.#config.max - this.#store.count((t) => t.phase === 'active');
+        : this.#options.max - this.#store.count((t) => t.phase === 'active');
 
     const events: ToastEvent<Content>[] = [];
     for (const toast of queued) {
@@ -450,9 +450,9 @@ function resolveMax(max: number | undefined): number {
 
 function createPresenter<Content extends {} = string>(
   toaster: Toaster<Content>,
-  config?: PresenterConfig
+  options?: PresenterOptions
 ): PresenterContract<Content> {
-  return new Presenter(toaster, config);
+  return new Presenter(toaster, options);
 }
 
 export { createPresenter };

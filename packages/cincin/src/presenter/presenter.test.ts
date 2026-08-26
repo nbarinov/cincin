@@ -6,13 +6,13 @@ import type { Presenter, ToastEvent } from './types';
 declare const console: { warn(...args: unknown[]): void };
 
 /** A mounted presenter over a fresh toaster, with an event log. */
-function setup(config?: Parameters<typeof createPresenter>[1]): {
+function setup(options?: Parameters<typeof createPresenter>[1]): {
   t: Toaster;
   p: Presenter;
   events: ToastEvent[];
 } {
   const t = createToaster();
-  const p = createPresenter(t, config);
+  const p = createPresenter(t, options);
   const events: ToastEvent[] = [];
   p.subscribe((event) => events.push(event));
   p.mount();
@@ -198,7 +198,7 @@ describe('presenter', () => {
       ).toEqual(['a:leaving', 'b:active', 'c:queued']);
     });
 
-    it('should promote queued toasts when setConfig raises max', () => {
+    it('should promote queued toasts when setOptions raises max', () => {
       const { t, p, events } = setup({ max: 1 });
       t.message('a');
       t.message('b');
@@ -206,18 +206,18 @@ describe('presenter', () => {
       expect(phases(p)).toEqual(['active', 'queued', 'queued']);
       events.length = 0;
 
-      p.setConfig({ max: 3 });
+      p.setOptions({ max: 3 });
 
       expect(phases(p)).toEqual(['active', 'active', 'active']);
       expect(events.map((e) => e.type)).toEqual(['updated', 'updated']);
     });
 
-    it('should demote nobody when setConfig lowers max', () => {
+    it('should demote nobody when setOptions lowers max', () => {
       const { t, p } = setup({ max: 3 });
       t.message('a');
       t.message('b');
 
-      p.setConfig({ max: 1 });
+      p.setOptions({ max: 1 });
 
       // The excess active toasts live out their time; only the next
       // arrival feels the new limit.
@@ -226,26 +226,26 @@ describe('presenter', () => {
       expect(phases(p)).toEqual(['active', 'active', 'queued']);
     });
 
-    it('should treat re-applying the current config as a no-op', () => {
+    it('should treat re-applying the current options as a no-op', () => {
       const { p, events } = setup({ max: 2, exitDuration: 500 });
-      const before = p.config;
+      const before = p.options;
       events.length = 0;
 
-      p.setConfig({ max: 2, exitDuration: 500 });
-      p.setConfig({});
+      p.setOptions({ max: 2, exitDuration: 500 });
+      p.setOptions({});
 
       // Same reference, no events: the effect firing after mount with
-      // the construction config costs nothing.
-      expect(p.config).toBe(before);
+      // the construction options costs nothing.
+      expect(p.options).toBe(before);
       expect(events).toEqual([]);
     });
 
-    it('should keep an omitted field on setConfig', () => {
+    it('should keep an omitted field on setOptions', () => {
       const { p } = setup({ max: 2, exitDuration: 500 });
 
-      p.setConfig({ max: 4 });
+      p.setOptions({ max: 4 });
 
-      expect(p.config).toEqual({ max: 4, exitDuration: 500 });
+      expect(p.options).toEqual({ max: 4, exitDuration: 500 });
     });
 
     it('should warn and fall back to Infinity when max cannot show any toast', () => {
@@ -259,7 +259,7 @@ describe('presenter', () => {
         0
       );
       // Normalized, not just reported: the toast still shows.
-      expect(p.config.max).toBe(Infinity);
+      expect(p.options.max).toBe(Infinity);
       t.message('a');
       expect(phases(p)).toEqual(['active']);
       warn.mockRestore();
@@ -275,20 +275,20 @@ describe('presenter', () => {
         expect.stringContaining('max below 1'),
         Number.NaN
       );
-      expect(p.config.max).toBe(Infinity);
+      expect(p.options.max).toBe(Infinity);
       warn.mockRestore();
     });
 
-    it('should normalize a bad max on setConfig as well', () => {
+    it('should normalize a bad max on setOptions as well', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const { t, p } = setup({ max: 1 });
       t.message('a');
       t.message('b');
 
-      p.setConfig({ max: Number.NaN });
+      p.setOptions({ max: Number.NaN });
 
       // The fallback frees the queue instead of freezing it.
-      expect(p.config.max).toBe(Infinity);
+      expect(p.options.max).toBe(Infinity);
       expect(phases(p)).toEqual(['active', 'active']);
       warn.mockRestore();
     });

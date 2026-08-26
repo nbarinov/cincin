@@ -47,19 +47,19 @@ type ToastEvent<Content extends {} = string> =
   | ToastLeavingEvent<Content>
   | ToastLeftEvent<Content>;
 
-interface PresenterConfig {
+type PresenterOptions = {
   /** Active toasts at once; the rest queue. @default Infinity */
   max?: number;
   /** Declared length of the skin's exit animation, ms. A leaving toast
    * nobody finishes is finished for them a small grace past it. The
    * default is a conservative fallback: declare your own. @default 2000 */
   exitDuration?: number;
-}
+};
 
 interface Presenter<Content extends {} = string> {
-  readonly config: Readonly<Required<PresenterConfig>>;
+  readonly options: Readonly<Required<PresenterOptions>>;
 
-  setConfig(config: Partial<PresenterConfig>): void;
+  setOptions(options: Partial<PresenterOptions>): void;
 
   dismiss(): void;
   dismiss(key: ToastKey): void;
@@ -97,6 +97,6 @@ export type {
   ToastLeavingEvent,
   ToastLeftEvent,
   ToastEvent,
-  PresenterConfig,
+  PresenterOptions,
   Presenter,
 };

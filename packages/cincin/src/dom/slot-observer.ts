@@ -14,11 +14,13 @@ type SlotObserverOptions = {
  * keyed by data. The upstream subscription is lazy: the layout is
  * listened to only while someone listens to the observer. Snapshots
  * need no cache here: the layout keeps slot references stable and
- * publishes only real changes.
+ * publishes only real changes. The options are immutable: a stateless
+ * lens costs nothing to recreate, so switching keys is a new observer,
+ * not a mutation.
  */
 class SlotObserver extends Subscribable<(slot: StackSlot | undefined) => void> {
   readonly #layout: StackLayout;
-  #options: SlotObserverOptions;
+  readonly #options: SlotObserverOptions;
   #detach: (() => void) | undefined;
 
   constructor(layout: StackLayout, options: SlotObserverOptions) {
@@ -29,26 +31,10 @@ class SlotObserver extends Subscribable<(slot: StackSlot | undefined) => void> {
 
     this.observe = this.observe.bind(this);
     this.getSnapshot = this.getSnapshot.bind(this);
-    this.setOptions = this.setOptions.bind(this);
-  }
-
-  /** Live options, the observer pattern's way: the consumer re-states
-   * them and the snapshot follows. Subscribers are not woken: the
-   * caller is the one changing course and can read right away (the
-   * React binding calls this during render, before the store read).
-   * Idempotent: re-stating the current values costs nothing. */
-  setOptions(options: SlotObserverOptions): void {
-    if (options.key === this.#options.key) {
-      return;
-    }
-
-    this.#options = options;
   }
 
   /** Registers the card's element for measurement (sugar over
-   * `layout.setCard`). The key is captured at call time: the returned
-   * detach releases the registration this call made, whatever the
-   * options say by then. */
+   * `layout.setCard`); the return detaches it. */
   observe(element: HTMLElement): () => void {
     const { key } = this.#options;
     this.#layout.setCard(key, element);

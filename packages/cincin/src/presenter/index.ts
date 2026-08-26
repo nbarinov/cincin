@@ -9,6 +9,6 @@ export type {
   ToastLeavingEvent,
   ToastLeftEvent,
   ToastEvent,
-  PresenterConfig,
+  PresenterOptions,
   Presenter,
 } from './types';

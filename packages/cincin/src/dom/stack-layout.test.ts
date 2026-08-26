@@ -300,7 +300,7 @@ describe('createStackLayout', () => {
     expect(fresh.card.style.getPropertyValue('--cincin-toast-height')).toBe('');
   });
 
-  it('applies live config changes and ignores no-op ones', () => {
+  it('applies live options changes and ignores no-op ones', () => {
     const layout = createStackLayout({ gap: 10 });
     const back = mount(layout, 'back');
     const front = mount(layout, 'front');
@@ -318,12 +318,12 @@ describe('createStackLayout', () => {
       '98px'
     );
 
-    layout.setConfig({ gap: 20 });
+    layout.setOptions({ gap: 20 });
     expect(back.card.style.getPropertyValue('--cincin-toast-offset')).toBe(
       '108px'
     );
 
-    layout.setConfig({ gap: 20 }); // no-op re-apply
+    layout.setOptions({ gap: 20 }); // no-op re-apply
     expect(back.card.style.getPropertyValue('--cincin-toast-offset')).toBe(
       '108px'
     );
@@ -548,31 +548,21 @@ describe('createSlotObserver', () => {
     expect(observer.getSnapshot()).toBeUndefined();
   });
 
-  it('follows a key swapped through setOptions', () => {
+  it('is free to recreate: a fresh lens picks up where the old one was', () => {
     const layout = createStackLayout();
     const a = mount(layout, 'a');
-    mount(layout, 'b');
-    layout.setEntries([
-      { key: key('a'), leaving: false },
-      { key: key('b'), leaving: false },
-    ]);
-
-    const observer = createSlotObserver(layout, { key: key('a') });
-    expect(observer.getSnapshot()).toBe(layout.getSlot(key('a')));
-
-    // the swapped key is readable right away, no wake needed: the
-    // caller is the one changing course
-    observer.setOptions({ key: key('b') });
-    expect(observer.getSnapshot()).toBe(layout.getSlot(key('b')));
-
-    // and the upstream filter follows: an event that moves only `a`
-    // (its own height; `b` sits in front, its slot keeps the
-    // reference) no longer reaches this observer
-    const wakes = vi.fn();
-    observer.subscribe(wakes);
+    layout.setEntries([{ key: key('a'), leaving: false }]);
     ObserverStub.instance!.deliver(new Map([[a.body, 46]]));
 
-    expect(wakes).not.toHaveBeenCalled();
+    // a stateless lens holds nothing: dropping one and creating another
+    // over the same key loses no state (the React binding recreates on
+    // an identity change instead of mutating options)
+    const first = createSlotObserver(layout, { key: key('a') });
+    const before = first.getSnapshot();
+
+    const second = createSlotObserver(layout, { key: key('a') });
+    expect(second.getSnapshot()).toBe(before);
+    expect(second.getSnapshot()).toBe(layout.getSlot(key('a')));
   });
 
   it('listens to the layout only while it has listeners itself', () => {

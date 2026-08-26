@@ -52,7 +52,7 @@ describe('usePresenter', () => {
     expect(presenter.getSnapshot()).toHaveLength(1);
   });
 
-  it('should apply config changes through setConfig', () => {
+  it('should apply options changes through setOptions', () => {
     const toaster = createToaster();
     toaster.message('a');
     toaster.message('b');
@@ -68,17 +68,17 @@ describe('usePresenter', () => {
 
     rerender({ max: 2 });
 
-    expect(result.current.config.max).toBe(2);
+    expect(result.current.options.max).toBe(2);
     expect(result.current.getSnapshot().map((t) => t.phase)).toEqual([
       'active',
       'active',
     ]);
   });
 
-  it('should pass the config through', () => {
+  it('should pass the options through', () => {
     const toaster = createToaster();
     const { result } = renderHook(() => usePresenter(toaster, { max: 1 }));
 
-    expect(result.current.config.max).toBe(1);
+    expect(result.current.options.max).toBe(1);
   });
 });

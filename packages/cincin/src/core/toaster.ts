@@ -7,7 +7,7 @@ import type {
   PromiseOptions,
   ToastEntry,
   Toaster as ToasterContract,
-  ToasterConfig,
+  ToasterOptions,
   ToastId,
   ToastEntryEvent,
   ToastType,
@@ -19,7 +19,7 @@ import type {
  * subscribed to it. The only lifecycle here is create, update, remove.
  */
 class Toaster<Content extends {} = string> implements ToasterContract<Content> {
-  readonly config: Readonly<Required<ToasterConfig>>;
+  readonly options: Readonly<Required<ToasterOptions>>;
 
   #store = createToastStore<Content>();
   #toastCounter = counter();
@@ -29,9 +29,9 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
   readonly subscribe: ToasterContract<Content>['subscribe'];
   readonly getSnapshot: ToasterContract<Content>['getSnapshot'];
 
-  constructor(config?: ToasterConfig) {
-    this.config = Object.freeze({
-      duration: config?.duration ?? 4000,
+  constructor(options?: ToasterOptions) {
+    this.options = Object.freeze({
+      duration: options?.duration ?? 4000,
     });
 
     this.subscribe = this.#store.subscribe;
@@ -321,7 +321,7 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
       return Infinity;
     }
 
-    return this.config.duration;
+    return this.options.duration;
   }
 
   #resolveDismissible(type: ToastType, dismissible?: boolean): boolean {
@@ -337,9 +337,9 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
 }
 
 function createToaster<Content extends {} = string>(
-  config?: ToasterConfig
+  options?: ToasterOptions
 ): ToasterContract<Content> {
-  return new Toaster(config);
+  return new Toaster(options);
 }
 
 export { createToaster };

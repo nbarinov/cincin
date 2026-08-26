@@ -12,6 +12,6 @@ export type {
   ToastEntryEvent,
   PromisePhases,
   PromiseOptions,
-  ToasterConfig,
+  ToasterOptions,
   Toaster,
 } from './types';

@@ -79,13 +79,13 @@ interface PromisePhases<T, Content extends {} = string> {
  */
 type PromiseOptions = Pick<ToastCreateOptions, 'id' | 'dismissible'>;
 
-interface ToasterConfig {
+type ToasterOptions = {
   /** @default 4000 */
   duration?: number;
-}
+};
 
 interface Toaster<Content extends {} = string> {
-  readonly config: Readonly<Required<ToasterConfig>>;
+  readonly options: Readonly<Required<ToasterOptions>>;
 
   success(
     content: Content,
@@ -137,6 +137,6 @@ export type {
   ToastEntryEvent,
   PromisePhases,
   PromiseOptions,
-  ToasterConfig,
+  ToasterOptions,
   Toaster,
 };

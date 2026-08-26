@@ -61,7 +61,7 @@ presenter.dismiss(key); // begins the exit; the renderer finishes it
 presenter.finish(key); // exit done: the toast goes, and so does the
 // entry, once no showing of it remains
 presenter.pause(); // hover: freeze the expiry clocks
-presenter.setConfig({ max: 3 }); // live config; a raised max promotes
+presenter.setOptions({ max: 3 }); // live options; a raised max promotes
 ```
 
 A removed entry does not vanish from the screen: its toast becomes a

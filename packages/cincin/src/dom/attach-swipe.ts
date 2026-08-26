@@ -2,7 +2,7 @@ import { dampen, trailingVelocity } from './gesture';
 import type { Gesture, SwipeDirection } from './gesture';
 import { createSwipeChannel } from './swipe-channel';
 import { flingOut, springBack } from './swipe-exits';
-import type { FlingConfig } from './swipe-exits';
+import type { FlingOptions } from './swipe-exits';
 
 type SwipeOptions = {
   /** Physical swipe direction. @default 'right' */
@@ -218,7 +218,7 @@ interface ResolvedOptions {
   onRemove: () => void;
   drag: Required<NonNullable<SwipeOptions['drag']>>;
   dismiss: Required<NonNullable<SwipeOptions['dismiss']>>;
-  fling: FlingConfig;
+  fling: FlingOptions;
   cancel: Required<NonNullable<SwipeOptions['cancel']>>;
 }
 

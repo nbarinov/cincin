@@ -2,7 +2,7 @@ import { flingDuration } from './gesture';
 import type { SwipeChannel } from './swipe-channel';
 import { prefersReducedMotion, translateValue } from './utils';
 
-interface FlingConfig {
+interface FlingOptions {
   /** Initial slope of the fling easing; ties duration to hand speed. */
   slope: number;
   minDuration: number;
@@ -21,7 +21,7 @@ function flingOut(
   channel: SwipeChannel,
   from: number,
   velocity: number,
-  config: FlingConfig,
+  options: FlingOptions,
   onComplete: () => void
 ): Animation | null {
   const target = channel.exitTarget();
@@ -35,9 +35,9 @@ function flingOut(
   const duration = flingDuration(
     Math.abs(target - from),
     velocity,
-    config.slope,
-    config.minDuration,
-    config.maxDuration
+    options.slope,
+    options.minDuration,
+    options.maxDuration
   );
 
   const animation = channel.element.animate(
@@ -47,7 +47,7 @@ function flingOut(
     ],
     {
       duration,
-      easing: `cubic-bezier(${(1 / config.slope).toFixed(3)}, 1, 0.7, 1)`,
+      easing: `cubic-bezier(${(1 / options.slope).toFixed(3)}, 1, 0.7, 1)`,
     }
   );
 
@@ -79,4 +79,4 @@ function springBack(
 }
 
 export { flingOut, springBack };
-export type { FlingConfig };
+export type { FlingOptions };

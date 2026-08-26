@@ -14,7 +14,7 @@ export { createToasterContext } from './context';
 export type { Toaster, ToastEntry, ToastEntryEvent } from 'cincin';
 export type {
   Presenter,
-  PresenterConfig,
+  PresenterOptions,
   Toast,
   ToastKey,
   ToastPhase,

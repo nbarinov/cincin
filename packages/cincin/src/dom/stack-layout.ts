@@ -15,22 +15,23 @@ type StackLayoutEntry = {
 
 type StackLayoutOrder = 'stack' | 'queue';
 
-type StackLayoutConfig = {
+type StackLayoutOptions = {
   /** Which end of `entries` is the front card. @default 'stack' */
   order?: StackLayoutOrder;
   /** How many cards peek out of the collapsed stack. @default 3 */
   visible?: number;
   /** Vertical gap between expanded cards, px. @default 12 */
   gap?: number;
-};
-
-type StackLayoutOptions = StackLayoutConfig & {
   /** Finds the measured node inside a card. The card itself renders at
    * an explicit height, so sizes are observed on a body node that
-   * always keeps its natural height. @default the card's first element
-   * child */
+   * always keeps its natural height. Read once, like the layout in
+   * `useSlot`: `setOptions` leaves it alone. @default the card's first
+   * element child */
   body?: (card: HTMLElement) => HTMLElement | null;
 };
+
+/** The live subset: what `setOptions` re-applies. */
+type LiveOptions = Required<Omit<StackLayoutOptions, 'body'>>;
 
 /**
  * One card's place in the stack, as computed data. The layout publishes
@@ -46,7 +47,7 @@ type StackSlot = {
    * live cards in front of it, px. */
   offset: number;
   zIndex: number;
-  /** Past the collapsed peek (the `visible` config). */
+  /** Past the collapsed peek (the `visible` options). */
   hidden: boolean;
   /** The single live front card. Never `true` on a leaving one. */
   front: boolean;
@@ -88,7 +89,7 @@ type StackSlotListener = (event: StackSlotEvent) => void;
  * still before paint, completes the pass.
  */
 class StackLayout extends Subscribable<StackSlotListener> {
-  #config: Required<StackLayoutConfig>;
+  #options: LiveOptions;
   readonly #bodyOf: (card: HTMLElement) => HTMLElement | null;
 
   #entries: ReadonlyArray<StackLayoutEntry> = [];
@@ -102,7 +103,7 @@ class StackLayout extends Subscribable<StackSlotListener> {
   constructor(options: StackLayoutOptions = {}) {
     super();
 
-    this.#config = {
+    this.#options = {
       order: options.order ?? 'stack',
       visible: options.visible ?? 3,
       gap: options.gap ?? 12,
@@ -110,7 +111,7 @@ class StackLayout extends Subscribable<StackSlotListener> {
     this.#bodyOf = options.body ?? defaultBodyOf;
 
     this.setEntries = this.setEntries.bind(this);
-    this.setConfig = this.setConfig.bind(this);
+    this.setOptions = this.setOptions.bind(this);
     this.setCard = this.setCard.bind(this);
     this.getSlot = this.getSlot.bind(this);
     this.destroy = this.destroy.bind(this);
@@ -142,12 +143,12 @@ class StackLayout extends Subscribable<StackSlotListener> {
   }
 
   /** Idempotent: re-applying the current values costs nothing. */
-  setConfig(config: StackLayoutConfig): void {
-    const current = this.#config;
-    const next: Required<StackLayoutConfig> = {
-      order: config.order ?? current.order,
-      visible: config.visible ?? current.visible,
-      gap: config.gap ?? current.gap,
+  setOptions(options: StackLayoutOptions): void {
+    const current = this.#options;
+    const next: LiveOptions = {
+      order: options.order ?? current.order,
+      visible: options.visible ?? current.visible,
+      gap: options.gap ?? current.gap,
     };
 
     if (
@@ -158,12 +159,12 @@ class StackLayout extends Subscribable<StackSlotListener> {
       return;
     }
 
-    this.#config = next;
+    this.#options = next;
     this.#apply();
   }
 
   /** Registers a card's element; `null` on unmount. Registration is
-   * silent: the pass runs on `setEntries`, size deliveries and config
+   * silent: the pass runs on `setEntries`, size deliveries and options
    * changes, when the composition is complete. Detaching deliberately
    * leaves the body observation alone: ref cleanups re-run while a
    * card is alive (StrictMode replays), and only the data (a key
@@ -268,7 +269,7 @@ class StackLayout extends Subscribable<StackSlotListener> {
   }
 
   #apply(): void {
-    const { order, visible, gap } = this.#config;
+    const { order, visible, gap } = this.#options;
     const entries = this.#entries;
     const ordered = order === 'stack' ? entries.toReversed() : entries;
     const prev = this.#slots;
@@ -376,7 +377,6 @@ export type {
   StackLayout,
   StackLayoutEntry,
   StackLayoutOrder,
-  StackLayoutConfig,
   StackLayoutOptions,
   StackSlot,
   StackSlotEvent,
