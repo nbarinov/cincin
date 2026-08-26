@@ -97,6 +97,45 @@ const SCENARIOS: Scenario[] = [
         }),
   },
   {
+    label: 'Undo',
+    // No cross: the button IS the way out, and without the close
+    // button the skin keeps the whole toast on one line. The click
+    // would dismiss the toast; preventing it lets the confirmation
+    // morph the same card in place instead (the type change to
+    // success also rewinds the clock).
+    code: `const toastId = toast.message(
+  {
+    title: 'Message archived',
+    action: {
+      label: 'Undo',
+      onClick: (e) => {
+        e.preventDefault();
+        toast.success(
+          { title: 'Archive restored' },
+          { id: toastId }
+        );
+      },
+    },
+  },
+  { dismissible: false }
+)`,
+    run: () => {
+      const toastId = toast.message(
+        {
+          title: 'Message archived',
+          action: {
+            label: 'Undo',
+            onClick: (e) => {
+              e.preventDefault();
+              toast.success({ title: 'Archive restored' }, { id: toastId });
+            },
+          },
+        },
+        { dismissible: false }
+      );
+    },
+  },
+  {
     label: 'Update',
     code: `const id = toast.loading({ title: 'Preparing export…' });
 

@@ -53,6 +53,24 @@ const id = toast.info({ title: 'Connected' });
 toast.remove(id);
 ```
 
+An action click dismisses its toast. The handler receives the click
+event and can cancel that with `event.preventDefault()`, say to morph
+the toast in place by re-creating its id (the check is synchronous, so
+prevent before any `await`):
+
+```ts
+const id = toast.message({
+  title: 'Message archived',
+  action: {
+    label: 'Undo',
+    onClick: (event) => {
+      event.preventDefault();
+      toast.success({ title: 'Archive restored' }, { id });
+    },
+  },
+});
+```
+
 `<Toaster />` props: `toaster` (your own store instead of the
 singleton; read once, remount to switch), `max` (active toasts at once,
 the rest queue; live), `visible` (how many peek out of the collapsed
