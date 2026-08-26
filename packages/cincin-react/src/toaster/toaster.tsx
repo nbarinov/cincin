@@ -145,9 +145,16 @@ function ToastCard({
           <button
             type="button"
             data-cincin-action
-            onClick={() => {
-              action.onClick();
-              presenter.dismiss(key);
+            onClick={(event) => {
+              // The click dismisses, unless the handler cancels it: a
+              // handler that wants the toast to stay (say, to morph it
+              // in place by re-creating its id) calls
+              // event.preventDefault(). The check is synchronous on
+              // purpose: a prevent after an await is too late.
+              action.onClick(event);
+              if (!event.defaultPrevented) {
+                presenter.dismiss(key);
+              }
             }}
           >
             {action.label}

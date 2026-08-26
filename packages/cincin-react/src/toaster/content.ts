@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 
 type ToastContent = {
   title: ReactNode;
   description?: ReactNode;
   action?: {
     label: string;
-    onClick: () => void;
+    onClick: (event: MouseEvent<HTMLButtonElement>) => void;
   };
 };
 

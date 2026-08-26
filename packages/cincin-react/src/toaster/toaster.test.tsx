@@ -1,4 +1,4 @@
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { createToaster } from 'cincin';
 import { Toaster } from './toaster';
 import type { ToastContent } from './content';
@@ -116,5 +116,41 @@ describe('Toaster a11y', () => {
     expect(getRegion().dataset.expanded).toBe('true');
     expect(front!.dataset.phase).toBe('leaving');
     expect(front!.hasAttribute('inert')).toBe(true);
+  });
+});
+
+describe('Toaster action', () => {
+  function setupWithAction(
+    onClick: NonNullable<ToastContent['action']>['onClick']
+  ): HTMLElement {
+    const toaster = setup();
+
+    act(() => {
+      toaster.message({
+        title: 'archived',
+        action: { label: 'Undo', onClick },
+      });
+    });
+
+    return getCards()[0]!;
+  }
+
+  function clickAction(card: HTMLElement): void {
+    const button = card.querySelector<HTMLElement>('[data-cincin-action]')!;
+    act(() => void fireEvent.click(button));
+  }
+
+  it('should dismiss the toast after the action click', () => {
+    const card = setupWithAction(() => {});
+    clickAction(card);
+
+    expect(card.dataset.phase).toBe('leaving');
+  });
+
+  it('should keep the toast when the handler prevents the click', () => {
+    const card = setupWithAction((event) => event.preventDefault());
+    clickAction(card);
+
+    expect(card.dataset.phase).toBe('active');
   });
 });
