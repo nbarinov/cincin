@@ -59,23 +59,7 @@ class EntityStore<Key, Entity, Event> extends Subscribable<
     }
 
     this.#snapshot = Object.freeze(this.values());
-    const current = Array.from(this.listeners);
-
-    for (const event of events) {
-      for (const listener of current) {
-        if (!this.listeners.has(listener)) {
-          continue;
-        }
-
-        try {
-          listener(event);
-        } catch (error) {
-          setTimeout(() => {
-            throw error;
-          }, 0);
-        }
-      }
-    }
+    this.notify(events.map((event) => [event]));
   }
 
   getSnapshot(): ReadonlyArray<Entity> {

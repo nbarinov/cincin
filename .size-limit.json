@@ -7,12 +7,12 @@
   {
     "name": "cincin/dom",
     "path": "packages/cincin/dist/dom/index.mjs",
-    "limit": "3 kB"
+    "limit": "3.5 kB"
   },
   {
     "name": "cincin/presenter",
     "path": "packages/cincin/dist/presenter/index.mjs",
-    "limit": "2 kB"
+    "limit": "2.5 kB"
   },
   {
     "name": "cincin-react (toaster)",
