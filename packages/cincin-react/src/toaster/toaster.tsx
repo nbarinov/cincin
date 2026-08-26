@@ -1,15 +1,16 @@
 'use client';
 
 import type { Toaster as ToasterContract } from 'cincin';
-import type { SwipeDirection } from 'cincin/dom';
+import type { StackLayout, StackSlot, SwipeDirection } from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
 import { useMemo } from 'react';
-import type { CSSProperties, Ref } from 'react';
+import type { CSSProperties } from 'react';
 import { useComposedRefs } from '../shared/use-composed-refs';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
+import { useSlot } from '../core/use-slot';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent } from './content';
 import { toast as defaultToaster } from './toast';
@@ -40,21 +41,13 @@ function Toaster({
 }: ToasterProps) {
   const presenter = usePresenter(toaster, { max, exitDuration });
   const toasts = useToasts(presenter);
-  const shown = useMemo(
+  const live = useMemo(
     () => toasts.filter((toast) => toast.phase !== 'queued'),
     [toasts]
   );
-  // The stack order's front: the newest live toast. Everything behind
-  // it is non-interactive while collapsed, and leaving ghosts always
-  // are; `inert` states that for the tab order and the AT tree in one
-  // place, while the CSS protocol keeps painting the same fact.
-  const frontKey = useMemo(
-    () => shown.findLast((toast) => toast.phase !== 'leaving')?.key,
-    [shown]
-  );
 
   const region = useRegion(presenter);
-  const stack = useStack(shown, { visible });
+  const stack = useStack(live, { visible });
 
   useVisibilityPause(presenter);
 
@@ -69,17 +62,14 @@ function Toaster({
       ref={region.ref}
       {...region.handlers}
     >
-      {shown.map((toast) => (
+      {live.map((toast) => (
         <ToastCard
           key={toast.key}
           toast={toast}
           presenter={presenter}
+          layout={stack.layout}
+          expanded={region.expanded}
           swipeDirection={swipeDirection}
-          inert={
-            toast.phase === 'leaving' ||
-            (!region.expanded && toast.key !== frontKey)
-          }
-          ref={stack.cardRef(toast.key)}
         />
       ))}
     </ol>
@@ -89,26 +79,27 @@ function Toaster({
 type ToastCardProps = {
   toast: Toast<ToastContent>;
   presenter: Presenter<ToastContent>;
+  layout: StackLayout;
+  expanded: boolean;
   swipeDirection: SwipeDirection;
-  inert: boolean;
-  ref?: Ref<HTMLLIElement>;
 };
 
 function ToastCard({
   toast,
   presenter,
+  layout,
+  expanded,
   swipeDirection,
-  inert,
-  ref: forwardedRef,
 }: ToastCardProps) {
   const { key, entry, phase } = toast;
+  const { ref: slotRef, slot } = useSlot({ layout, key });
   const swipeRef = useToastSwipe({
     key,
     presenter,
     direction: swipeDirection,
     enabled: entry.dismissible,
   });
-  const composedRef = useComposedRefs(swipeRef, forwardedRef);
+  const composedRef = useComposedRefs(swipeRef, slotRef);
 
   const { title, description, action } = entry.content;
 
@@ -121,7 +112,12 @@ function ToastCard({
       data-type={entry.type}
       data-phase={phase}
       data-dismissible={entry.dismissible}
-      inert={inert}
+      data-hidden={slot === undefined ? undefined : String(slot.hidden)}
+      data-front={
+        slot === undefined || slot.leaving ? undefined : String(slot.front)
+      }
+      style={createStyles(slot)}
+      inert={slot === undefined || slot.leaving || (!expanded && !slot.front)}
       ref={composedRef}
     >
       {/* The body carries the slots and the padding; the card box above
@@ -174,3 +170,21 @@ function ToastCard({
 }
 
 export { Toaster };
+
+// utils
+
+function createStyles(slot: StackSlot | undefined): CSSProperties {
+  if (slot === undefined) {
+    return {};
+  }
+
+  return {
+    zIndex: slot.zIndex,
+    '--cincin-toast-index': slot.index,
+    '--cincin-toast-offset': `${slot.offset}px`,
+    '--cincin-toast-height':
+      slot.height === undefined ? undefined : `${slot.height}px`,
+    '--cincin-front-height':
+      slot.frontHeight === undefined ? undefined : `${slot.frontHeight}px`,
+  } as CSSProperties;
+}

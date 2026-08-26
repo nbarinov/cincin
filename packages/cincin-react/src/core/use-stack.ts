@@ -6,12 +6,11 @@ import { useRefMap } from '../shared/use-ref-map';
 
 type StackOptions = StackLayoutConfig;
 
-/** A thin binding over the `cincin/dom` stack layout: the controller
- * owns the geometry (slots, heights, the ResizeObserver); the hook
- * feeds it commits and hands out stable card refs. Cleanup is split by
- * signal: the layout sweeps its per-key state when a key leaves the
- * rendered list, the ref registry buries dead callbacks on its own
- * deferred node-lifecycle check. */
+/** A thin binding over the `cincin/dom` stack layout: the hook owns
+ * the instance and feeds it commits; cards read their slots through
+ * `useSlot(layout, key)` (which also registers their elements).
+ * `cardRef` is the older imperative registration path, kept for
+ * consumers that apply the protocol without slots. */
 function useStack(
   entries: ReadonlyArray<Pick<Toast, 'key' | 'phase'>>,
   options: StackOptions = {}
@@ -50,7 +49,7 @@ function useStack(
     [layout]
   );
 
-  return { cardRef: cards.getRef };
+  return { layout, cardRef: cards.getRef };
 }
 
 export { useStack };
