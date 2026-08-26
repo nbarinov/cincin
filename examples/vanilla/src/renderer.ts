@@ -84,6 +84,25 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     mounted.delete(key);
   };
 
+  // Collapsed backs and leaving ghosts are non-interactive: `inert`
+  // states it for the tab order and the AT tree in one place, the CSS
+  // only paints the same fact. Mirrors the react skin.
+  const applyInert = () => {
+    const expanded = region.dataset.expanded === 'true';
+    const shown = presenter
+      .getSnapshot()
+      .filter((toast: Toast) => toast.phase !== 'queued');
+    const frontKey = shown.findLast((toast) => toast.phase !== 'leaving')?.key;
+
+    for (const toast of shown) {
+      const card = mounted.get(toast.key);
+      if (card) {
+        card.element.inert =
+          toast.phase === 'leaving' || (!expanded && toast.key !== frontKey);
+      }
+    }
+  };
+
   const render = () => {
     const shown = presenter
       .getSnapshot()
@@ -145,6 +164,8 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
       offset += element.offsetHeight + GAP;
       depth += 1;
     }
+
+    applyInert();
   };
 
   const controller = new AbortController();
@@ -156,7 +177,10 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   const expand = () => {
     clearTimeout(collapseTimer);
     collapseTimer = undefined;
-    region.dataset.expanded = 'true';
+    if (region.dataset.expanded !== 'true') {
+      region.dataset.expanded = 'true';
+      applyInert();
+    }
     presenter.pause();
   };
   const collapse = () => {
@@ -168,6 +192,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     clearTimeout(collapseTimer);
     collapseTimer = setTimeout(() => {
       region.dataset.expanded = 'false';
+      applyInert();
       presenter.resume();
     }, COLLAPSE_DELAY);
   };
@@ -177,6 +202,26 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   // the hovered toast is removed from under the pointer.
   region.addEventListener('mousemove', expand, { signal });
   region.addEventListener('mouseleave', collapse, { signal });
+  // Focus mirrors hover for the keyboard: tabbing onto the front card's
+  // controls opens the stack, the collapsed backs join the tab order.
+  region.addEventListener('focusin', expand, { signal });
+  region.addEventListener(
+    'focusout',
+    (event) => {
+      if (region.contains(event.relatedTarget as Node | null)) {
+        return;
+      }
+
+      // A dismissed control drops focus to the body while the pointer
+      // still parks on the stack: the hover keeps the region open.
+      if (region.matches(':hover')) {
+        return;
+      }
+
+      collapse();
+    },
+    { signal }
+  );
   region.addEventListener(
     'pointerdown',
     () => {
