@@ -5,11 +5,7 @@
  *   keeps its stack position under the drag
  * - the regular exit is gated on the absence of data-swipe-direction:
  *   the fling owns that exit
- * - data-swiping and --cincin-swipe-x drive the grabbed styling
- *
- * Pseudo-element budget of a card: ::before is the hover bridge over
- * the expanded gap, ::after is the swipe fill. The accent stripe is a
- * plain border-left for that reason.
+ * - data-swiping drives the grabbed styling
  */
 
 [data-cincin-toaster] {
@@ -44,14 +40,19 @@
     hsl(220deg 15% 45% / 0.16),
     hsl(220deg 45% 2% / 0.5)
   );
+  /* The hairline edge rides the shadow stack, not a border: the card
+   * forces its height to the body's measured border box, and a real
+   * border would sit inside that box and shave the same 2px off the
+   * body's room. */
   --shadow-rest:
-    0 1px 2px var(--shadow-soft), 0 4px 8px var(--shadow-soft),
-    0 12px 24px -4px var(--shadow-deep);
+    0 0 0 1px var(--toast-edge), 0 1px 2px var(--shadow-soft),
+    0 4px 8px var(--shadow-soft), 0 12px 24px -4px var(--shadow-deep);
   --shadow-lift:
-    0 2px 4px var(--shadow-soft), 0 8px 16px var(--shadow-soft),
-    0 24px 48px -8px var(--shadow-deep);
+    0 0 0 1px var(--toast-edge), 0 2px 4px var(--shadow-soft),
+    0 8px 16px var(--shadow-soft), 0 24px 48px -8px var(--shadow-deep);
 
   --toast-surface: light-dark(canvas, color-mix(in oklab, canvas 82%, white));
+  --toast-edge: light-dark(rgb(20 20 15 / 0.09), rgb(255 255 255 / 0.09));
 }
 
 @media (max-width: 600px) {
@@ -62,15 +63,12 @@
 }
 
 [data-cincin-toast] {
-  --toast-accent: #8590a2;
-
   position: absolute;
   right: 0;
   bottom: 0;
   box-sizing: border-box;
   width: 100%;
-  border-left: 4px solid var(--toast-accent);
-  border-radius: 0.6rem;
+  border-radius: 0.7rem;
   background: var(--toast-surface);
   box-shadow: var(--shadow-rest);
   cursor: grab;
@@ -82,6 +80,15 @@
    * heights come from the layout observing the card's body, which
    * always renders at the natural size. */
   height: var(--cincin-toast-height, auto);
+  /* The forced height is larger than the body's natural one whenever a
+   * collapsed back card borrows the front's height. Centring the body
+   * inside the card makes the box grow and shrink symmetrically around
+   * the content instead of pinning it to the top edge — with
+   * `bottom: 0` and a moving top edge, top-anchored content rode the
+   * whole difference on every promotion. The body keeps its natural
+   * height, so the stack's measurement is untouched. */
+  display: grid;
+  align-content: center;
   transform-origin: center bottom;
   transform: translateY(calc(var(--cincin-toast-index) * -0.875rem))
     scale(calc(1 - var(--cincin-toast-index) * 0.05));
@@ -101,46 +108,46 @@
   cursor: default;
 }
 
-[data-cincin-toast][data-type='info'] {
-  --toast-accent: #388bff;
-}
-
-[data-cincin-toast][data-type='success'] {
-  --toast-accent: #22a06b;
-}
-
-[data-cincin-toast][data-type='warning'] {
-  --toast-accent: #e2b203;
-}
-
-[data-cincin-toast][data-type='error'] {
-  --toast-accent: #ef5c48;
-}
-
-[data-cincin-toast][data-type='loading'] {
-  --toast-accent: #8f7ee7;
-}
-
 /* --- slots --------------------------------------------------------- */
 
-/* The card's body: the slot row and the padding live here, the box
+/* The card's body: the slot grid and the padding live here, the box
  * chrome (background, border, shadow, the forced height) stays on the
  * card. A block child is never clamped by its parent's height, so the
  * body always renders at the natural size; the stack's
  * ResizeObserver watches it, and with the padding on board its border
- * box IS the card's natural height. */
+ * box IS the card's natural height.
+ *
+ * The action sits on its own row rather than beside the text: a toast
+ * with a button grows anyway, and a full-width second row lets the
+ * copy keep the whole first row instead of being squeezed by a label
+ * of unknown length. The row is areas-only, so `message` (which
+ * renders no icon) needs no separate rule — an empty icon column
+ * collapses, and the gaps are margins, not column-gap, so it leaves
+ * no phantom indent. */
 [data-cincin-body] {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon content close'
+    'action action action';
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.8rem 0.9rem;
+  padding: 0.7rem 0.85rem;
+}
+
+/* Only a toast that HAS an action pays for the second row's gap. */
+[data-cincin-body]:has([data-cincin-action]) {
+  row-gap: 0.5rem;
 }
 
 [data-cincin-body] > [data-cincin-icon] {
+  grid-area: icon;
   flex: none;
-  width: 1.15rem;
-  height: 1.15rem;
-  color: var(--toast-accent);
+  width: 1rem;
+  height: 1rem;
+  align-self: start;
+  margin-top: 0.08rem;
+  margin-right: 0.65rem;
+  opacity: 0.48;
 }
 
 [data-cincin-toast][data-type='loading']
@@ -150,30 +157,84 @@
 }
 
 [data-cincin-content] {
-  flex: 1;
+  grid-area: content;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.2rem;
 }
 
 [data-cincin-title] {
   font-weight: 600;
+  line-height: 1.35;
 }
 
 [data-cincin-description] {
-  color: color-mix(in srgb, currentColor 78%, transparent);
+  font-size: 0.78125rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  text-wrap: pretty;
+}
+
+/* A lone title arrives in the description slot (see toaster.tsx). It
+ * is the whole message, so it gets the title's weight and full
+ * contrast back — the muted body style is for text that sits UNDER a
+ * title. */
+[data-cincin-description]:only-child {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: inherit;
+}
+
+/* A one-line toast carries a touch more air instead: the extra goes
+ * vertical only, since a different horizontal padding would misalign
+ * the copy between a simple and a rich card in the same stack. */
+[data-cincin-body]:has([data-cincin-description]:only-child) {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+/* One line, no cross, one button: the action moves up into the free
+ * third column, and an undo toast stays exactly one line tall — which
+ * is the point of an undo. The second row comes back the moment the
+ * card has a description or a close button to hold that column, so a
+ * label of unknown length can never squeeze the copy. The action is
+ * required by the selector on purpose: `loading` is non-dismissible by
+ * default, and without that clause a plain loading toast would take
+ * the tighter padding and then change height as the promise settles
+ * into a dismissible one-liner. */
+[data-cincin-toast][data-dismissible='false']
+  [data-cincin-body]:has([data-cincin-description]:only-child):has(
+    [data-cincin-action]
+  ) {
+  grid-template-areas: 'icon content action';
+  padding: 0.65rem 0.65rem 0.65rem 0.85rem;
+}
+
+/* In the single row the button, not the copy, sets the row height:
+ * a start-anchored glyph would float above its line, so here it
+ * centres with everything else. */
+[data-cincin-toast][data-dismissible='false']
+  [data-cincin-body]:has([data-cincin-description]:only-child):has(
+    [data-cincin-action]
+  )
+  > [data-cincin-icon] {
+  align-self: center;
+  margin-top: 0;
 }
 
 [data-cincin-action] {
-  flex: none;
-  padding: 0.3rem 0.6rem;
-  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  grid-area: action;
+  justify-self: end;
+  margin-left: 0.65rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 0.45rem;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.78125rem;
   font-weight: 500;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -184,31 +245,36 @@
 }
 
 [data-cincin-close] {
+  grid-area: close;
   position: relative;
   flex: none;
   display: grid;
   place-items: center;
   width: 1rem;
   height: 1rem;
+  margin-left: 0.65rem;
   padding: 0;
   border: none;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  opacity: 0.55;
+  /* Quiet, but not below the floor: 0.45 keeps the resting cross at
+   * roughly 3.3:1 against a light canvas, the 3:1 minimum for
+   * non-text controls. Hover and focus bring it to full. */
+  opacity: 0.45;
   -webkit-tap-highlight-color: transparent;
 }
 
 [data-cincin-close]::before {
   content: '';
   position: absolute;
-  inset: -0.25rem;
+  inset: -0.3rem;
   border-radius: 0.4rem;
 }
 
 [data-cincin-close] > [data-cincin-icon] {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.78rem;
+  height: 0.78rem;
 }
 
 [data-cincin-close]:active {
@@ -327,31 +393,12 @@
 
 /* --- swipe --------------------------------------------------------- */
 
+/* The tint that used to fill the surface with the accent is gone with
+ * the accents. What is left is honest and enough: the card lifts, and
+ * it follows the finger. */
 [data-cincin-toast][data-swiping] {
   cursor: grabbing;
   box-shadow: var(--shadow-lift);
-}
-
-/* The protocol variable in action: the swipe progress fills the
- * surface with the accent tint, behind the content. */
-[data-cincin-toast]::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: linear-gradient(
-      to right,
-      color-mix(in oklab, var(--toast-accent) 15%, transparent),
-      color-mix(in oklab, var(--toast-accent) 15%, transparent)
-    )
-    no-repeat;
-  background-size: clamp(0px, abs(var(--cincin-swipe-x, 0px)), 100%) 100%;
-}
-
-[data-cincin-toast]:not([data-swiping])::after {
-  /* Matches the cancel spring: the fill retreats with the toast. */
-  transition: background-size 300ms ease-out;
 }
 
 @keyframes cincin-spin {
@@ -369,9 +416,5 @@
     transition:
       opacity var(--cincin-exit-duration, 400ms),
       box-shadow 200ms;
-  }
-
-  [data-cincin-toast]:not([data-swiping])::after {
-    transition: none;
   }
 }
