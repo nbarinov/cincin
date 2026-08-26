@@ -83,6 +83,10 @@ main header {
 
 /* --- toast region ------------------------------------------------- */
 
+/* The same decisions as the React skin, kept deliberately in step: no
+ * accent stripe, no per-type colour, no swipe tint. What a toast is
+ * reads from its copy; what it does reads from its movement. */
+
 #toasts {
   position: fixed;
   /* The region owns selection: a drag that starts on a card must not
@@ -130,6 +134,9 @@ main header {
    * toast from the page, so the surface itself gets lighter (the
    * closer to the "light", the brighter), light mode stays on canvas. */
   --toast-surface: light-dark(canvas, color-mix(in oklab, canvas 82%, white));
+  /* With the stripe gone, this hairline is what holds the card's edge
+   * against a light page and against a dark one. */
+  --toast-edge: light-dark(rgb(20 20 15 / 0.09), rgb(255 255 255 / 0.09));
 }
 
 @media (max-width: 600px) {
@@ -147,10 +154,10 @@ main header {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.9rem 1rem;
-  border-left: 4px solid var(--toast-accent);
-  border-radius: 0.6rem;
+  gap: 0.65rem;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--toast-edge);
+  border-radius: 0.7rem;
   background: var(--toast-surface);
   box-shadow: var(--shadow-rest);
   cursor: grab;
@@ -210,57 +217,14 @@ main header {
   opacity: 0;
 }
 
-.toast[data-type='message'] {
-  --toast-accent: #8590a2;
-}
-
-.toast[data-type='info'] {
-  --toast-accent: #388bff;
-}
-
-.toast[data-type='success'] {
-  --toast-accent: #22a06b;
-}
-
-.toast[data-type='warning'] {
-  --toast-accent: #e2b203;
-}
-
-.toast[data-type='error'] {
-  --toast-accent: #ef5c48;
-}
-
-.toast[data-type='loading'] {
-  --toast-accent: #8f7ee7;
-}
-
+/* The tint that used to fill the surface with the accent went with the
+ * accents, and with it the ::after that carried it — --cincin-swipe-x
+ * is still published by the protocol if a skin wants it back. What is
+ * left is honest and enough: the card lifts, and it follows the
+ * finger. */
 .toast[data-swiping] {
   cursor: grabbing;
   box-shadow: var(--shadow-lift);
-}
-
-/* The protocol variable in action: the swipe progress fills the
- * surface with the accent tint. Behind the content (negative z-index
- * inside the toast's own stacking context), the fill edge tracks the
- * finger 1:1 while dragging and animates home on release. */
-.toast::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: linear-gradient(
-      to right,
-      color-mix(in oklab, var(--toast-accent) 15%, transparent),
-      color-mix(in oklab, var(--toast-accent) 15%, transparent)
-    )
-    no-repeat;
-  background-size: clamp(0px, abs(var(--cincin-swipe-x, 0px)), 100%) 100%;
-}
-
-.toast:not([data-swiping])::after {
-  /* Matches the cancel spring: the fill retreats with the toast. */
-  transition: background-size 300ms ease-out;
 }
 
 /* Reduced motion: crossfades stay, movement snaps. The presenter's
@@ -272,15 +236,16 @@ main header {
       opacity var(--cincin-exit-duration, 400ms),
       box-shadow 200ms;
   }
-
-  .toast:not([data-swiping])::after {
-    transition: none;
-  }
 }
 
+/* Every vanilla toast is a one-liner, so it gets the simple card's
+ * padding above. */
 .toast-content {
   flex: 1;
   margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  font-weight: 600;
 }
 
 /* The layout box stays 1rem — under the text line — so the button
@@ -309,14 +274,14 @@ main header {
   font: inherit;
   line-height: 1;
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.45;
   -webkit-tap-highlight-color: transparent;
 }
 
 .toast-close::before {
   content: '';
   position: absolute;
-  inset: -0.25rem;
+  inset: -0.3rem;
   border-radius: 0.4rem;
 }
 
