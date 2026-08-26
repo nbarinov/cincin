@@ -1,5 +1,6 @@
 import type { Presenter } from 'cincin/presenter';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FocusEvent } from 'react';
 import type { ToastContent } from './content';
 
 type RegionOptions = {
@@ -79,6 +80,23 @@ function useRegion(
       onMouseEnter: expand,
       onMouseMove: expand,
       onMouseLeave: collapse,
+      // Focus mirrors hover for the keyboard: tabbing onto the front
+      // card's controls opens the stack, and the collapsed backs (inert
+      // until then) join the tab order.
+      onFocus: expand,
+      onBlur: (event: FocusEvent<HTMLOListElement>) => {
+        if (event.currentTarget.contains(event.relatedTarget)) {
+          return;
+        }
+
+        // A dismissed control drops focus to the body while the pointer
+        // still parks on the stack: the hover keeps the region open.
+        if (event.currentTarget.matches(':hover')) {
+          return;
+        }
+
+        collapse();
+      },
       onPointerDown: () => {
         interacting.current = true;
       },
