@@ -37,26 +37,25 @@ const scenarios: Array<[label: string, run: () => void]> = [
       }),
   ],
   [
-    // No cross: the button IS the way out, and without the close
-    // button the skin keeps the whole toast on one line. The click
-    // would dismiss the toast; preventing it lets the confirmation
-    // morph the same card in place instead (the type change to
-    // success also rewinds the clock).
+    // No cross: the button reads as the way out, and without it the
+    // skin keeps the whole toast on one line. The toast stays
+    // dismissible though, so a flick still closes it. The click would
+    // dismiss the toast; preventing it lets the confirmation morph the
+    // same card in place instead (the type change to success also
+    // rewinds the clock).
     'Undo',
     () => {
-      const toastId = toast.message(
-        {
-          title: 'Message archived',
-          action: {
-            label: 'Undo',
-            onClick: (event) => {
-              event.preventDefault();
-              toast.success({ title: 'Archive restored' }, { id: toastId });
-            },
+      const toastId = toast.message({
+        title: 'Message archived',
+        closeButton: false,
+        action: {
+          label: 'Undo',
+          onClick: (event) => {
+            event.preventDefault();
+            toast.success({ title: 'Archive restored' }, { id: toastId });
           },
         },
-        { dismissible: false }
-      );
+      });
     },
   ],
   [
