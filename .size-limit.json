@@ -25,5 +25,17 @@
     "path": "packages/cincin-react/dist/core/index.mjs",
     "limit": "1.25 kB",
     "ignore": ["cincin", "react"]
+  },
+  {
+    "name": "cincin-vue (toaster)",
+    "path": "packages/cincin-vue/dist/index.mjs",
+    "limit": "4.5 kB",
+    "ignore": ["cincin", "vue"]
+  },
+  {
+    "name": "cincin-vue/core",
+    "path": "packages/cincin-vue/dist/core/index.mjs",
+    "limit": "1.25 kB",
+    "ignore": ["cincin", "vue"]
   }
 ]

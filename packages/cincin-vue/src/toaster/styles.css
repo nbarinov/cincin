@@ -1,0 +1,351 @@
+[data-cincin-toaster] {
+  --region-inset: 1rem;
+  --inset-right: calc(var(--region-inset) + env(safe-area-inset-right, 0px));
+  --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
+  --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
+
+  position: fixed;
+  right: var(--inset-right);
+  bottom: var(--inset-bottom);
+  z-index: 999999999;
+  width: 22rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: CanvasText;
+
+  --shadow-soft: light-dark(
+    hsl(220deg 15% 45% / 0.12),
+    hsl(220deg 45% 2% / 0.38)
+  );
+  --shadow-deep: light-dark(
+    hsl(220deg 15% 45% / 0.16),
+    hsl(220deg 45% 2% / 0.5)
+  );
+  --shadow-rest:
+    0 0 0 1px var(--toast-edge), 0 1px 2px var(--shadow-soft),
+    0 4px 8px var(--shadow-soft), 0 12px 24px -4px var(--shadow-deep);
+  --shadow-lift:
+    0 0 0 1px var(--toast-edge), 0 2px 4px var(--shadow-soft),
+    0 8px 16px var(--shadow-soft), 0 24px 48px -8px var(--shadow-deep);
+
+  --toast-surface: light-dark(canvas, color-mix(in oklab, canvas 82%, white));
+  --toast-edge: light-dark(rgb(20 20 15 / 0.09), rgb(255 255 255 / 0.09));
+}
+
+@media (max-width: 600px) {
+  [data-cincin-toaster] {
+    left: var(--inset-left);
+    width: auto;
+  }
+}
+
+[data-cincin-toast] {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--cincin-toast-height, auto);
+  border-radius: 0.7rem;
+  background: var(--toast-surface);
+  box-shadow: var(--shadow-rest);
+  cursor: grab;
+  display: grid;
+  align-content: center;
+  transform-origin: center bottom;
+  transform: translateY(calc(var(--cincin-toast-index) * -0.875rem))
+    scale(calc(1 - var(--cincin-toast-index) * 0.05));
+  transition:
+    transform var(--cincin-exit-duration, 400ms),
+    opacity var(--cincin-exit-duration, 400ms),
+    height var(--cincin-exit-duration, 400ms),
+    box-shadow 200ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-toast][data-dismissible='false'] {
+  cursor: default;
+}
+
+/* --- slots --------------------------------------------------------- */
+
+/* The card's body: the slot grid and the padding live here, the box
+ * chrome (background, border, shadow, the forced height) stays on the
+ * card. A block child is never clamped by its parent's height, so the
+ * body always renders at the natural size; the stack's
+ * ResizeObserver watches it, and with the padding on board its border
+ * box IS the card's natural height.
+ *
+ * The action sits on its own row rather than beside the text: a toast
+ * with a button grows anyway, and a full-width second row lets the
+ * copy keep the whole first row instead of being squeezed by a label
+ * of unknown length. The row is areas-only, so `message` (which
+ * renders no icon) needs no separate rule — an empty icon column
+ * collapses, and the gaps are margins, not column-gap, so it leaves
+ * no phantom indent. */
+[data-cincin-body] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon content close'
+    'action action action';
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+}
+
+[data-cincin-body]:has([data-cincin-action]) {
+  row-gap: 0.5rem;
+}
+
+[data-cincin-body] > [data-cincin-icon] {
+  grid-area: icon;
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  align-self: start;
+  margin-top: 0.08rem;
+  margin-right: 0.65rem;
+  opacity: 0.48;
+}
+
+[data-cincin-toast][data-type='loading']
+  [data-cincin-body]
+  > [data-cincin-icon] {
+  animation: cincin-spin 900ms linear infinite;
+}
+
+[data-cincin-content] {
+  grid-area: content;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+[data-cincin-title] {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+[data-cincin-description] {
+  font-size: 0.78125rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  text-wrap: pretty;
+}
+
+[data-cincin-description]:only-child {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: inherit;
+}
+
+[data-cincin-body]:has([data-cincin-description]:only-child) {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+[data-cincin-body]:not(:has([data-cincin-close])):not(
+    :has([data-cincin-action] ~ [data-cincin-action])
+  ):has([data-cincin-description]:only-child):has([data-cincin-action]) {
+  grid-template-areas: 'icon content action';
+  padding: 0.65rem 0.65rem 0.65rem 0.85rem;
+}
+
+[data-cincin-body]:not(:has([data-cincin-close])):not(
+    :has([data-cincin-action] ~ [data-cincin-action])
+  ):has([data-cincin-description]:only-child):has([data-cincin-action])
+  > [data-cincin-icon] {
+  align-self: center;
+  margin-top: 0;
+}
+
+[data-cincin-actions] {
+  grid-area: action;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.65rem;
+}
+
+[data-cincin-action] {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-action]:active {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+[data-cincin-action][data-variant='secondary'] {
+  border-color: transparent;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+[data-cincin-close] {
+  grid-area: close;
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.65rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.45;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-close]::before {
+  content: '';
+  position: absolute;
+  inset: -0.3rem;
+  border-radius: 0.4rem;
+}
+
+[data-cincin-close] > [data-cincin-icon] {
+  width: 0.78rem;
+  height: 0.78rem;
+}
+
+[data-cincin-close]:active {
+  opacity: 1;
+}
+
+[data-cincin-close]:active::before {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+[data-cincin-action]:focus-visible,
+[data-cincin-close]:focus-visible {
+  outline: 2px solid color-mix(in srgb, currentColor 60%, transparent);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+[data-cincin-action][data-variant='secondary']:focus-visible {
+  border-color: color-mix(in srgb, currentColor 10%, transparent);
+  color: inherit;
+}
+
+@media (hover: hover) {
+  [data-cincin-action]:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  [data-cincin-action][data-variant='secondary']:hover {
+    border-color: color-mix(in srgb, currentColor 10%, transparent);
+    color: inherit;
+  }
+
+  [data-cincin-close]:hover {
+    opacity: 1;
+  }
+
+  [data-cincin-close]:hover::before {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+/* --- stack states -------------------------------------------------- */
+
+[data-cincin-toaster]:not([data-expanded='true'])
+  [data-cincin-toast][data-front='false'] {
+  height: var(--cincin-front-height, auto);
+}
+
+[data-cincin-body] {
+  transition: opacity 200ms;
+}
+
+[data-cincin-toaster]:not([data-expanded='true'])
+  [data-cincin-toast][data-front='false']
+  [data-cincin-body] {
+  opacity: 0;
+}
+
+[data-cincin-toast][data-hidden='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-cincin-toaster][data-expanded='true'] [data-cincin-toast] {
+  transform: translateY(calc(-1 * var(--cincin-toast-offset)));
+}
+
+[data-cincin-toaster][data-expanded='true']
+  [data-cincin-toast][data-hidden='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-cincin-toaster][data-expanded='true'] [data-cincin-toast]::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  height: calc(12px + 1px);
+}
+
+@starting-style {
+  [data-cincin-toast] {
+    transform: translateY(calc(100% + var(--inset-bottom)));
+    opacity: 0;
+  }
+}
+
+[data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
+  transform: translateY(calc(100% + var(--inset-bottom)));
+  opacity: 0;
+}
+
+[data-cincin-toaster][data-expanded='true']
+  [data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
+  transform: translateY(calc(-1 * var(--cincin-toast-offset) + 100%));
+  opacity: 0;
+}
+
+/* --- swipe --------------------------------------------------------- */
+
+[data-cincin-toast][data-swiping] {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lift);
+}
+
+@keyframes cincin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-cincin-toast] {
+    transition:
+      opacity var(--cincin-exit-duration, 400ms),
+      box-shadow 200ms;
+  }
+}

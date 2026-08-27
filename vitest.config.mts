@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import Vue from 'unplugin-vue/vite';
 
 export default defineConfig({
   test: {
@@ -35,6 +36,18 @@ export default defineConfig({
           environment: 'jsdom',
           globals: true,
           include: ['packages/cincin-react/src/**/*.test.{ts,tsx}'],
+        },
+      },
+      {
+        plugins: [Vue()],
+        resolve: {
+          conditions: ['source'],
+        },
+        test: {
+          name: 'vue',
+          environment: 'jsdom',
+          globals: true,
+          include: ['packages/cincin-vue/src/**/*.test.ts'],
         },
       },
     ],

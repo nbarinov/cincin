@@ -1,0 +1,196 @@
+# cincin-vue 🥂
+
+Vue bindings for the [cincin](https://www.npmjs.com/package/cincin)
+toast library: a ready-to-use `<Toaster />` for a quick start, and
+headless building blocks under `cincin-vue/core`.
+
+> **Beta.** The public names are settled; the path to 0.1.0 is
+> additions and fixes.
+
+## Install
+
+```bash
+pnpm add cincin-vue
+```
+
+Requires Vue 3.5.
+
+## Quick start
+
+```vue
+<script setup lang="ts">
+import { Toaster, toast } from 'cincin-vue';
+</script>
+
+<template>
+  <button @click="toast.success({ title: 'Saved' })">Save</button>
+  <Toaster />
+</template>
+```
+
+`<Toaster />` renders a swipeable stack that collapses to a clean edge,
+expands on hover or tap, and pauses its timers while open and while the
+tab is hidden; the stylesheet comes along with the import. `toast` is a
+package-wide store callable from anywhere on the client (calls on the
+server do nothing useful).
+
+```ts
+toast.error({
+  title: 'Something broke',
+  description: 'The request did not survive the round trip.',
+  actions: [{ label: 'Retry', onClick: retry }],
+});
+
+toast.promise(upload(), {
+  loading: { title: 'Uploading…' },
+  success: (ms) => ({ title: `Uploaded in ${ms}ms` }),
+  error: () => ({ title: 'Upload failed' }),
+});
+
+// Closing from app code: the entry goes at once, the exit still plays.
+const id = toast.info({ title: 'Connected' });
+toast.remove(id);
+```
+
+A toast takes one or two actions, and a click on either dismisses it.
+The handler receives the click event and can cancel that with
+`event.preventDefault()`, say to morph the toast in place by
+re-creating its id (the check is synchronous, so prevent before any
+`await`):
+
+```ts
+const id = toast.message({
+  title: 'Message archived',
+  actions: [
+    {
+      label: 'Undo',
+      onClick: (event) => {
+        event.preventDefault();
+        toast.success({ title: 'Archive restored' }, { id });
+      },
+    },
+  ],
+});
+```
+
+Buttons render in the order you list them, left to right, and that is
+also their tab order: the skin never reorders a pair. Which one looks
+loud is `variant`, not position, so the two are yours to combine.
+`primary` is the outlined default and `secondary` drops the border to
+step back.
+
+```ts
+toast.message(
+  {
+    title: 'Invitation',
+    description: 'Anna asked to join the workspace.',
+    actions: [
+      { label: 'Decline', variant: 'secondary', onClick: decline },
+      { label: 'Accept', onClick: accept },
+    ],
+  },
+  { duration: Infinity, dismissible: false }
+);
+```
+
+There is no `disabled` on an action, on purpose. A pending Accept is
+better said out loud: prevent the dismiss and re-create the same id as
+`toast.loading({ title: 'Accepting…' })`, and the buttons stop existing
+instead of greying out.
+
+The cross is chrome, not permission. `closeButton: false` hides it and
+leaves the toast swipeable, which is what an undo toast wants: the
+button reads as the way out, and the gesture is still there for anyone
+who would rather flick it away. `dismissible: false` is the other
+thing entirely, it takes the right to close away (no cross, no swipe),
+and no `closeButton` brings the cross back.
+
+```ts
+toast.message({
+  title: 'Message archived',
+  closeButton: false,
+  actions: [{ label: 'Undo', onClick: undoArchive }],
+});
+```
+
+`<Toaster />` props: `toaster` (your own store instead of the
+singleton; read once, remount to switch), `max` (active toasts at once,
+the rest queue; live), `visible` (how many peek out of the collapsed
+stack), `swipe-direction`, `exit-duration` (the exit animation's
+length, ms; one value drives the presenter's exit clock and, published
+as `--cincin-exit-duration`, the skin's motion durations).
+
+## Headless
+
+```vue
+<script setup lang="ts">
+import { usePresenter, useToasts } from 'cincin-vue/core';
+import Card from './Card.vue';
+
+const { toaster } = defineProps(['toaster']);
+
+// The exit clock finishes leaving toasts on time: declare your exit
+// animation's length, no transitionend listeners needed.
+const presenter = usePresenter(toaster, { max: 5, exitDuration: 400 });
+const toasts = useToasts(presenter);
+</script>
+
+<template>
+  <ol>
+    <Card
+      v-for="toast of toasts"
+      :key="toast.key"
+      :toast="toast"
+      :presenter="presenter"
+    />
+  </ol>
+</template>
+```
+
+```vue
+<!-- Card.vue -->
+<script setup lang="ts">
+import { useToastSwipe } from 'cincin-vue/core';
+import { useTemplateRef } from 'vue';
+
+const props = defineProps(['toast', 'presenter']);
+
+const card = useTemplateRef('card');
+useToastSwipe(card, {
+  key: props.toast.key,
+  presenter: props.presenter,
+  enabled: () => props.toast.entry.dismissible,
+});
+</script>
+
+<template>
+  <li ref="card" :data-phase="toast.phase">
+    {{ String(toast.entry.content) }}
+  </li>
+</template>
+```
+
+The composables return refs and take options as plain values, refs or
+getters (`MaybeRefOrGetter`): a getter over your props keeps an option
+live. The rest of the toolbox: `useStack(toasts, options)` owns a
+`cincin/dom` stack layout and mirrors the rendered list into it;
+`useSlot(element, { layout, key })` registers the card's element for
+measurement and reads its live slot (geometry, `front`/`leaving` for
+the `inert` rule); `useVisibilityPause(presenter)` pauses the toasts
+while the document is hidden; `useToastEntries(toaster)` subscribes to
+the store records instead of the showings;
+`createToasterContext<MyContent>()` returns `provideToaster` with
+injection-aware `useToaster` / `useToastEntries` for a typed content
+payload. The primitives take their instances explicitly and carry no
+CSS.
+
+## Browser support
+
+Ships untranspiled modern JS (`AbortSignal.any`, ES2023 array methods)
+over `ResizeObserver`: Chrome 116+, Safari 17.4+, Firefox 124+,
+Node 20.3+ for SSR. The bundled skin's CSS (`@starting-style`,
+`light-dark()`) wants 2024-class browsers.
+
+## Documentation and source
+
+[github.com/nbarinov/cincin](https://github.com/nbarinov/cincin)
