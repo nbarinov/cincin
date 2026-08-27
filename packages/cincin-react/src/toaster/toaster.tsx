@@ -101,7 +101,7 @@ function ToastCard({
   });
   const composedRef = useComposedRefs(swipeRef, slotRef);
 
-  const { title, description, action, closeButton = true } = entry.content;
+  const { title, description, actions, closeButton = true } = entry.content;
 
   return (
     <li
@@ -141,26 +141,6 @@ function ToastCard({
           )}
         </div>
 
-        {action !== undefined && (
-          <button
-            type="button"
-            data-cincin-action
-            onClick={(event) => {
-              // The click dismisses, unless the handler cancels it: a
-              // handler that wants the toast to stay (say, to morph it
-              // in place by re-creating its id) calls
-              // event.preventDefault(). The check is synchronous on
-              // purpose: a prevent after an await is too late.
-              action.onClick(event);
-              if (!event.defaultPrevented) {
-                presenter.dismiss(key);
-              }
-            }}
-          >
-            {action.label}
-          </button>
-        )}
-
         {entry.dismissible && closeButton && (
           <button
             type="button"
@@ -170,6 +150,28 @@ function ToastCard({
           >
             {CLOSE_ICON}
           </button>
+        )}
+
+        {actions !== undefined && (
+          <div data-cincin-actions>
+            {actions.map((action, index) => (
+              <button
+                key={index}
+                type="button"
+                data-cincin-action
+                data-variant={action.variant ?? 'primary'}
+                onClick={(event) => {
+                  action.onClick(event);
+
+                  if (!event.defaultPrevented) {
+                    presenter.dismiss(key);
+                  }
+                }}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
         )}
       </div>
     </li>

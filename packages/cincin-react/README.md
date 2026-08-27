@@ -39,7 +39,7 @@ client (calls on the server do nothing useful).
 toast.error({
   title: 'Something broke',
   description: 'The request did not survive the round trip.',
-  action: { label: 'Retry', onClick: retry },
+  actions: [{ label: 'Retry', onClick: retry }],
 });
 
 toast.promise(upload(), {
@@ -53,23 +53,51 @@ const id = toast.info({ title: 'Connected' });
 toast.remove(id);
 ```
 
-An action click dismisses its toast. The handler receives the click
-event and can cancel that with `event.preventDefault()`, say to morph
-the toast in place by re-creating its id (the check is synchronous, so
-prevent before any `await`):
+A toast takes one or two actions, and a click on either dismisses it.
+The handler receives the click event and can cancel that with
+`event.preventDefault()`, say to morph the toast in place by
+re-creating its id (the check is synchronous, so prevent before any
+`await`):
 
 ```ts
 const id = toast.message({
   title: 'Message archived',
-  action: {
-    label: 'Undo',
-    onClick: (event) => {
-      event.preventDefault();
-      toast.success({ title: 'Archive restored' }, { id });
+  actions: [
+    {
+      label: 'Undo',
+      onClick: (event) => {
+        event.preventDefault();
+        toast.success({ title: 'Archive restored' }, { id });
+      },
     },
-  },
+  ],
 });
 ```
+
+Buttons render in the order you list them, left to right, and that is
+also their tab order: the skin never reorders a pair. Which one looks
+loud is `variant`, not position, so the two are yours to combine.
+`primary` is the outlined default and `secondary` drops the border to
+step back.
+
+```ts
+toast.message(
+  {
+    title: 'Invitation',
+    description: 'Anna asked to join the workspace.',
+    actions: [
+      { label: 'Decline', variant: 'secondary', onClick: decline },
+      { label: 'Accept', onClick: accept },
+    ],
+  },
+  { duration: Infinity, dismissible: false }
+);
+```
+
+There is no `disabled` on an action, on purpose. A pending Accept is
+better said out loud: prevent the dismiss and re-create the same id as
+`toast.loading({ title: 'Accepting…' })`, and the buttons stop existing
+instead of greying out.
 
 The cross is chrome, not permission. `closeButton: false` hides it and
 leaves the toast swipeable, which is what an undo toast wants: the
@@ -82,7 +110,7 @@ and no `closeButton` brings the cross back.
 toast.message({
   title: 'Message archived',
   closeButton: false,
-  action: { label: 'Undo', onClick: undoArchive },
+  actions: [{ label: 'Undo', onClick: undoArchive }],
 });
 ```
 

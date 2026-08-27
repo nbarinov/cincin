@@ -207,9 +207,9 @@
  * non-dismissible by default, and without that clause a plain loading
  * toast would take the tighter padding and then change height as the
  * promise settles into a dismissible one-liner. */
-[data-cincin-body]:not(:has([data-cincin-close])):has(
-    [data-cincin-description]:only-child
-  ):has([data-cincin-action]) {
+[data-cincin-body]:not(:has([data-cincin-close])):not(
+    :has([data-cincin-action] ~ [data-cincin-action])
+  ):has([data-cincin-description]:only-child):has([data-cincin-action]) {
   grid-template-areas: 'icon content action';
   padding: 0.65rem 0.65rem 0.65rem 0.85rem;
 }
@@ -217,18 +217,27 @@
 /* In the single row the button, not the copy, sets the row height:
  * a start-anchored glyph would float above its line, so here it
  * centres with everything else. */
-[data-cincin-body]:not(:has([data-cincin-close])):has(
-    [data-cincin-description]:only-child
-  ):has([data-cincin-action])
+[data-cincin-body]:not(:has([data-cincin-close])):not(
+    :has([data-cincin-action] ~ [data-cincin-action])
+  ):has([data-cincin-description]:only-child):has([data-cincin-action])
   > [data-cincin-icon] {
   align-self: center;
   margin-top: 0;
 }
 
-[data-cincin-action] {
+/* The row, not the button, claims the slot: a pair shares one grid
+ * area, and two buttons placed straight into it would sit on top of
+ * each other. Order inside the row is the tuple's, never ours. */
+[data-cincin-actions] {
   grid-area: action;
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin-left: 0.65rem;
+}
+
+[data-cincin-action] {
   padding: 0.35rem 0.65rem;
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 0.45rem;
@@ -243,6 +252,15 @@
 
 [data-cincin-action]:active {
   background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* A step down in chrome, not in legibility: the quiet button drops its
+ * border and keeps a label well above the 4.5:1 text floor (the cross
+ * may rest at 0.45 only because a non-text control answers to 3:1).
+ * The box is untouched, so the pair never differs in hit area. */
+[data-cincin-action][data-variant='secondary'] {
+  border-color: transparent;
+  color: color-mix(in srgb, currentColor 70%, transparent);
 }
 
 [data-cincin-close] {
@@ -293,9 +311,22 @@
   opacity: 1;
 }
 
+/* Pointed at, the quiet button borrows the loud one's shape: full
+ * label, and a border of its own that stays under primary's 18% so the
+ * pair keeps its order even while the quiet half is under the cursor. */
+[data-cincin-action][data-variant='secondary']:focus-visible {
+  border-color: color-mix(in srgb, currentColor 10%, transparent);
+  color: inherit;
+}
+
 @media (hover: hover) {
   [data-cincin-action]:hover {
     background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  [data-cincin-action][data-variant='secondary']:hover {
+    border-color: color-mix(in srgb, currentColor 10%, transparent);
+    color: inherit;
   }
 
   [data-cincin-close]:hover {

@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { createToaster } from 'cincin';
 import { Toaster } from './toaster';
-import type { ToastContent } from './content';
+import type { ToastAction, ToastContent } from './content';
 
 /** jsdom lacks ResizeObserver; the layout tolerates silent stubs (height
  * variables stay unwritten, skins keep their fallbacks). */
@@ -117,27 +117,67 @@ describe('Toaster a11y', () => {
     expect(front!.dataset.phase).toBe('leaving');
     expect(front!.hasAttribute('inert')).toBe(true);
   });
+
+  it('should tab the cross before the action, as the card reads', () => {
+    const toaster = setup();
+
+    act(() => {
+      toaster.error({
+        title: 'Something broke',
+        description: 'The request did not survive the round trip.',
+        actions: [{ label: 'Retry', onClick: () => {} }],
+      });
+    });
+
+    // The grid puts the cross in the first row and the action in the
+    // second: the markup has to agree, or the tab sequence walks the
+    // card bottom to top.
+    const order = [...getCards()[0]!.querySelectorAll('button')].map(
+      (button) =>
+        button.hasAttribute('data-cincin-close') ? 'close' : 'action'
+    );
+
+    expect(order).toEqual(['close', 'action']);
+  });
 });
 
-describe('Toaster action', () => {
-  function setupWithAction(
-    onClick: NonNullable<ToastContent['action']>['onClick']
-  ): HTMLElement {
+describe('Toaster actions', () => {
+  function getActions(card: HTMLElement): HTMLElement[] {
+    return [...card.querySelectorAll<HTMLElement>('[data-cincin-action]')];
+  }
+
+  function clickAction(card: HTMLElement, index = 0): void {
+    act(() => void fireEvent.click(getActions(card)[index]!));
+  }
+
+  function setupWithAction(onClick: ToastAction['onClick']): HTMLElement {
     const toaster = setup();
 
     act(() => {
       toaster.message({
         title: 'archived',
-        action: { label: 'Undo', onClick },
+        actions: [{ label: 'Undo', onClick }],
       });
     });
 
     return getCards()[0]!;
   }
 
-  function clickAction(card: HTMLElement): void {
-    const button = card.querySelector<HTMLElement>('[data-cincin-action]')!;
-    act(() => void fireEvent.click(button));
+  function setupWithPair(onSecond: ToastAction['onClick']): HTMLElement {
+    const toaster = setup();
+
+    act(() => {
+      toaster.message({
+        title: 'Invitation',
+        description: 'Anna asked to join the workspace.',
+        actions: [
+          { label: 'Decline', variant: 'secondary', onClick: () => {} },
+          { label: 'Accept', onClick: onSecond },
+        ],
+      });
+    });
+
+    return getCards()[0]!;
   }
 
   it('should dismiss the toast after the action click', () => {
@@ -150,6 +190,38 @@ describe('Toaster action', () => {
   it('should keep the toast when the handler prevents the click', () => {
     const card = setupWithAction((event) => event.preventDefault());
     clickAction(card);
+
+    expect(card.dataset.phase).toBe('active');
+  });
+
+  it('should render a pair in the tuple order and default to primary', () => {
+    const card = setupWithPair(() => {});
+
+    // The skin never reorders: the caller owns the layout, and the
+    // variant, not the position, says which one is loud.
+    expect(
+      getActions(card).map((button) => [
+        button.textContent,
+        button.dataset.variant,
+      ])
+    ).toEqual([
+      ['Decline', 'secondary'],
+      ['Accept', 'primary'],
+    ]);
+  });
+
+  it('should let the second button dismiss on the same rule', () => {
+    const onAccept = vi.fn();
+    const card = setupWithPair(onAccept);
+    clickAction(card, 1);
+
+    expect(onAccept).toHaveBeenCalledOnce();
+    expect(card.dataset.phase).toBe('leaving');
+  });
+
+  it('should keep the toast when the second handler prevents the click', () => {
+    const card = setupWithPair((event) => event.preventDefault());
+    clickAction(card, 1);
 
     expect(card.dataset.phase).toBe('active');
   });

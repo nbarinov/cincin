@@ -36,7 +36,7 @@ motion is respected.
 toast.error({
   title: 'Something broke',
   description: 'The request did not survive the round trip.',
-  action: { label: 'Retry', onClick: retry },
+  actions: [{ label: 'Retry', onClick: retry }],
 });
 
 toast.promise(upload(), {
@@ -105,7 +105,7 @@ function Region({ toaster }) {
 
 The store keeps content opaque, so a headless setup can carry any
 payload type; the skin fixes it to
-`{ title, description?, action?, closeButton? }`.
+`{ title, description?, actions?, closeButton? }`.
 `examples/vanilla` is the reference headless renderer.
 
 ## Requirements
