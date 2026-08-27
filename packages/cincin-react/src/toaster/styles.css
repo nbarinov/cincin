@@ -199,15 +199,17 @@
  * third column, and an undo toast stays exactly one line tall — which
  * is the point of an undo. The second row comes back the moment the
  * card has a description or a close button to hold that column, so a
- * label of unknown length can never squeeze the copy. The action is
- * required by the selector on purpose: `loading` is non-dismissible by
- * default, and without that clause a plain loading toast would take
- * the tighter padding and then change height as the promise settles
- * into a dismissible one-liner. */
-[data-cincin-toast][data-dismissible='false']
-  [data-cincin-body]:has([data-cincin-description]:only-child):has(
-    [data-cincin-action]
-  ) {
+ * label of unknown length can never squeeze the copy. The selector
+ * keys on the cross being absent rather than on the toast being
+ * locked: `closeButton: false` and a non-dismissible toast both free
+ * that column, and only the markup knows which of the two it is. The
+ * action is required by the selector on purpose: `loading` is
+ * non-dismissible by default, and without that clause a plain loading
+ * toast would take the tighter padding and then change height as the
+ * promise settles into a dismissible one-liner. */
+[data-cincin-body]:not(:has([data-cincin-close])):has(
+    [data-cincin-description]:only-child
+  ):has([data-cincin-action]) {
   grid-template-areas: 'icon content action';
   padding: 0.65rem 0.65rem 0.65rem 0.85rem;
 }
@@ -215,10 +217,9 @@
 /* In the single row the button, not the copy, sets the row height:
  * a start-anchored glyph would float above its line, so here it
  * centres with everything else. */
-[data-cincin-toast][data-dismissible='false']
-  [data-cincin-body]:has([data-cincin-description]:only-child):has(
-    [data-cincin-action]
-  )
+[data-cincin-body]:not(:has([data-cincin-close])):has(
+    [data-cincin-description]:only-child
+  ):has([data-cincin-action])
   > [data-cincin-icon] {
   align-self: center;
   margin-top: 0;

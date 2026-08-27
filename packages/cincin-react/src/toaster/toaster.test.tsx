@@ -154,3 +154,51 @@ describe('Toaster action', () => {
     expect(card.dataset.phase).toBe('active');
   });
 });
+
+describe('Toaster close button', () => {
+  function getClose(card: HTMLElement): HTMLElement | null {
+    return card.querySelector<HTMLElement>('[data-cincin-close]');
+  }
+
+  it('should keep the cross by default', () => {
+    const toaster = setup();
+
+    act(() => {
+      toaster.message({ title: 'archived' });
+    });
+
+    expect(getClose(getCards()[0]!)).not.toBeNull();
+  });
+
+  it('should drop the cross while the toast stays dismissible', () => {
+    const toaster = setup();
+
+    act(() => {
+      toaster.message({ title: 'archived', closeButton: false });
+    });
+
+    const card = getCards()[0]!;
+
+    // Chrome only: the permission is untouched, so the swipe controller
+    // is still attached and still claims its cross axis.
+    expect(getClose(card)).toBeNull();
+    expect(card.dataset.dismissible).toBe('true');
+    expect(card.style.touchAction).toBe('pan-y');
+  });
+
+  it('should not bring the cross back on a non-dismissible toast', () => {
+    const toaster = setup();
+
+    act(() => {
+      toaster.message(
+        { title: 'working', closeButton: true },
+        { dismissible: false }
+      );
+    });
+
+    const card = getCards()[0]!;
+
+    expect(getClose(card)).toBeNull();
+    expect(card.style.touchAction).toBe('');
+  });
+});

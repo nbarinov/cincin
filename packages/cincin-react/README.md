@@ -71,6 +71,21 @@ const id = toast.message({
 });
 ```
 
+The cross is chrome, not permission. `closeButton: false` hides it and
+leaves the toast swipeable, which is what an undo toast wants: the
+button reads as the way out, and the gesture is still there for anyone
+who would rather flick it away. `dismissible: false` is the other
+thing entirely, it takes the right to close away (no cross, no swipe),
+and no `closeButton` brings the cross back.
+
+```ts
+toast.message({
+  title: 'Message archived',
+  closeButton: false,
+  action: { label: 'Undo', onClick: undoArchive },
+});
+```
+
 `<Toaster />` props: `toaster` (your own store instead of the
 singleton; read once, remount to switch), `max` (active toasts at once,
 the rest queue; live), `visible` (how many peek out of the collapsed

@@ -104,7 +104,8 @@ function Region({ toaster }) {
 ```
 
 The store keeps content opaque, so a headless setup can carry any
-payload type; the skin fixes it to `{ title, description?, action? }`.
+payload type; the skin fixes it to
+`{ title, description?, action?, closeButton? }`.
 `examples/vanilla` is the reference headless renderer.
 
 ## Requirements

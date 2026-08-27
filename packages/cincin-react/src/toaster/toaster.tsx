@@ -101,7 +101,7 @@ function ToastCard({
   });
   const composedRef = useComposedRefs(swipeRef, slotRef);
 
-  const { title, description, action } = entry.content;
+  const { title, description, action, closeButton = true } = entry.content;
 
   return (
     <li
@@ -161,7 +161,7 @@ function ToastCard({
           </button>
         )}
 
-        {entry.dismissible && (
+        {entry.dismissible && closeButton && (
           <button
             type="button"
             data-cincin-close
