@@ -130,6 +130,58 @@ h1 {
   text-wrap: pretty;
 }
 
+/* --- adapters ------------------------------------------------------- */
+
+.targets {
+  margin: 1.625rem 0 0;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+  list-style: none;
+}
+
+.target {
+  display: flex;
+}
+
+.target a,
+.target.is-soon {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4375rem;
+  padding: 0.4375rem 0.875rem;
+  border-radius: 0.5625rem;
+  color: inherit;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 150ms;
+}
+
+@media (hover: hover) {
+  .target a:hover {
+    background: light-dark(#f4f4f0, #26262b);
+  }
+}
+
+/* Not shipped yet: dashed, dimmed, and inert. */
+.target.is-soon {
+  border: 1px dashed light-dark(#dededa, #313137);
+  color: light-dark(#b0b0a8, #66665f);
+}
+
+.target-soon {
+  font-size: 0.59375rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
 h2 {
   margin: 3.25rem 0 0;
   color: var(--faint);
@@ -146,7 +198,6 @@ h2 {
   margin-top: 0.875rem;
   display: flex;
   flex-wrap: wrap;
-  flex-wrap: balance;
   justify-content: center;
   gap: 0.5rem;
 }
@@ -196,9 +247,10 @@ h2 {
   }
 }
 
-/* The dots borrow the skin's accents, so a button and the toast it
- * fires read as the same thing. Keep in sync with the skin's
- * [data-type] accents. */
+/* Page chrome, deliberately NOT the skin: the toasts themselves carry
+ * no per-type colour, so these dots are the landing's own shorthand
+ * for "this button fires that kind" — nothing on screen has to match
+ * them. */
 .dot {
   flex: none;
   width: 0.4375rem;

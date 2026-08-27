@@ -5,6 +5,12 @@ import { ThemeToggle } from './theme-toggle';
 
 const REPO_URL = 'https://github.com/nbarinov/cincin';
 
+const TARGETS = [
+  { name: 'Vanilla JS', href: `${REPO_URL}/tree/main/examples/vanilla` },
+  { name: 'React', href: `${REPO_URL}/tree/main/packages/cincin-react` },
+  { name: 'Vue', soon: true },
+];
+
 function App() {
   // The panel shows the call behind the last button pressed: the demo
   // and its documentation are the same click.
@@ -40,6 +46,23 @@ toast.success({ title: 'Saved' })`
           shows it, thin adapters, polished UX.
         </p>
 
+        <ul className="targets" aria-label="Supported UI libraries">
+          {TARGETS.map((target) =>
+            target.soon ? (
+              <li key={target.name} className="target is-soon">
+                {target.name}
+                <span className="target-soon">soon</span>
+              </li>
+            ) : (
+              <li key={target.name} className="target">
+                <a href={target.href} target="_blank" rel="noreferrer">
+                  {target.name}
+                </a>
+              </li>
+            )
+          )}
+        </ul>
+
         <h2>Try it</h2>
         <section className="controls" aria-label="Toast scenarios">
           {SCENARIOS.map((scenario) => (
@@ -53,7 +76,11 @@ toast.success({ title: 'Saved' })`
               }}
             >
               {scenario.dot !== undefined && (
-                <span className="dot" data-type={scenario.dot} aria-hidden />
+                <span
+                  className="dot"
+                  data-type={scenario.dot}
+                  aria-hidden
+                ></span>
               )}
               {scenario.label}
             </button>
