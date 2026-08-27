@@ -69,6 +69,8 @@ Two objects with one job each:
 | `cincin/dom`        | Framework-free DOM controllers: the swipe gesture, the stack layout, the visibility pause. |
 | `cincin-react`      | The ready-to-use `<Toaster />` and the `toast` store singleton.                            |
 | `cincin-react/core` | Headless React bindings: `usePresenter`, `useToasts`, `useStack`, `useSlot`, more.         |
+| `cincin-vue`        | The same ready-to-use pair for Vue 3.5.                                                    |
+| `cincin-vue/core`   | Headless Vue composables, mirroring the React set.                                         |
 
 ## Going headless
 
