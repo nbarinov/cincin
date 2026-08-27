@@ -33,7 +33,7 @@ const scenarios: Array<[label: string, run: () => void]> = [
       toast.warning({
         title: 'File deleted',
         description: 'You have a few seconds to change your mind.',
-        action: { label: 'Undo', onClick: () => console.log('undo!') },
+        actions: [{ label: 'Undo', onClick: () => console.log('undo!') }],
       }),
   ],
   [
@@ -48,14 +48,57 @@ const scenarios: Array<[label: string, run: () => void]> = [
       const toastId = toast.message({
         title: 'Message archived',
         closeButton: false,
-        action: {
-          label: 'Undo',
-          onClick: (event) => {
-            event.preventDefault();
-            toast.success({ title: 'Archive restored' }, { id: toastId });
+        actions: [
+          {
+            label: 'Undo',
+            onClick: (event) => {
+              event.preventDefault();
+              toast.success({ title: 'Archive restored' }, { id: toastId });
+            },
           },
-        },
+        ],
       });
+    },
+  ],
+  [
+    // A pair asks a question, so the card waits for the answer: no
+    // expiry and no swipe, silence is not a reply. Both answers morph
+    // the same card in place, so the card that asked reports back. The
+    // ask is an info and the answers are not: an upsert re-derives the
+    // duration and the dismissibility only when the type changes, so
+    // answering in the asking type would inherit the open-ended clock.
+    'Decide',
+    () => {
+      const toastId = toast.info(
+        {
+          title: 'Anna wants to join',
+          description: 'She asked for access to the workspace.',
+          actions: [
+            {
+              label: 'Decline',
+              variant: 'secondary',
+              onClick: (event) => {
+                event.preventDefault();
+                toast.message(
+                  { title: 'Invitation declined' },
+                  { id: toastId }
+                );
+              },
+            },
+            {
+              label: 'Accept',
+              onClick: (event) => {
+                event.preventDefault();
+                toast.success(
+                  { title: 'Anna joined the workspace' },
+                  { id: toastId }
+                );
+              },
+            },
+          ],
+        },
+        { duration: Infinity, dismissible: false }
+      );
     },
   ],
   [

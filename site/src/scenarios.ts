@@ -66,13 +66,13 @@ const SCENARIOS: Scenario[] = [
     code: `toast.error({
   title: 'Something broke',
   description: 'The request did not survive the round trip.',
-  action: { label: 'Retry', onClick: retry },
+  actions: [{ label: 'Retry', onClick: retry }],
 })`,
     run: () =>
       void toast.error({
         title: 'Something broke',
         description: 'The request did not survive the round trip.',
-        action: { label: 'Retry', onClick: retry },
+        actions: [{ label: 'Retry', onClick: retry }],
       }),
   },
   {
@@ -107,29 +107,106 @@ const SCENARIOS: Scenario[] = [
     code: `const toastId = toast.message({
   title: 'Message archived',
   closeButton: false,
-  action: {
-    label: 'Undo',
-    onClick: (e) => {
-      e.preventDefault();
-      toast.success(
-        { title: 'Archive restored' },
-        { id: toastId }
-      );
+  actions: [
+    {
+      label: 'Undo',
+      onClick: (e) => {
+        e.preventDefault();
+        toast.success(
+          { title: 'Archive restored' },
+          { id: toastId }
+        );
+      },
     },
-  },
+  ],
 })`,
     run: () => {
       const toastId = toast.message({
         title: 'Message archived',
         closeButton: false,
-        action: {
-          label: 'Undo',
-          onClick: (e) => {
-            e.preventDefault();
-            toast.success({ title: 'Archive restored' }, { id: toastId });
+        actions: [
+          {
+            label: 'Undo',
+            onClick: (e) => {
+              e.preventDefault();
+              toast.success({ title: 'Archive restored' }, { id: toastId });
+            },
           },
-        },
+        ],
       });
+    },
+  },
+  {
+    label: 'Decide',
+    // A pair asks a question, so the card must wait for the answer:
+    // no expiry and no swipe, because silence is not a reply. Both
+    // answers prevent the dismiss and re-create the same id, so the
+    // card that asked is the card that reports back. The ask is an
+    // info and the answers are not: an upsert only re-derives the
+    // duration and the dismissibility when the type changes, so
+    // answering in the asking type would inherit the open-ended clock
+    // and strand the confirmation on screen.
+    code: `const toastId = toast.info(
+  {
+    title: 'Anna wants to join',
+    description: 'She asked for access to the workspace.',
+    actions: [
+      {
+        label: 'Decline',
+        variant: 'secondary',
+        onClick: (e) => {
+          e.preventDefault();
+          toast.message(
+            { title: 'Invitation declined' },
+            { id: toastId }
+          );
+        },
+      },
+      {
+        label: 'Accept',
+        onClick: (e) => {
+          e.preventDefault();
+          toast.success(
+            { title: 'Anna joined the workspace' },
+            { id: toastId }
+          );
+        },
+      },
+    ],
+  },
+  { duration: Infinity, dismissible: false }
+)`,
+    run: () => {
+      const toastId = toast.info(
+        {
+          title: 'Anna wants to join',
+          description: 'She asked for access to the workspace.',
+          actions: [
+            {
+              label: 'Decline',
+              variant: 'secondary',
+              onClick: (e) => {
+                e.preventDefault();
+                toast.message(
+                  { title: 'Invitation declined' },
+                  { id: toastId }
+                );
+              },
+            },
+            {
+              label: 'Accept',
+              onClick: (e) => {
+                e.preventDefault();
+                toast.success(
+                  { title: 'Anna joined the workspace' },
+                  { id: toastId }
+                );
+              },
+            },
+          ],
+        },
+        { duration: Infinity, dismissible: false }
+      );
     },
   },
   {
