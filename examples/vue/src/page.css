@@ -1,0 +1,58 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  --page-pad: 2rem;
+
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 100dvh;
+  padding: max(var(--page-pad), env(safe-area-inset-top, 0px))
+    max(var(--page-pad), env(safe-area-inset-right, 0px))
+    max(var(--page-pad), env(safe-area-inset-bottom, 0px))
+    max(var(--page-pad), env(safe-area-inset-left, 0px));
+}
+
+@media (max-width: 600px) {
+  body {
+    --page-pad: 1.25rem;
+  }
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Scoped to the demo section: a bare `button` selector reaches the
+ * toast's close/action buttons too, and paints them with the page's
+ * hover/active backgrounds and radius. */
+section button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  section button:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}
+
+section button:active {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
