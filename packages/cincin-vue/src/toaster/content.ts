@@ -13,4 +13,19 @@ type ToastAction = {
   variant?: 'primary' | 'secondary';
 };
 
-export type { ToastContent, ToastAction };
+type ToasterLabels = {
+  /**
+   * The region landmark's accessible name.
+   *
+   * @default 'Notifications'
+   */
+  region?: string;
+  /**
+   * The close buttons' accessible name.
+   *
+   * @default 'Dismiss'
+   */
+  close?: string;
+};
+
+export type { ToastContent, ToastAction, ToasterLabels };

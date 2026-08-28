@@ -6,7 +6,7 @@ import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
-import type { ToastContent } from './content';
+import type { ToastContent, ToasterLabels } from './content';
 import { toast as defaultToaster } from './toast';
 import { useRegion } from './use-region';
 import ToastCard from './ToastCard.vue';
@@ -19,6 +19,10 @@ const props = withDefaults(
      * @default package singleton
      */
     toaster?: ToasterContract<ToastContent>;
+    /**
+     * The skin's a11y vocabulary, one place for all toasts.
+     */
+    labels?: ToasterLabels;
     /**
      * @default 'right'
      */
@@ -67,27 +71,30 @@ const { expanded, handlers } = useRegion(region, presenter);
 const { layout } = useStack(live, () => ({ visible: props.visible }));
 
 useVisibilityPause(presenter);
+
+const regionLabel = computed(() => props.labels?.region ?? 'Notifications');
+const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
 </script>
 
 <template>
-  <ol
-    ref="region"
-    role="region"
-    aria-label="Notifications"
-    tabindex="-1"
-    data-cincin-toaster
-    :data-expanded="expanded"
-    :style="{ '--cincin-exit-duration': `${exitDuration}ms` }"
-    v-bind="handlers"
-  >
-    <ToastCard
-      v-for="toast of live"
-      :key="toast.key"
-      :toast="toast"
-      :presenter="presenter"
-      :layout="layout"
-      :expanded="expanded"
-      :swipe-direction="swipeDirection"
-    />
-  </ol>
+  <section tabindex="-1" :aria-label="regionLabel" aria-live="polite">
+    <ol
+      ref="region"
+      data-cincin-toaster
+      :data-expanded="expanded"
+      :style="{ '--cincin-exit-duration': `${exitDuration}ms` }"
+      v-bind="handlers"
+    >
+      <ToastCard
+        v-for="toast of live"
+        :key="toast.key"
+        :toast="toast"
+        :presenter="presenter"
+        :layout="layout"
+        :expanded="expanded"
+        :swipe-direction="swipeDirection"
+        :close-label="closeLabel"
+      />
+    </ol>
+  </section>
 </template>

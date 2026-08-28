@@ -118,7 +118,9 @@ singleton; read once, remount to switch), `max` (active toasts at once,
 the rest queue; live), `visible` (how many peek out of the collapsed
 stack), `swipe-direction`, `exit-duration` (the exit animation's
 length, ms; one value drives the presenter's exit clock and, published
-as `--cincin-exit-duration`, the skin's motion durations).
+as `--cincin-exit-duration`, the skin's motion durations), `labels`
+(the skin's a11y vocabulary: `{ region, close }`, defaults
+`'Notifications'` and `'Dismiss'`).
 
 ## Headless
 

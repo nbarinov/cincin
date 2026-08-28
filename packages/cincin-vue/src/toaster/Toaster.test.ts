@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render } from '@testing-library/vue';
 import { createToaster } from 'cincin';
 import { nextTick } from 'vue';
 import Toaster from './Toaster.vue';
-import type { ToastAction, ToastContent } from './content';
+import type { ToastAction, ToastContent, ToasterLabels } from './content';
 
 /** jsdom lacks ResizeObserver; the layout tolerates silent stubs (height
  * variables stay unwritten, skins keep their fallbacks). */
@@ -12,9 +12,9 @@ class ResizeObserverStub {
   disconnect(): void {}
 }
 
-function setup() {
+function setup(labels?: ToasterLabels) {
   const toaster = createToaster<ToastContent>();
-  render(Toaster, { props: { toaster } });
+  render(Toaster, { props: { toaster, ...(labels && { labels }) } });
   return toaster;
 }
 
@@ -57,6 +57,35 @@ afterEach(() => {
 });
 
 describe('Toaster a11y', () => {
+  it('should name the region landmark and keep the list role under it', async () => {
+    const toaster = setup();
+
+    toaster.message({ title: 'hi' });
+    await flushEffects();
+
+    const landmark = document.querySelector(
+      'section[aria-label="Notifications"]'
+    );
+    expect(landmark).not.toBeNull();
+    // The landmark wraps the list instead of replacing its role: the
+    // screen reader keeps both the region and "list, N items".
+    expect(landmark!.contains(getRegion())).toBe(true);
+    expect(getRegion().hasAttribute('role')).toBe(false);
+  });
+
+  it('should speak the labels prop on the landmark and the close button', async () => {
+    const toaster = setup({ region: 'Alerts', close: 'Close' });
+
+    toaster.message({ title: 'hi' });
+    await flushEffects();
+
+    expect(document.querySelector('section[aria-label="Alerts"]')).not.toBe(
+      null
+    );
+    const close = getRegion().querySelector('[data-cincin-close]');
+    expect(close!.getAttribute('aria-label')).toBe('Close');
+  });
+
   it('should keep collapsed back cards inert and the front card live', async () => {
     const toaster = setup();
 

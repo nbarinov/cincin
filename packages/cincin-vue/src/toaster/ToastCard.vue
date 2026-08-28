@@ -13,6 +13,7 @@ const props = defineProps<{
   layout: StackLayout;
   expanded: boolean;
   swipeDirection: SwipeDirection;
+  closeLabel: string;
 }>();
 
 const card = useTemplateRef<HTMLElement>('card');
@@ -110,7 +111,7 @@ function onAction(action: ToastAction, event: MouseEvent): void {
         v-if="toast.entry.dismissible && (content.closeButton ?? true)"
         type="button"
         data-cincin-close
-        aria-label="Dismiss"
+        :aria-label="closeLabel"
         @click="presenter.dismiss(toast.key)"
       >
         <CloseIcon />
