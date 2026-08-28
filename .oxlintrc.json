@@ -4,8 +4,18 @@
     "correctness": "error",
     "suspicious": "warn"
   },
+  "plugins": [
+    "unicorn",
+    "typescript",
+    "oxc",
+    "react",
+    "vue",
+    "react-perf",
+    "jsx-a11y"
+  ],
   "rules": {
-    "unicorn/consistent-function-scoping": "off"
+    "unicorn/consistent-function-scoping": "off",
+    "react/react-in-jsx-scope": "off"
   },
   "ignorePatterns": ["**/dist/**"],
   "overrides": [
