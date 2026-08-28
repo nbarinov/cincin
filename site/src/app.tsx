@@ -8,7 +8,8 @@ const REPO_URL = 'https://github.com/nbarinov/cincin';
 const TARGETS = [
   { name: 'Vanilla JS', href: `${REPO_URL}/tree/main/examples/vanilla` },
   { name: 'React', href: `${REPO_URL}/tree/main/packages/cincin-react` },
-  { name: 'Vue', soon: true },
+  { name: 'Vue', href: `${REPO_URL}/tree/main/packages/cincin-vue` },
+  { name: 'Solid', soon: true },
 ];
 
 function App() {
