@@ -45,7 +45,7 @@ describe('setRef', () => {
 });
 
 describe('composeRefs', () => {
-  it('should forward the value and tear every part down via one cleanup', () => {
+  it('should tear every part down via one cleanup when a part returns one', () => {
     const objectRef = createRef<string>();
     const detach = vi.fn();
     const seen: Array<string | null> = [];
@@ -68,14 +68,22 @@ describe('composeRefs', () => {
     expect(seen).toEqual(['value']);
   });
 
-  it('should reset cleanup-less callback refs with null', () => {
+  it('should return nothing without cleanup-aware parts and reset them with null', () => {
+    const objectRef = createRef<string>();
     const seen: Array<string | null> = [];
 
-    const composed = composeRefs<string>((value) => void seen.push(value));
-    const teardown = composed('value');
-    (teardown as () => void)();
+    const composed = composeRefs<string>(
+      objectRef,
+      (value) => void seen.push(value)
+    );
+
+    // No part returned a cleanup: a returned function here would make
+    // React 18 log an error; the null call is the teardown path.
+    expect(composed('value')).toBeUndefined();
+    composed(null);
 
     expect(seen).toEqual(['value', null]);
+    expect(objectRef.current).toBeNull();
   });
 });
 
