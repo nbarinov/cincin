@@ -31,8 +31,10 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
         return;
       }
 
+      const direction = options.direction ?? swipeOptionsRef.current.direction;
       return attachSwipe(el, {
         ...swipeOptionsRef.current,
+        ...(direction !== undefined && { direction }),
         onDismiss: () => presenter.dismiss(key),
         onRemove: () => presenter.finish(key),
       });

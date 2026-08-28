@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 type ComposableRef<T> = Ref<T> | undefined;
 
 function useComposedRefs<T>(...refs: ComposableRef<T>[]): RefCallback<T> {
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- refs is an array of dependencies that should be compared by reference
   return useCallback(composeRefs(...refs), refs);
 }
 

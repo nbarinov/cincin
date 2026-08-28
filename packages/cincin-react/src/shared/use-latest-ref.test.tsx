@@ -46,6 +46,7 @@ describe('useLatestRef', () => {
             seen.push(latest.current);
           }
         },
+        // oxlint-disable-next-line react-hooks/exhaustive-deps -- value is deliberate: it drives the fresh identity, latest is a stable box
         [value]
       );
 
