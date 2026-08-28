@@ -15,4 +15,19 @@ type ToastContent = {
   closeButton?: boolean;
 };
 
-export type { ToastAction, ToastContent };
+type ToasterLabels = {
+  /**
+   * The region landmark's accessible name.
+   *
+   * @default 'Notifications'
+   */
+  region?: string;
+  /**
+   * The close buttons' accessible name.
+   *
+   * @default 'Dismiss'
+   */
+  close?: string;
+};
+
+export type { ToastAction, ToastContent, ToasterLabels };

@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { createToaster } from 'cincin';
 import { Toaster } from './toaster';
-import type { ToastAction, ToastContent } from './content';
+import type { ToastAction, ToastContent, ToasterLabels } from './content';
 
 /** jsdom lacks ResizeObserver; the layout tolerates silent stubs (height
  * variables stay unwritten, skins keep their fallbacks). */
@@ -11,9 +11,9 @@ class ResizeObserverStub {
   disconnect(): void {}
 }
 
-function setup() {
+function setup(labels?: ToasterLabels) {
   const toaster = createToaster<ToastContent>();
-  render(<Toaster toaster={toaster} />);
+  render(<Toaster toaster={toaster} {...(labels && { labels })} />);
   return toaster;
 }
 
@@ -48,6 +48,37 @@ afterEach(() => {
 });
 
 describe('Toaster a11y', () => {
+  it('should name the region landmark and keep the list role under it', () => {
+    const toaster = setup();
+
+    act(() => {
+      toaster.message({ title: 'hi' });
+    });
+
+    const landmark = document.querySelector(
+      'section[aria-label="Notifications"]'
+    );
+    expect(landmark).not.toBeNull();
+    // The landmark wraps the list instead of replacing its role: the
+    // screen reader keeps both the region and "list, N items".
+    expect(landmark!.contains(getRegion())).toBe(true);
+    expect(getRegion().hasAttribute('role')).toBe(false);
+  });
+
+  it('should speak the labels prop on the landmark and the close button', () => {
+    const toaster = setup({ region: 'Alerts', close: 'Close' });
+
+    act(() => {
+      toaster.message({ title: 'hi' });
+    });
+
+    expect(document.querySelector('section[aria-label="Alerts"]')).not.toBe(
+      null
+    );
+    const close = getRegion().querySelector('[data-cincin-close]');
+    expect(close!.getAttribute('aria-label')).toBe('Close');
+  });
+
   it('should keep collapsed back cards inert and the front card live', () => {
     const toaster = setup();
 

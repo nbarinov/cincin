@@ -12,7 +12,7 @@ import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useSlot } from '../core/use-slot';
 import { useToastSwipe } from '../core/use-toast-swipe';
-import type { ToastContent } from './content';
+import type { ToastContent, ToasterLabels } from './content';
 import { toast as defaultToaster } from './toast';
 import { useRegion } from './use-region';
 import { CLOSE_ICON, TYPE_ICONS } from './icons';
@@ -20,6 +20,8 @@ import { CLOSE_ICON, TYPE_ICONS } from './icons';
 type ToasterProps = {
   /** @default package singleton */
   toaster?: ToasterContract<ToastContent>;
+  /** The skin's a11y vocabulary, one place for all toasts. */
+  labels?: ToasterLabels;
   /** @default 'right' */
   swipeDirection?: SwipeDirection;
   /** How many toasts peek out of the collapsed stack. @default 3 */
@@ -34,6 +36,7 @@ type ToasterProps = {
 
 function Toaster({
   toaster = defaultToaster,
+  labels = {},
   swipeDirection = 'right',
   visible = 3,
   max = Infinity,
@@ -51,28 +54,35 @@ function Toaster({
 
   useVisibilityPause(presenter);
 
+  const {
+    region: regionLabel = 'Notifications',
+    close: closeLabel = 'Dismiss',
+  } = labels;
+
   return (
-    <ol
-      role="region"
-      aria-label="Notifications"
-      tabIndex={-1}
-      data-cincin-toaster
-      data-expanded={region.expanded}
-      style={{ '--cincin-exit-duration': `${exitDuration}ms` } as CSSProperties}
-      ref={region.ref}
-      {...region.handlers}
-    >
-      {live.map((toast) => (
-        <ToastCard
-          key={toast.key}
-          toast={toast}
-          presenter={presenter}
-          layout={stack.layout}
-          expanded={region.expanded}
-          swipeDirection={swipeDirection}
-        />
-      ))}
-    </ol>
+    <section tabIndex={-1} aria-label={regionLabel} aria-live="polite">
+      <ol
+        data-cincin-toaster
+        data-expanded={region.expanded}
+        style={
+          { '--cincin-exit-duration': `${exitDuration}ms` } as CSSProperties
+        }
+        ref={region.ref}
+        {...region.handlers}
+      >
+        {live.map((toast) => (
+          <ToastCard
+            key={toast.key}
+            toast={toast}
+            presenter={presenter}
+            layout={stack.layout}
+            expanded={region.expanded}
+            swipeDirection={swipeDirection}
+            closeLabel={closeLabel}
+          />
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -82,6 +92,7 @@ type ToastCardProps = {
   layout: StackLayout;
   expanded: boolean;
   swipeDirection: SwipeDirection;
+  closeLabel: string;
 };
 
 function ToastCard({
@@ -90,6 +101,7 @@ function ToastCard({
   layout,
   expanded,
   swipeDirection,
+  closeLabel,
 }: ToastCardProps) {
   const { key, entry, phase } = toast;
   const { ref: slotRef, slot } = useSlot({ layout, key });
@@ -145,7 +157,7 @@ function ToastCard({
           <button
             type="button"
             data-cincin-close
-            aria-label="Dismiss"
+            aria-label={closeLabel}
             onClick={() => presenter.dismiss(key)}
           >
             {CLOSE_ICON}

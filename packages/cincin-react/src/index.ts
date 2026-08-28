@@ -6,4 +6,8 @@ import './toaster/styles.css';
 
 export { Toaster } from './toaster/toaster';
 export { toast } from './toaster/toast';
-export type { ToastContent, ToastAction } from './toaster/content';
+export type {
+  ToastContent,
+  ToastAction,
+  ToasterLabels,
+} from './toaster/content';
