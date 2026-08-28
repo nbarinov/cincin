@@ -3,8 +3,10 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useLatestRef } from './use-latest-ref';
 
 type RefMapOptions<Key, Value> = {
-  /** Fires on attach (with the value) and on ref cleanup (with null).
-   * Always the latest render's callback, so it may close over props. */
+  /**
+   * Fires on attach (with the value) and on detach (with null).
+   * Always the latest render's callback, so it may close over props.
+   */
   onChange?: (key: Key, value: Value | null) => void;
 };
 
@@ -15,22 +17,23 @@ interface RefMap<Key, Value> {
   get: (key: Key) => Value | undefined;
 }
 
-/** The grace between a detach and the burial of its cached callback.
- * Same-commit re-attaches (StrictMode replays, node swaps) beat any
- * timer; the delay additionally lets cross-commit remounts (a restored
- * subtree, a quick unmount/remount) keep their callback identity. */
 const BURIAL_DELAY = 200;
 
 /**
- * A registry of "key to value behind a ref". A ref cleanup is a node
- * event, not a key death: React re-runs cleanups while a key is alive
- * (StrictMode replays, composed-ref identity changes), and pruning the
- * callback cache right there would hand the next render a fresh
- * callback, retriggering the very re-run that pruned it. Instead a
- * cleanup enqueues the key for burial and a shared timer flushes the
- * queue: replays and node swaps re-attach within the same commit —
- * synchronously, before any timer — so a key still valueless at flush
- * time is truly gone. Re-attaching also dequeues the key outright.
+ * A registry of "key to value behind a ref". The callback never
+ * returns a cleanup: React 18 ignores the returned function (with a
+ * warning) and both majors fall back to calling the ref with null, so
+ * the null branch is the one detach path that works everywhere.
+ *
+ * A detach is a node event, not a key death: React re-runs the ref
+ * while a key is alive (StrictMode replays, composed-ref identity
+ * changes), and pruning the callback cache right there would hand the
+ * next render a fresh callback, retriggering the very re-run that
+ * pruned it. Instead a detach enqueues the key for burial and a shared
+ * timer flushes the queue: replays and node swaps re-attach within the
+ * same commit, synchronously, before any timer, so a key still
+ * valueless at flush time is truly gone. Re-attaching also dequeues
+ * the key outright.
  */
 function useRefMap<Key, Value>(options: RefMapOptions<Key, Value> = {}) {
   const values = useRef(new Map<Key, Value>());
@@ -44,6 +47,7 @@ function useRefMap<Key, Value>(options: RefMapOptions<Key, Value> = {}) {
     return () => {
       if (flushTimer.current !== undefined) {
         clearTimeout(flushTimer.current);
+        flushTimer.current = undefined;
       }
     };
   }, []);
@@ -57,31 +61,33 @@ function useRefMap<Key, Value>(options: RefMapOptions<Key, Value> = {}) {
         }
 
         const ref: RefCallback<Value> = (value) => {
-          if (value === null) {
+          if (value !== null) {
+            burials.current.delete(key);
+            values.current.set(key, value);
+            onChangeRef.current?.(key, value);
+
             return;
           }
 
-          burials.current.delete(key);
-          values.current.set(key, value);
-          onChangeRef.current?.(key, value);
+          if (!values.current.has(key)) {
+            return;
+          }
 
-          return () => {
-            values.current.delete(key);
-            onChangeRef.current?.(key, null);
+          values.current.delete(key);
+          onChangeRef.current?.(key, null);
 
-            burials.current.add(key);
+          burials.current.add(key);
 
-            flushTimer.current ??= setTimeout(() => {
-              flushTimer.current = undefined;
-              for (const buried of burials.current) {
-                if (!values.current.has(buried)) {
-                  refs.current.delete(buried);
-                }
+          flushTimer.current ??= setTimeout(() => {
+            flushTimer.current = undefined;
+            for (const buried of burials.current) {
+              if (!values.current.has(buried)) {
+                refs.current.delete(buried);
               }
+            }
 
-              burials.current.clear();
-            }, BURIAL_DELAY);
-          };
+            burials.current.clear();
+          }, BURIAL_DELAY);
         };
 
         refs.current.set(key, ref);

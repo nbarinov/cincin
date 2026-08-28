@@ -66,6 +66,21 @@ describe('useRefMap', () => {
     expect(changes).toEqual([['a', false]]);
   });
 
+  it('should return nothing from the ref callback, the React 18 contract', () => {
+    const { result } = renderHook(() => useRefMap<string, HTMLElement>());
+    const ref = result.current.getRef('a');
+    const element = document.createElement('div');
+
+    // React 18 ignores a returned cleanup (with a warning) and calls
+    // the ref with null instead; the null branch must carry the whole
+    // detach for the hook to work there.
+    expect(ref(element)).toBeUndefined();
+    expect(result.current.get('a')).toBe(element);
+
+    expect(ref(null)).toBeUndefined();
+    expect(result.current.get('a')).toBeUndefined();
+  });
+
   it('should keep the ref callback stable across a StrictMode double mount', () => {
     let map!: RefMap<string, HTMLElement>;
     const seen = new Set<unknown>();
@@ -89,6 +104,42 @@ describe('useRefMap', () => {
     // controller) would be torn down and re-attached for nothing.
     expect(seen.size).toBe(1);
     expect(map.get('a')).toBeDefined();
+  });
+
+  it('should still bury a departed key after the StrictMode mount cycle', async () => {
+    let map!: RefMap<string, HTMLElement>;
+
+    function Host({ keys }: { keys: string[] }) {
+      map = useRefMap<string, HTMLElement>();
+      return (
+        <>
+          {keys.map((key) => (
+            <div key={key} ref={map.getRef(key)} />
+          ))}
+        </>
+      );
+    }
+
+    const view = render(
+      <StrictMode>
+        <Host keys={['a']} />
+      </StrictMode>
+    );
+    const before = map.getRef('a');
+
+    // The mount replay detaches and reattaches the ref: the detach
+    // schedules a flush, the cancelBurials cleanup cancels it, and the
+    // hook lives on (the same shape as an Activity hide/show). A
+    // cleanup that left the cancelled id in the slot would block every
+    // future flush, and no key would ever be buried again.
+    view.rerender(
+      <StrictMode>
+        <Host keys={[]} />
+      </StrictMode>
+    );
+    await new Promise((resolve) => setTimeout(resolve, BURIAL_DELAY + 20));
+
+    expect(map.getRef('a')).not.toBe(before);
   });
 
   it('should keep the callback right after a cleanup, then bury it', async () => {
