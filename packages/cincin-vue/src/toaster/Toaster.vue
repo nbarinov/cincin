@@ -77,7 +77,7 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
 </script>
 
 <template>
-  <section tabindex="-1" :aria-label="regionLabel" aria-live="polite">
+  <section tabindex="-1" :aria-label="regionLabel">
     <ol
       ref="region"
       data-cincin-toaster

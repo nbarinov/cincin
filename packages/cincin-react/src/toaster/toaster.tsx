@@ -60,7 +60,7 @@ function Toaster({
   } = labels;
 
   return (
-    <section tabIndex={-1} aria-label={regionLabel} aria-live="polite">
+    <section tabIndex={-1} aria-label={regionLabel}>
       <ol
         data-cincin-toaster
         data-expanded={region.expanded}
