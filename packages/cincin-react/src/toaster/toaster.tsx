@@ -5,6 +5,7 @@ import type { StackLayout, StackSlot, SwipeDirection } from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
 import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
+import { inertValue } from '../shared/inert';
 import { useComposedRefs } from '../shared/use-composed-refs';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
@@ -129,7 +130,9 @@ function ToastCard({
         slot === undefined || slot.leaving ? undefined : String(slot.front)
       }
       style={createStyles(slot)}
-      inert={slot === undefined || slot.leaving || (!expanded && !slot.front)}
+      inert={inertValue(
+        slot === undefined || slot.leaving || (!expanded && !slot.front)
+      )}
       ref={composedRef}
     >
       {/* The body carries the slots and the padding; the card box above
