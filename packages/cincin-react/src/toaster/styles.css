@@ -177,13 +177,14 @@
 }
 
 /* A lone title arrives in the description slot (see toaster.tsx). It
- * is the whole message, so it gets the title's weight and full
- * contrast back — the muted body style is for text that sits UNDER a
- * title. */
+ * is the whole message, so it gets full contrast back — but not the
+ * title's weight: with no description under it there is nothing to
+ * outweigh, and 600 on a single line only shouts. The muted body
+ * style is for text that sits UNDER a title. */
 [data-cincin-description]:only-child {
   font-size: 0.875rem;
   line-height: 1.35;
-  font-weight: 600;
+  font-weight: 400;
   color: inherit;
 }
 
