@@ -13,7 +13,7 @@ headless building blocks under `cincin-react/core`.
 pnpm add cincin-react
 ```
 
-Requires React 19.
+Requires React 18.
 
 ## Quick start
 
@@ -144,14 +144,14 @@ function Region({ toaster }) {
 }
 
 function Card({ toast, presenter }) {
-  const swipeRef = useToastSwipe({
+  const swipe = useToastSwipe({
     key: toast.key,
     presenter,
     enabled: toast.entry.dismissible,
   });
 
   return (
-    <li ref={swipeRef} data-phase={toast.phase}>
+    <li data-phase={toast.phase} style={swipe.style} {...swipe.handlers}>
       {String(toast.entry.content)}
     </li>
   );
