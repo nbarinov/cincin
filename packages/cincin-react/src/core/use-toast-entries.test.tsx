@@ -11,7 +11,7 @@ afterEach(() => {
 describe('useToastEntries', () => {
   it('should read the current snapshot and follow updates', () => {
     const toaster = createToaster();
-    const { result } = renderHook(() => useToastEntries(toaster));
+    const { result, unmount } = renderHook(() => useToastEntries(toaster));
 
     expect(result.current).toEqual([]);
 
@@ -25,6 +25,9 @@ describe('useToastEntries', () => {
     });
     expect(result.current).toEqual([]);
 
+    // The hook goes first: destroying under a live subscriber makes
+    // the core warn about the leak it suspects.
+    unmount();
     toaster.destroy();
   });
 

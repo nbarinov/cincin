@@ -28,7 +28,11 @@ describe('useToasts', () => {
     });
     expect(result.current.map((p) => p.phase)).toEqual(['leaving']);
 
-    presenter.unmount();
+    // The unmount clears the snapshot into the live subscriber: a
+    // React update, so it belongs inside act.
+    act(() => {
+      presenter.unmount();
+    });
   });
 
   it('should render the shared empty snapshot on the server', () => {

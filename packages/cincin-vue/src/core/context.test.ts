@@ -12,8 +12,11 @@ function renderTree<T>(provide: (() => void) | null, use: () => T): T {
   const Child = defineComponent({
     setup() {
       result = use();
-      return () => h('div');
     },
+    // An options-level render, not a setup-returned one: the throw
+    // cases leave setup without a return, and Vue would warn about a
+    // missing template mid-unwind.
+    render: () => h('div'),
   });
 
   const Parent = defineComponent({
