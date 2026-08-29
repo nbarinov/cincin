@@ -108,7 +108,10 @@ function Region({ toaster }) {
 The store keeps content opaque, so a headless setup can carry any
 payload type; the skin fixes it to
 `{ title, description?, actions?, closeButton? }`.
-`examples/vanilla` is the reference headless renderer.
+`examples/vanilla` is the reference headless renderer;
+`examples/framer-motion` renders the bare entry store with Framer
+Motion, skipping the presenter entirely (`AnimatePresence` owns the
+exit phases).
 
 ## Requirements
 
