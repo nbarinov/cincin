@@ -1,4 +1,6 @@
 import type { Axis } from './types';
+import { AXIS } from './gesture';
+import type { SwipeDirection } from './gesture';
 
 function prefersReducedMotion(): boolean {
   return matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -64,4 +66,14 @@ function assignStyle(
   };
 }
 
-export { prefersReducedMotion, assignStyle, translateValue, parseTranslate };
+function touchActionFor(direction: SwipeDirection): 'pan-y' | 'pan-x' {
+  return AXIS[direction] === 'x' ? 'pan-y' : 'pan-x';
+}
+
+export {
+  prefersReducedMotion,
+  assignStyle,
+  translateValue,
+  parseTranslate,
+  touchActionFor,
+};

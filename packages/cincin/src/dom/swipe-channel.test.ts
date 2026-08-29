@@ -6,14 +6,14 @@ afterEach(() => {
 });
 
 describe('createSwipeChannel', () => {
-  it('should claim touch-action for the cross axis', () => {
-    const horizontal = makeElement();
-    createSwipeChannel(horizontal, 'right');
-    expect(horizontal.style.touchAction).toBe('pan-y');
-
-    const vertical = makeElement();
-    createSwipeChannel(vertical, 'down');
-    expect(vertical.style.touchAction).toBe('pan-x');
+  it('should leave touch-action alone, the adapters claim it', () => {
+    // The channel binds lazily, at the first gesture: a touch-action
+    // claim from here would arrive too late for the browser's
+    // scroll-vs-app decision. The adapters claim it declaratively
+    // through `touchActionFor` before any gesture instead.
+    const element = makeElement();
+    createSwipeChannel(element, 'right');
+    expect(element.style.touchAction).toBe('');
   });
 
   it('should claim the rest position and the protocol variable', () => {

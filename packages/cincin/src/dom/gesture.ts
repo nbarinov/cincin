@@ -78,7 +78,8 @@ const SIGN: Record<SwipeDirection, Sign> = {
 
 /** Mutable state of one in-flight gesture, owned by the swipe controller. */
 interface Gesture {
-  pointerId: number;
+  /** The contact being tracked, in the protocol's opaque id. */
+  id: number;
   startX: number;
   startY: number;
   /** Translate at grab time: a re-grab during the cancel spring continues from there. */

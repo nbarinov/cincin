@@ -1,4 +1,9 @@
-import { assignStyle, parseTranslate, translateValue } from './utils';
+import {
+  assignStyle,
+  parseTranslate,
+  touchActionFor,
+  translateValue,
+} from './utils';
 
 describe('translateValue', () => {
   it('should format the offset along the requested axis', () => {
@@ -73,5 +78,14 @@ describe('assignStyle', () => {
 
     restore();
     expect(element.style.getPropertyValue('--cincin-swipe-x')).toBe('7px');
+  });
+});
+
+describe('touchActionFor', () => {
+  it('should reserve the cross axis for the browser', () => {
+    expect(touchActionFor('right')).toBe('pan-y');
+    expect(touchActionFor('left')).toBe('pan-y');
+    expect(touchActionFor('up')).toBe('pan-x');
+    expect(touchActionFor('down')).toBe('pan-x');
   });
 });

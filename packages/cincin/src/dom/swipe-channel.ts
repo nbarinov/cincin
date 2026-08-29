@@ -31,11 +31,9 @@ function createSwipeChannel(
   const sign = SIGN[direction];
   const variable = axis === 'x' ? '--cincin-swipe-x' : '--cincin-swipe-y';
 
-  // Claim our channels up front: touch-action (the browser owns scrolling
-  // on the other axis), the translate rest position, and the protocol
-  // variable. One restore returns the element to its pre-attach state.
+  // Claim our channels up front: the translate rest position and the
+  // protocol variable. One restore returns the element to its pre-bind state.
   const restore = assignStyle(element, {
-    touchAction: axis === 'x' ? 'pan-y' : 'pan-x',
     translate: translateValue(axis, 0),
     [variable]: '0px',
   });
