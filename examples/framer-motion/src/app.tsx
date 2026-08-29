@@ -72,7 +72,7 @@ const scenarios: Array<[label: string, run: () => void]> = [
 function App() {
   return (
     <main>
-      <h1>🥂 cincin · motion</h1>
+      <h1>🥂 cincin · framer motion</h1>
       <p>
         A renderer over the bare entry store, no <code>cincin/presenter</code>:
         exits belong to <code>AnimatePresence</code>, the swipe to{' '}
