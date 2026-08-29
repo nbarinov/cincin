@@ -1,8 +1,12 @@
-import { attachSwipe } from 'cincin/dom';
+import {
+  createSwipeController,
+  createSwipeHandlers,
+  touchActionFor,
+} from 'cincin/dom';
 import type { SwipeDirection, SwipeOptions } from 'cincin/dom';
 import type { Presenter, ToastKey } from 'cincin/presenter';
-import { toValue, watch } from 'vue';
-import type { MaybeRefOrGetter } from 'vue';
+import { computed, onScopeDispose, shallowRef, toValue, watch } from 'vue';
+import type { ComputedRef, MaybeRefOrGetter } from 'vue';
 
 type ToastSwipeOptions<Content extends {} = string> = Omit<
   SwipeOptions,
@@ -11,61 +15,111 @@ type ToastSwipeOptions<Content extends {} = string> = Omit<
   key: ToastKey;
   presenter: Presenter<Content>;
   /**
-   * Physical swipe direction. A changed source re-attaches the
+   * Physical swipe direction. A changed source recreates the
    * controller: the axis claim is a creation-time affair.
    *
    * @default 'right'
    */
   direction?: MaybeRefOrGetter<SwipeDirection>;
   /**
-   * Whether the gesture is attached at all. A non-dismissible toast
-   * gets no controller: no swipe, and no touch-action claim either.
+   * Whether the gesture exists at all. A non-dismissible toast gets
+   * no swipe: no handlers, and no touch-action claim either.
    *
    * @default true
    */
   enabled?: MaybeRefOrGetter<boolean>;
 };
 
+type ToastSwipeHandlers = {
+  pointerdown: (event: PointerEvent) => void;
+  pointermove: (event: PointerEvent) => void;
+  pointerup: (event: PointerEvent) => void;
+  pointercancel: (event: PointerEvent) => void;
+  /** `v-on` reads the suffix: a capture-phase click listener. */
+  clickCapture: (event: MouseEvent) => void;
+};
+
+type ToastSwipe = {
+  /**
+   * Bind onto the swiped element: `v-on="handlers"`.
+   * Empty while disabled: `v-on` digests an empty object without ceremony.
+   */
+  handlers: ComputedRef<ToastSwipeHandlers | Record<string, never>>;
+  /**
+   * The static touch-action claim: the browser must know the reserved
+   * axis before any gesture, so it travels declaratively with
+   * the element. `undefined` while disabled.
+   */
+  style: ComputedRef<{ touchAction: 'pan-y' | 'pan-x' } | undefined>;
+};
+
 /**
- * The swipe gesture on the given element, alive while the element is
- * and the option allows: attached after the DOM patch, re-attached when
- * the element, the direction or `enabled` changes, detached on unmount.
- * The key, the presenter and the tuning are read once, like the slot's
- * identities.
+ * The handlers translate native events into the gesture protocol (the
+ * machine takes the element lazily from the first `start`), so no
+ * element ref is involved. The controller is recreated on the
+ * direction source; the key, the presenter and the tuning are read
+ * once, like the slot's identities. `enabled` only projects the
+ * return: the lazy machine costs nothing behind a disabled toast, and
+ * disabling mid-gesture settles through destroy.
  */
 function useToastSwipe<Content extends {}>(
-  element: MaybeRefOrGetter<HTMLElement | null>,
   options: ToastSwipeOptions<Content>
-): void {
-  const {
-    key,
-    presenter,
-    direction,
-    enabled = true,
-    ...swipeOptions
-  } = options;
+): ToastSwipe {
+  const { key, presenter, direction, enabled = true, ...tuning } = options;
+
+  const create = (resolvedDirection: SwipeDirection | undefined) =>
+    createSwipeController({
+      ...tuning,
+      ...(resolvedDirection !== undefined && {
+        direction: resolvedDirection,
+      }),
+      onDismiss: () => presenter.dismiss(key),
+      onRemove: () => presenter.finish(key),
+    });
+
+  const controller = shallowRef(create(toValue(direction)));
 
   watch(
-    [() => toValue(element), () => toValue(enabled), () => toValue(direction)],
-    ([el, isEnabled, resolvedDirection], _previous, onCleanup) => {
-      if (el === null || !isEnabled) {
-        return;
-      }
-
-      onCleanup(
-        attachSwipe(el, {
-          ...swipeOptions,
-          ...(resolvedDirection !== undefined && {
-            direction: resolvedDirection,
-          }),
-          onDismiss: () => presenter.dismiss(key),
-          onRemove: () => presenter.finish(key),
-        })
-      );
-    },
-    { immediate: true, flush: 'post' }
+    () => toValue(direction),
+    (resolvedDirection) => {
+      controller.value.destroy();
+      controller.value = create(resolvedDirection);
+    }
   );
+
+  onScopeDispose(() => controller.value.destroy());
+
+  const isEnabled = computed(() => toValue(enabled));
+
+  watch(isEnabled, (value) => {
+    if (!value) {
+      controller.value.destroy();
+    }
+  });
+
+  const handlers = computed<ToastSwipeHandlers>(() => {
+    const swipe = createSwipeHandlers(controller.value);
+
+    return {
+      pointerdown: swipe.pointerdown,
+      pointermove: swipe.pointermove,
+      pointerup: swipe.pointerup,
+      pointercancel: swipe.pointercancel,
+      clickCapture: swipe.click,
+    };
+  });
+
+  return {
+    handlers: computed(() => (isEnabled.value ? handlers.value : IDLE)),
+    style: computed(() =>
+      isEnabled.value
+        ? { touchAction: touchActionFor(controller.value.direction) }
+        : undefined
+    ),
+  };
 }
 
+const IDLE: Record<string, never> = {};
+
 export { useToastSwipe };
-export type { ToastSwipeOptions };
+export type { ToastSwipeOptions, ToastSwipeHandlers, ToastSwipe };

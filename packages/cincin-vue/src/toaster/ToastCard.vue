@@ -22,7 +22,7 @@ const stackSlot = useSlot(card, {
   key: props.toast.key,
 });
 
-useToastSwipe(card, {
+const { handlers: swipeHandlers, style: swipeStyle } = useToastSwipe({
   key: props.toast.key,
   presenter: props.presenter,
   direction: () => props.swipeDirection,
@@ -91,8 +91,9 @@ function onAction(action: ToastAction, event: MouseEvent): void {
         ? undefined
         : String(stackSlot.front)
     "
-    :style="styles"
+    :style="[styles, swipeStyle]"
     :inert="inert"
+    v-on="swipeHandlers"
   >
     <div data-cincin-body>
       <component :is="typeIcon" v-if="typeIcon" />

@@ -39,7 +39,14 @@ function getRegion(): HTMLElement {
 }
 
 beforeEach(() => {
-  vi.useFakeTimers();
+  // Timer functions only: faking Date and performance freezes both
+  // sides of Vue's event invoker guard at zero (the listener's
+  // `attached` stamp and the event's `_vts`), and a click that
+  // crosses two of our listeners (the swipe's capture click on the
+  // card, then a button's own) gets silently skipped at the second.
+  vi.useFakeTimers({
+    toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'],
+  });
   window.ResizeObserver =
     ResizeObserverStub as unknown as typeof ResizeObserver;
   window.matchMedia = ((query: string) =>

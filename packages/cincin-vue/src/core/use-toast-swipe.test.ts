@@ -3,7 +3,7 @@ import { createToaster } from 'cincin';
 import { createPresenter } from 'cincin/presenter';
 import type { Presenter, ToastKey } from 'cincin/presenter';
 import type { SwipeDirection } from 'cincin/dom';
-import { defineComponent, h, nextTick, shallowRef } from 'vue';
+import { defineComponent, h, nextTick, shallowRef, toHandlers } from 'vue';
 import { useToastSwipe } from './use-toast-swipe';
 import type { ToastSwipeOptions } from './use-toast-swipe';
 
@@ -12,12 +12,16 @@ function mountSwipeHost(
   key: ToastKey,
   options?: Omit<ToastSwipeOptions, 'key' | 'presenter'>
 ) {
-  const element = shallowRef<HTMLElement | null>(null);
-
   const Host = defineComponent({
     setup() {
-      useToastSwipe(element, { key, presenter, ...options });
-      return () => h('li', { 'data-testid': 'toast', ref: element });
+      const { handlers, style } = useToastSwipe({ key, presenter, ...options });
+
+      return () =>
+        h('li', {
+          'data-testid': 'toast',
+          style: style.value,
+          ...toHandlers(handlers.value),
+        });
     },
   });
 
