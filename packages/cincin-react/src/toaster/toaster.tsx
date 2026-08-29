@@ -6,7 +6,6 @@ import type { Toast, Presenter } from 'cincin/presenter';
 import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { inertValue } from '../shared/inert';
-import { useComposedRefs } from '../shared/use-composed-refs';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
@@ -105,14 +104,13 @@ function ToastCard({
   closeLabel,
 }: ToastCardProps) {
   const { key, entry, phase } = toast;
-  const { ref: slotRef, slot } = useSlot({ layout, key });
-  const swipeRef = useToastSwipe({
+  const { ref, slot } = useSlot({ layout, key });
+  const swipe = useToastSwipe({
     key,
     presenter,
     direction: swipeDirection,
     enabled: entry.dismissible,
   });
-  const composedRef = useComposedRefs(swipeRef, slotRef);
 
   const { title, description, actions, closeButton = true } = entry.content;
 
@@ -129,11 +127,12 @@ function ToastCard({
       data-front={
         slot === undefined || slot.leaving ? undefined : String(slot.front)
       }
-      style={createStyles(slot)}
+      style={{ ...createStyles(slot), ...swipe.style }}
       inert={inertValue(
         slot === undefined || slot.leaving || (!expanded && !slot.front)
       )}
-      ref={composedRef}
+      ref={ref}
+      {...swipe.handlers}
     >
       {/* The body carries the slots and the padding; the card box above
           renders at an explicit height, while the body always keeps

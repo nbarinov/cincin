@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, render, renderHook } from '@testing-library/react';
 import { createToaster } from 'cincin';
 import { createPresenter } from 'cincin/presenter';
 import { useToastSwipe } from './use-toast-swipe';
@@ -15,8 +15,8 @@ function SwipeHost({
   presenter: Presenter;
   options?: Omit<ToastSwipeOptions, 'key' | 'presenter'>;
 }) {
-  const ref = useToastSwipe({ key: toastKey, presenter, ...options });
-  return <li data-testid="toast" ref={ref} />;
+  const swipe = useToastSwipe({ key: toastKey, presenter, ...options });
+  return <li data-testid="toast" style={swipe.style} {...swipe.handlers} />;
 }
 
 /** A mounted presenter over a fresh toaster with one shown toast. */
@@ -106,7 +106,7 @@ describe('useToastSwipe', () => {
     presenter.unmount();
   });
 
-  it('should reattach the controller when the direction changes', () => {
+  it('should recreate the controller when the direction changes', () => {
     const { presenter, key } = setup();
 
     const view = render(
@@ -114,8 +114,8 @@ describe('useToastSwipe', () => {
     );
     expect(getToastElement().style.touchAction).toBe('pan-y');
 
-    // The fresh options must reach the new channel in the same commit:
-    // a lagging latest-ref would reattach with the previous direction.
+    // Direction is read-once: a new direction is a new controller, and
+    // the declarative touch-action claim flips with it.
     view.rerender(
       <SwipeHost
         toastKey={key}
@@ -128,24 +128,21 @@ describe('useToastSwipe', () => {
     presenter.unmount();
   });
 
-  it('should not reattach when only the tuning identity changes', () => {
+  it('should keep the handlers identity across tuning changes', () => {
     const { presenter, key } = setup();
 
-    const view = render(
-      <SwipeHost toastKey={key} presenter={presenter} options={{}} />
+    const { result, rerender } = renderHook(
+      ({ damping }: { damping: number }) =>
+        useToastSwipe({ key, presenter, drag: { damping } }),
+      { initialProps: { damping: 0.7 } }
     );
-    const element = getToastElement();
-    const listen = vi.spyOn(element, 'addEventListener');
+    const before = result.current.handlers;
 
-    view.rerender(
-      <SwipeHost
-        toastKey={key}
-        presenter={presenter}
-        options={{ drag: { damping: 0.5 } }}
-      />
-    );
+    // Tuning rides setOptions on the live controller: no recreation,
+    // and a composed consumer sees the same handler identities.
+    rerender({ damping: 0.5 });
 
-    expect(listen).not.toHaveBeenCalled();
+    expect(result.current.handlers).toBe(before);
     presenter.unmount();
   });
 
