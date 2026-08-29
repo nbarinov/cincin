@@ -1,10 +1,10 @@
 import { createToaster } from 'cincin';
 import type { ToastEntry } from 'cincin';
-import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 /**
- * A toaster driven by Framer Motion instead of `cincin/presenter`.
+ * A toaster driven by Motion instead of `cincin/presenter`.
  *
  * The presenter exists to solve showing without an animation library:
  * exit phases (the record is gone but the element still needs to play
