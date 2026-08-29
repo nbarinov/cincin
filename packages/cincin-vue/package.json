@@ -1,6 +1,6 @@
 {
   "name": "cincin-vue",
-  "version": "0.1.0-beta.4",
+  "version": "0.1.0-beta.5",
   "description": "🥂 Vue bindings for cincin: headless composables, primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
