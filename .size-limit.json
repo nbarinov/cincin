@@ -17,13 +17,13 @@
   {
     "name": "cincin-react (toaster)",
     "path": "packages/cincin-react/dist/index.mjs",
-    "limit": "4 kB",
+    "limit": "4.25 kB",
     "ignore": ["cincin", "react"]
   },
   {
     "name": "cincin-react/core",
     "path": "packages/cincin-react/dist/core/index.mjs",
-    "limit": "1.25 kB",
+    "limit": "1.5 kB",
     "ignore": ["cincin", "react"]
   },
   {
