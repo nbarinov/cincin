@@ -153,12 +153,10 @@ const toasts = useToasts(presenter);
 <!-- Card.vue -->
 <script setup lang="ts">
 import { useToastSwipe } from 'cincin-vue/core';
-import { useTemplateRef } from 'vue';
 
 const props = defineProps(['toast', 'presenter']);
 
-const card = useTemplateRef('card');
-useToastSwipe(card, {
+const { handlers, style } = useToastSwipe({
   key: props.toast.key,
   presenter: props.presenter,
   enabled: () => props.toast.entry.dismissible,
@@ -166,7 +164,7 @@ useToastSwipe(card, {
 </script>
 
 <template>
-  <li ref="card" :data-phase="toast.phase">
+  <li :data-phase="toast.phase" :style="style" v-on="handlers">
     {{ String(toast.entry.content) }}
   </li>
 </template>
