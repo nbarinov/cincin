@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Toaster, toast } from 'cincin-react';
+import type { ToasterPosition } from 'cincin-react';
+
+const POSITIONS: ToasterPosition[] = [
+  'top-left',
+  'top-center',
+  'top-right',
+  'bottom-left',
+  'bottom-center',
+  'bottom-right',
+];
 
 let counter = 0;
 
@@ -150,6 +160,7 @@ function App() {
   // the whole integration. The cleanup restores the attribute-free
   // root on the way back.
   const [rtl, setRtl] = useState(false);
+  const [position, setPosition] = useState<ToasterPosition | undefined>();
 
   useEffect(() => {
     if (rtl) {
@@ -163,9 +174,25 @@ function App() {
     <main>
       <header>
         <h1>🥂 cincin · react skin</h1>
-        <button type="button" onClick={() => setRtl(!rtl)}>
-          {rtl ? 'LTR' : 'RTL'}
-        </button>
+        <div>
+          <select
+            aria-label="Toaster position"
+            value={position}
+            onChange={(event) =>
+              setPosition(event.target.value as ToasterPosition)
+            }
+          >
+            <option value="">auto</option>
+            {POSITIONS.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+          <button type="button" onClick={() => setRtl(!rtl)}>
+            {rtl ? 'LTR' : 'RTL'}
+          </button>
+        </div>
       </header>
       <p>
         The ready-to-use <code>&lt;Toaster /&gt;</code> over the package
@@ -180,7 +207,8 @@ function App() {
         ))}
       </section>
 
-      <Toaster />
+      {/* @ts-expect-error - position can be undefined */}
+      <Toaster position={position} />
     </main>
   );
 }

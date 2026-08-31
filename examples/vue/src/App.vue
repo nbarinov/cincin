@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import { Toaster, toast } from 'cincin-vue';
+import type { ToasterPosition } from 'cincin-vue';
+
+const POSITIONS: ToasterPosition[] = [
+  'top-left',
+  'top-center',
+  'top-right',
+  'bottom-left',
+  'bottom-center',
+  'bottom-right',
+];
 
 let counter = 0;
 
@@ -150,6 +160,7 @@ const scenarios: Array<[label: string, run: () => void]> = [
 // the whole integration. The cleanup restores the attribute-free
 // root on the way back.
 const rtl = ref(false);
+const position = ref<ToasterPosition | undefined>();
 
 watchEffect((onCleanup) => {
   if (rtl.value) {
@@ -177,9 +188,17 @@ function fakeRequest(): Promise<number> {
   <main>
     <header>
       <h1>🥂 cincin · vue skin</h1>
-      <button type="button" @click="rtl = !rtl">
-        {{ rtl ? 'LTR' : 'RTL' }}
-      </button>
+      <div>
+        <select v-model="position" aria-label="Toaster position">
+          <option value="">auto</option>
+          <option v-for="value of POSITIONS" :key="value" :value="value">
+            {{ value }}
+          </option>
+        </select>
+        <button type="button" @click="rtl = !rtl">
+          {{ rtl ? 'LTR' : 'RTL' }}
+        </button>
+      </div>
     </header>
     <p>
       The ready-to-use <code>&lt;Toaster /&gt;</code> over the package
@@ -197,6 +216,6 @@ function fakeRequest(): Promise<number> {
       </button>
     </section>
 
-    <Toaster />
+    <Toaster :position="position" />
   </main>
 </template>

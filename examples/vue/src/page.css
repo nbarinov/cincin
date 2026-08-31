@@ -34,6 +34,12 @@ header {
   gap: 1rem;
 }
 
+header div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 section {
   display: flex;
   flex-wrap: wrap;
@@ -44,7 +50,8 @@ section {
  * the toast's close/action buttons too, and paints them with the
  * page's hover/active backgrounds and radius. */
 section button,
-header button {
+header button,
+header select {
   padding: 0.5rem 0.9rem;
   border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
   border-radius: 0.5rem;
@@ -57,12 +64,14 @@ header button {
 
 @media (hover: hover) {
   section button:hover,
-  header button:hover {
+  header button:hover,
+  header select:hover {
     background: color-mix(in srgb, currentColor 8%, transparent);
   }
 }
 
 section button:active,
-header button:active {
+header button:active,
+header select:active {
   background: color-mix(in srgb, currentColor 12%, transparent);
 }
