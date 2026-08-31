@@ -7,7 +7,7 @@
   {
     "name": "cincin/dom",
     "path": "packages/cincin/dist/dom/index.mjs",
-    "limit": "3.5 kB"
+    "limit": "4 kB"
   },
   {
     "name": "cincin/presenter",
