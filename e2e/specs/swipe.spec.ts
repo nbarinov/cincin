@@ -46,12 +46,13 @@ test('a drag along the other outward edge dismisses too', async ({ page }) => {
   await expect(toast).toHaveCount(0);
 });
 
-test('a short slow drag snaps back', async ({ page }) => {
+test('a short drag snaps back after a rest', async ({ page }) => {
   const { toast, x, y } = await showToast(page);
 
-  // 20px is under the 45px distance gate, and 40ms per 2px step keeps
-  // the trailing velocity (~0.05 px/ms) under the 0.11 flick gate.
-  await drag(page, { x, y }, 20, 0, { steps: 10, stepDelay: 40, settle: true });
+  // 25px is under the 45px distance gate, and the burst itself is
+  // over the flick speed: the rest before release must decay it, so
+  // the release reads stillness, not the last burst.
+  await drag(page, { x, y }, 25, 0, { steps: 10, settle: true });
   await expect(toast).toHaveCount(1);
   await expect(toast).toHaveAttribute('data-phase', 'active');
 });

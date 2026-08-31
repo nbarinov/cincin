@@ -5,12 +5,7 @@ const TOAST = '[data-cincin-toast]';
 
 type DragOptions = {
   steps: number;
-  /** Pause between steps, ms: stretches the drag in time so the
-   * trailing velocity stays under the flick threshold. */
   stepDelay?: number;
-  /** Rest before release. NOTE: velocity is measured over the last
-   * movement burst, so resting does not decay it; only a slow drag
-   * (stepDelay) keeps a release below the flick threshold. */
   settle?: boolean;
 };
 

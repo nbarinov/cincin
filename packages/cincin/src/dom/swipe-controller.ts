@@ -214,6 +214,12 @@ class SwipeController {
       return 'drag';
     }
 
+    // The samples end at the last move, but the hand may have rested
+    // since: a settle sample at release time lets the trailing window
+    // see the stillness, so a paused drag decays toward zero velocity
+    // instead of keeping the speed of its last burst forever.
+    gesture.samples.push({ t: performance.now(), pos: offset });
+
     // The candidate direction is where the card actually sits; the
     // velocity counts only when it agrees with it (an inward flick
     // reads as "changed my mind", not as a dismissal the other way).

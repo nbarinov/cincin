@@ -91,6 +91,33 @@ describe('SwipeController', () => {
     expect(element.getAttribute('data-swipe-direction')).toBe('right');
   });
 
+  it('should dismiss on a flick under the distance threshold', () => {
+    const element = makeElement();
+    const { controller, onDismiss } = makeController();
+
+    // 30px is under the distance gate; the 16ms cadence is far over
+    // the velocity gate, and the hand lets go mid-flight.
+    dragTo(controller, element, [10, 20, 30]);
+
+    expect(controller.release(point(1, 30))).toBe('drag');
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('should decay the flick when the hand rests before release', () => {
+    const element = makeElement();
+    const { controller, onDismiss } = makeController();
+
+    // The same burst as the flick above, but the hand parks well past
+    // the velocity window before letting go: stillness is a change of
+    // mind, not a dismissal at the speed of the last burst.
+    dragTo(controller, element, [10, 20, 30]);
+    vi.advanceTimersByTime(200);
+
+    expect(controller.release(point(1, 30))).toBe('drag');
+    expect(onDismiss).not.toHaveBeenCalled();
+    expect(element.style.translate).toBe('0px 0px');
+  });
+
   it('should ignore foreign contacts', () => {
     const element = makeElement();
     const { controller } = makeController();
