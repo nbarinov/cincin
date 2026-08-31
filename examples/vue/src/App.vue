@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watchEffect } from 'vue';
 import { Toaster, toast } from 'cincin-vue';
 
 let counter = 0;
@@ -103,6 +104,21 @@ const scenarios: Array<[label: string, run: () => void]> = [
     },
   ],
   [
+    // Bidi coverage from both sides: on the LTR page the card carries
+    // RTL content inside an LTR layout, and with the header toggle
+    // flipped it exercises the mirrored skin. Sticky, so there is
+    // time to look at the glyphs.
+    'عربي',
+    () =>
+      toast.info(
+        {
+          title: 'أنّا تريد الانضمام',
+          description: 'طلبت الوصول إلى مساحة العمل الخاصة بك.',
+        },
+        { duration: Infinity }
+      ),
+  ],
+  [
     'Promise',
     () =>
       void toast
@@ -129,6 +145,19 @@ const scenarios: Array<[label: string, run: () => void]> = [
   ['Dismiss all', () => toast.remove()],
 ];
 
+// Direction is page state, not a Toaster prop: the skin mirrors
+// purely by CSS inheritance, so projecting dir onto the root is
+// the whole integration. The cleanup restores the attribute-free
+// root on the way back.
+const rtl = ref(false);
+
+watchEffect((onCleanup) => {
+  if (rtl.value) {
+    document.documentElement.dir = 'rtl';
+    onCleanup(() => document.documentElement.removeAttribute('dir'));
+  }
+});
+
 function fakeRequest(): Promise<number> {
   const duration = 800 + Math.random() * 1200;
 
@@ -146,7 +175,12 @@ function fakeRequest(): Promise<number> {
 
 <template>
   <main>
-    <h1>🥂 cincin · vue skin</h1>
+    <header>
+      <h1>🥂 cincin · vue skin</h1>
+      <button type="button" @click="rtl = !rtl">
+        {{ rtl ? 'LTR' : 'RTL' }}
+      </button>
+    </header>
     <p>
       The ready-to-use <code>&lt;Toaster /&gt;</code> over the package
       singleton. Swipe a toast to the right, hover or tap the stack to expand
