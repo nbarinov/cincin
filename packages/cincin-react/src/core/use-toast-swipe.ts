@@ -63,7 +63,7 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
     () =>
       createSwipeController({
         ...tuningRef.current,
-        ...(directions !== undefined && { directions }),
+        directions,
         onDismiss: () => presenter.dismiss(key),
         onRemove: () => presenter.finish(key),
       }),
@@ -73,14 +73,7 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
 
   useLayoutEffect(
     function syncTuning() {
-      const { drag, dismiss, fling, cancel } = tuning;
-
-      controller.setOptions({
-        ...(drag !== undefined && { drag }),
-        ...(dismiss !== undefined && { dismiss }),
-        ...(fling !== undefined && { fling }),
-        ...(cancel !== undefined && { cancel }),
-      });
+      controller.setOptions(tuning);
     },
     [controller, tuning]
   );

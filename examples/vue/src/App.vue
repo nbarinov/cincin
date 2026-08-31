@@ -190,7 +190,7 @@ function fakeRequest(): Promise<number> {
       <h1>🥂 cincin · vue skin</h1>
       <div>
         <select v-model="position" aria-label="Toaster position">
-          <option value="">auto</option>
+          <option :value="undefined">auto</option>
           <option v-for="value of POSITIONS" :key="value" :value="value">
             {{ value }}
           </option>

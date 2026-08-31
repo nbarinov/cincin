@@ -93,17 +93,14 @@ class Toaster<Content extends {} = string> implements ToasterContract<Content> {
     const toastId = this.#resolveToastId(id);
 
     if (this.#store.has(toastId)) {
-      // Upsert: only explicitly provided fields make it into the patch.
-      // Stamped 'create': the caller wants the toast shown, so a presenter
-      // whose toasts of this entry are all leaving opens a fresh one.
+      // Upsert: an undefined field reads as "not provided" all the way
+      // down (#applyUpdate resolves each through ??), so the patch
+      // carries the options as-is. Stamped 'create': the caller wants
+      // the toast shown, so a presenter whose toasts of this entry are
+      // all leaving opens a fresh one.
       this.#applyUpdate(
         toastId,
-        {
-          content,
-          ...(type !== undefined && { type }),
-          ...(duration !== undefined && { duration }),
-          ...(dismissible !== undefined && { dismissible }),
-        },
+        { content, type, duration, dismissible },
         'create'
       );
 

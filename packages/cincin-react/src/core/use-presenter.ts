@@ -18,10 +18,7 @@ function usePresenter<ToastContent extends {} = string>(
   const { max, exitDuration } = options ?? {};
 
   const resolvedOptions = useMemo<PresenterOptions>(
-    () => ({
-      ...(max !== undefined && { max }),
-      ...(exitDuration !== undefined && { exitDuration }),
-    }),
+    () => ({ max, exitDuration }),
     [max, exitDuration]
   );
 

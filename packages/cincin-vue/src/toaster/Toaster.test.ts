@@ -14,7 +14,7 @@ class ResizeObserverStub {
 
 function setup(labels?: ToasterLabels) {
   const toaster = createToaster<ToastContent>();
-  render(Toaster, { props: { toaster, ...(labels && { labels }) } });
+  render(Toaster, { props: { toaster, labels } });
   return toaster;
 }
 

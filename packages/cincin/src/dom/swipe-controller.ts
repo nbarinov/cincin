@@ -349,6 +349,7 @@ function resolveOptions(options: SwipeOptions): ResolvedOptions {
   return {
     ...DEFAULTS,
     ...options,
+    directions: options.directions ?? DEFAULTS.directions,
     drag: { ...DEFAULTS.drag, ...options.drag },
     dismiss: { ...DEFAULTS.dismiss, ...options.dismiss },
     fling,

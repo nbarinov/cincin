@@ -199,6 +199,22 @@ describe('SwipeController directions', () => {
     expect(onDismiss).not.toHaveBeenCalled();
   });
 
+  it('should treat an explicit undefined as the default set', () => {
+    // Without exactOptionalPropertyTypes an explicit undefined is a
+    // legal way to say "the default"; it must not clobber it through
+    // the options spread.
+    const element = makeElement();
+    const { controller, onDismiss } = makeController({
+      directions: undefined,
+    });
+
+    expect(controller.directions).toEqual(['right', 'down']);
+
+    dragTo(controller, element, [20, 40, 60]);
+    expect(controller.release(point(1, 60))).toBe('drag');
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
   it('should warn on an empty set and treat every gesture as foreign', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const element = makeElement();

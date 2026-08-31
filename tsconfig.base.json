@@ -10,7 +10,6 @@
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "exactOptionalPropertyTypes": true
+    "noEmit": true
   }
 }

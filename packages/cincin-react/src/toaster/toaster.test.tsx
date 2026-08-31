@@ -13,7 +13,7 @@ class ResizeObserverStub {
 
 function setup(labels?: ToasterLabels) {
   const toaster = createToaster<ToastContent>();
-  render(<Toaster toaster={toaster} {...(labels && { labels })} />);
+  render(<Toaster toaster={toaster} labels={labels} />);
   return toaster;
 }
 

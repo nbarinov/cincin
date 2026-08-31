@@ -77,11 +77,7 @@ toast.success({ title: 'Saved' })`
               }}
             >
               {scenario.dot !== undefined && (
-                <span
-                  className="dot"
-                  data-type={scenario.dot}
-                  aria-hidden
-                ></span>
+                <span className="dot" data-type={scenario.dot} aria-hidden />
               )}
               {scenario.label}
             </button>

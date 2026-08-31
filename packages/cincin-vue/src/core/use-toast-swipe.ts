@@ -69,16 +69,13 @@ function useToastSwipe<Content extends {}>(
 ): ToastSwipe {
   const { key, presenter, directions, enabled = true, ...tuning } = options;
 
-  const create = () => {
-    const resolved = toValue(directions);
-
-    return createSwipeController({
+  const create = () =>
+    createSwipeController({
       ...tuning,
-      ...(resolved !== undefined && { directions: resolved }),
+      directions: toValue(directions),
       onDismiss: () => presenter.dismiss(key),
       onRemove: () => presenter.finish(key),
     });
-  };
 
   const controller = shallowRef(create());
 

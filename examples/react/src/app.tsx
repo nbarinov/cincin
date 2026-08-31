@@ -177,9 +177,13 @@ function App() {
         <div>
           <select
             aria-label="Toaster position"
-            value={position}
+            value={position ?? ''}
             onChange={(event) =>
-              setPosition(event.target.value as ToasterPosition)
+              setPosition(
+                event.target.value === ''
+                  ? undefined
+                  : (event.target.value as ToasterPosition)
+              )
             }
           >
             <option value="">auto</option>
@@ -207,7 +211,6 @@ function App() {
         ))}
       </section>
 
-      {/* @ts-expect-error - position can be undefined */}
       <Toaster position={position} />
     </main>
   );
