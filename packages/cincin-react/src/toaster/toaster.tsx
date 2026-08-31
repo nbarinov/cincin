@@ -6,6 +6,7 @@ import type { Toast, Presenter } from 'cincin/presenter';
 import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { inertValue } from '../shared/inert';
+import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
@@ -13,6 +14,8 @@ import { useStack } from '../core/use-stack';
 import { useSlot } from '../core/use-slot';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent, ToasterLabels } from './content';
+import { outwardDirections } from './position';
+import type { ToasterPosition } from './position';
 import { toast as defaultToaster } from './toast';
 import { useRegion } from './use-region';
 import { CLOSE_ICON, TYPE_ICONS } from './icons';
@@ -20,9 +23,19 @@ import { CLOSE_ICON, TYPE_ICONS } from './icons';
 type ToasterProps = {
   /** @default package singleton */
   toaster?: ToasterContract<ToastContent>;
-  /** The skin's a11y vocabulary, one place for all toasts. */
-  labels?: ToasterLabels;
-  /** Directions a swipe may dismiss along. @default ['right', 'down'] */
+  /**
+   * The region's corner (or edge center). Explicit values are
+   * physical and final; the default is the bottom inline-end corner,
+   * live against the document's `dir`.
+   *
+   * @default 'bottom-right', 'bottom-left' under RTL
+   */
+  position?: ToasterPosition;
+  /**
+   * Directions a swipe may dismiss along.
+   *
+   * @default the position's outward edges
+   */
   swipeDirections?: readonly SwipeDirection[];
   /** How many toasts peek out of the collapsed stack. @default 3 */
   visible?: number;
@@ -32,15 +45,18 @@ type ToasterProps = {
    * presenter's exit clock and, published as `--cincin-exit-duration`,
    * the skin's motion durations. @default 400 */
   exitDuration?: number;
+  /** The skin's a11y vocabulary, one place for all toasts. */
+  labels?: ToasterLabels;
 };
 
 function Toaster({
   toaster = defaultToaster,
-  labels = {},
+  position: inputPosition,
   swipeDirections,
   visible = 3,
   max = Infinity,
   exitDuration = 400,
+  labels = {},
 }: ToasterProps) {
   const presenter = usePresenter(toaster, { max, exitDuration });
   const toasts = useToasts(presenter);
@@ -54,6 +70,12 @@ function Toaster({
 
   useVisibilityPause(presenter);
 
+  const direction = useDocumentDirection();
+  const position =
+    inputPosition ?? (direction === 'rtl' ? 'bottom-left' : 'bottom-right');
+  const [y, x] = position.split('-');
+  const directions = swipeDirections ?? outwardDirections(position);
+
   const {
     region: regionLabel = 'Notifications',
     close: closeLabel = 'Dismiss',
@@ -63,6 +85,8 @@ function Toaster({
     <section tabIndex={-1} aria-label={regionLabel}>
       <ol
         data-cincin-toaster
+        data-y={y}
+        data-x={x}
         data-expanded={region.expanded}
         style={
           { '--cincin-exit-duration': `${exitDuration}ms` } as CSSProperties
@@ -77,7 +101,7 @@ function Toaster({
             presenter={presenter}
             layout={stack.layout}
             expanded={region.expanded}
-            swipeDirections={swipeDirections}
+            swipeDirections={directions}
             closeLabel={closeLabel}
           />
         ))}
@@ -91,7 +115,7 @@ type ToastCardProps = {
   presenter: Presenter<ToastContent>;
   layout: StackLayout;
   expanded: boolean;
-  swipeDirections: readonly SwipeDirection[] | undefined;
+  swipeDirections: readonly SwipeDirection[];
   closeLabel: string;
 };
 
@@ -108,7 +132,7 @@ function ToastCard({
   const swipe = useToastSwipe({
     key,
     presenter,
-    ...(swipeDirections !== undefined && { directions: swipeDirections }),
+    directions: swipeDirections,
     enabled: entry.dismissible,
   });
 

@@ -117,7 +117,10 @@ toast.message({
 `<Toaster />` props: `toaster` (your own store instead of the
 singleton; read once, remount to switch), `max` (active toasts at once,
 the rest queue; live), `visible` (how many peek out of the collapsed
-stack), `swipeDirections`, `exitDuration` (the exit animation's length,
+stack), `position` (the region's corner or edge center; the default
+is the bottom inline-end corner, live against the document's `dir`),
+`swipeDirections` (defaults to the position's outward edges),
+`exitDuration` (the exit animation's length,
 ms; one value drives the presenter's exit clock and, published as
 `--cincin-exit-duration`, the skin's motion durations), `labels` (the
 skin's a11y vocabulary: `{ region, close }`, defaults `'Notifications'`

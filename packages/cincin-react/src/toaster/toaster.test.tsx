@@ -305,3 +305,79 @@ describe('Toaster close button', () => {
     expect(card.style.touchAction).toBe('');
   });
 });
+
+describe('Toaster position', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('dir');
+  });
+
+  it('should default to the bottom-right corner', () => {
+    setup();
+
+    const region = getRegion();
+    expect(region.dataset.y).toBe('bottom');
+    expect(region.dataset.x).toBe('right');
+  });
+
+  it('should default to the bottom-left corner under RTL', () => {
+    document.documentElement.dir = 'rtl';
+    setup();
+
+    const region = getRegion();
+    expect(region.dataset.y).toBe('bottom');
+    expect(region.dataset.x).toBe('left');
+  });
+
+  it('should follow a live dir flip on the root', async () => {
+    setup();
+    expect(getRegion().dataset.x).toBe('right');
+
+    // The flip arrives through the MutationObserver subscription, not
+    // through a re-render: nothing else about the tree changed.
+    await act(async () => {
+      document.documentElement.dir = 'rtl';
+      await Promise.resolve();
+    });
+
+    expect(getRegion().dataset.x).toBe('left');
+  });
+
+  it('should treat an explicit position as physical and final', () => {
+    document.documentElement.dir = 'rtl';
+    const toaster = createToaster<ToastContent>();
+    render(<Toaster toaster={toaster} position="top-right" />);
+
+    const region = getRegion();
+    expect(region.dataset.y).toBe('top');
+    expect(region.dataset.x).toBe('right');
+  });
+
+  it('should derive the swipe default from the position', () => {
+    const toaster = createToaster<ToastContent>();
+    render(<Toaster toaster={toaster} position="top-left" />);
+
+    act(() => {
+      toaster.message({ title: 'hi' });
+    });
+
+    // ['left', 'up'] spans both axes: the touch-action claim shows it.
+    expect(getCards()[0]!.style.touchAction).toBe('none');
+  });
+
+  it('should let an explicit swipeDirections outrank the position', () => {
+    const toaster = createToaster<ToastContent>();
+    render(
+      <Toaster
+        toaster={toaster}
+        position="top-left"
+        swipeDirections={['left']}
+      />
+    );
+
+    act(() => {
+      toaster.message({ title: 'hi' });
+    });
+
+    expect(getCards()[0]!.style.touchAction).toBe('pan-y');
+  });
+});

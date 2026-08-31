@@ -10,13 +10,12 @@
 
 [data-cincin-toaster] {
   --region-inset: 1rem;
+  --inset-top: calc(var(--region-inset) + env(safe-area-inset-top, 0px));
   --inset-right: calc(var(--region-inset) + env(safe-area-inset-right, 0px));
   --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
   --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
 
   position: fixed;
-  right: var(--inset-right);
-  bottom: var(--inset-bottom);
   z-index: 999999999;
   width: 22rem;
   margin: 0;
@@ -55,17 +54,89 @@
   --toast-edge: light-dark(rgb(20 20 15 / 0.09), rgb(255 255 255 / 0.09));
 }
 
+/* --- position ------------------------------------------------------ */
+
+/* The corner comes as data-y/data-x, resolved by the component (the
+ * default follows the document's dir). --lift is the stack's growth
+ * sign and --offscreen the off-viewport parking spot: the rest of the
+ * file does its vertical math through these two, so the variants stay
+ * confined to this block. */
+
+[data-cincin-toaster][data-y='bottom'] {
+  --lift: -1;
+  --offscreen: calc(100% + var(--inset-bottom));
+
+  bottom: var(--inset-bottom);
+}
+
+/* The light stays top-down everywhere, but a top stack's front card
+ * outranks the whole pile in z-order and hangs right over the peeking
+ * strips: the full page-length throw would paint them as a dark band.
+ * The surfaces beneath are millimetres away, so the throw shortens to
+ * a contact shadow; the pile's page-facing shadow comes from its
+ * lowest peeking card. */
+[data-cincin-toaster][data-y='top'] {
+  --lift: 1;
+  --offscreen: calc(-100% - var(--inset-top));
+  --shadow-rest:
+    0 0 0 1px var(--toast-edge), 0 1px 2px var(--shadow-soft),
+    0 2px 4px var(--shadow-soft), 0 4px 12px -2px var(--shadow-deep);
+  --shadow-lift:
+    0 0 0 1px var(--toast-edge), 0 1px 3px var(--shadow-soft),
+    0 4px 8px var(--shadow-soft), 0 8px 20px -4px var(--shadow-deep);
+
+  top: var(--inset-top);
+}
+
+[data-cincin-toaster][data-x='right'] {
+  right: var(--inset-right);
+}
+
+[data-cincin-toaster][data-x='left'] {
+  left: var(--inset-left);
+}
+
+[data-cincin-toaster][data-x='center'] {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+[data-cincin-toaster][data-y='bottom'] [data-cincin-toast] {
+  bottom: 0;
+  transform-origin: center bottom;
+}
+
+[data-cincin-toaster][data-y='top'] [data-cincin-toast] {
+  top: 0;
+  transform-origin: center top;
+}
+
+/* Hover bridge over the expanded gap, so the pointer never falls out
+ * of the region between two toasts and collapses the stack. It sits on
+ * the growth side, and its height stays in sync with the stack gap of
+ * use-stack. */
+[data-cincin-toaster][data-expanded='true'][data-y='bottom']
+  [data-cincin-toast]::before {
+  bottom: 100%;
+}
+
+[data-cincin-toaster][data-expanded='true'][data-y='top']
+  [data-cincin-toast]::before {
+  top: 100%;
+}
+
 @media (max-width: 600px) {
   [data-cincin-toaster] {
     left: var(--inset-left);
+    right: var(--inset-right);
     width: auto;
+    transform: none;
   }
 }
 
 [data-cincin-toast] {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  inset-inline: 0;
   box-sizing: border-box;
   width: 100%;
   border-radius: 0.7rem;
@@ -89,8 +160,9 @@
    * height, so the stack's measurement is untouched. */
   display: grid;
   align-content: center;
-  transform-origin: center bottom;
-  transform: translateY(calc(var(--cincin-toast-index) * -0.875rem))
+  transform: translateY(
+      calc(var(--lift) * var(--cincin-toast-index) * 0.875rem)
+    )
     scale(calc(1 - var(--cincin-toast-index) * 0.05));
   /* One value drives the whole exit story: the Toaster publishes its
    * exitDuration as --cincin-exit-duration and hands the same number
@@ -379,7 +451,7 @@
 }
 
 [data-cincin-toaster][data-expanded='true'] [data-cincin-toast] {
-  transform: translateY(calc(-1 * var(--cincin-toast-offset)));
+  transform: translateY(calc(var(--lift) * var(--cincin-toast-offset)));
 }
 
 [data-cincin-toaster][data-expanded='true']
@@ -388,32 +460,30 @@
   pointer-events: auto;
 }
 
-/* Hover bridge over the expanded gap, so the pointer never falls out
- * of the region between two toasts and collapses the stack. Keep the
- * height in sync with the stack gap of use-stack. */
+/* The hover bridge's body; its growth-side anchor lives in the
+ * position block above. */
 [data-cincin-toaster][data-expanded='true'] [data-cincin-toast]::before {
   content: '';
   position: absolute;
-  bottom: 100%;
   left: 0;
   width: 100%;
   height: calc(12px + 1px);
 }
 
-/* Enter from below the viewport edge: the starting style is what the
+/* Enter from beyond the viewport edge: the starting style is what the
  * first frame transitions FROM. */
 @starting-style {
   [data-cincin-toast] {
-    transform: translateY(calc(100% + var(--inset-bottom)));
+    transform: translateY(var(--offscreen));
     opacity: 0;
   }
 }
 
-/* The regular exit: slide back down. Swiped toasts skip it, and the
- * fading toast keeps its pointer-events: it stays the hover surface
- * while the survivors reflow into its slot. */
+/* The regular exit: slide back out the way it came. Swiped toasts skip
+ * it, and the fading toast keeps its pointer-events: it stays the hover
+ * surface while the survivors reflow into its slot. */
 [data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
-  transform: translateY(calc(100% + var(--inset-bottom)));
+  transform: translateY(var(--offscreen));
   opacity: 0;
 }
 
@@ -421,7 +491,9 @@
  * while the survivors reflow into the vacated slot. */
 [data-cincin-toaster][data-expanded='true']
   [data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
-  transform: translateY(calc(-1 * var(--cincin-toast-offset) + 100%));
+  transform: translateY(
+    calc(var(--lift) * (var(--cincin-toast-offset) - 100%))
+  );
   opacity: 0;
 }
 
