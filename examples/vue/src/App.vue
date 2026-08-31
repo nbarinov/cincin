@@ -25,7 +25,7 @@ const scenarios: Array<[label: string, run: () => void]> = [
     'Sticky',
     () =>
       toast.info(
-        { title: 'Sticky: swipe right or hit the cross' },
+        { title: 'Sticky: swipe away or hit the cross' },
         { duration: Infinity }
       ),
   ],
@@ -183,7 +183,7 @@ function fakeRequest(): Promise<number> {
     </header>
     <p>
       The ready-to-use <code>&lt;Toaster /&gt;</code> over the package
-      singleton. Swipe a toast to the right, hover or tap the stack to expand
+      singleton. Swipe a toast right or down, hover or tap the stack to expand
       it.
     </p>
     <section>

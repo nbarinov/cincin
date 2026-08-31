@@ -123,7 +123,6 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     card.detachSwipe?.();
     card.detachSwipe = on
       ? attachSwipe(card.element, {
-          direction: 'right',
           onDismiss: () => presenter.dismiss(key),
           onRemove: () => presenter.finish(key),
         })
