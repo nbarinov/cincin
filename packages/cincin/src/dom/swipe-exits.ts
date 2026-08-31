@@ -10,14 +10,6 @@ interface FlingOptions {
   maxDuration: number;
 }
 
-const CANCEL_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-
-// Both exits use the overlay pattern: the inline `translate` holds the
-// rest target, the animation is a transient layer on top (no fill).
-// When it ends, the computed value falls through to the inline target
-// seamlessly. The exits never touch `transition`, so the skin's own
-// transitions (stack movement, opacity) stay alive.
-
 function flingOut(
   channel: SwipeChannel,
   axis: Axis,
@@ -27,32 +19,22 @@ function flingOut(
   options: FlingOptions,
   onComplete: () => void
 ): Animation | null {
-  const target = channel.exitTarget(axis, sign);
-  channel.set(axis, target);
+  const target = channel.exitTarget(axis, sign, from);
+  const animation = overlay(channel, axis, from, target, {
+    duration: flingDuration(
+      Math.abs(target - from),
+      velocity,
+      options.slope,
+      options.minDuration,
+      options.maxDuration
+    ),
+    easing: `cubic-bezier(${(1 / options.slope).toFixed(3)}, 1, 0.7, 1)`,
+  });
 
-  if (prefersReducedMotion()) {
+  if (animation === null) {
     onComplete();
     return null;
   }
-
-  const duration = flingDuration(
-    Math.abs(target - from),
-    velocity,
-    options.slope,
-    options.minDuration,
-    options.maxDuration
-  );
-
-  const animation = channel.element.animate(
-    [
-      { translate: translateValue(axis, from) },
-      { translate: translateValue(axis, target) },
-    ],
-    {
-      duration,
-      easing: `cubic-bezier(${(1 / options.slope).toFixed(3)}, 1, 0.7, 1)`,
-    }
-  );
 
   animation.finished.then(onComplete, () => {
     // noop
@@ -67,7 +49,35 @@ function springBack(
   from: number,
   duration: number
 ): Animation | null {
-  channel.set(axis, 0);
+  return overlay(channel, axis, from, 0, {
+    duration,
+    easing: CANCEL_EASING,
+  });
+}
+
+export { flingOut, springBack };
+export type { FlingOptions };
+
+// utils
+
+const CANCEL_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+/**
+ * The overlay move both exits are made of: the inline `translate`
+ * jumps to the target, the animation replays the travel as a transient
+ * layer on top (no fill), and when it ends the computed value falls
+ * through to the inline target seamlessly. Under reduced motion only
+ * the jump remains (null). The move never touches `transition`, so the
+ * skin's own transitions (stack movement, opacity) stay alive.
+ */
+function overlay(
+  channel: SwipeChannel,
+  axis: Axis,
+  from: number,
+  target: number,
+  timing: { duration: number; easing: string }
+): Animation | null {
+  channel.set(axis, target);
 
   if (prefersReducedMotion()) {
     return null;
@@ -76,11 +86,8 @@ function springBack(
   return channel.element.animate(
     [
       { translate: translateValue(axis, from) },
-      { translate: translateValue(axis, 0) },
+      { translate: translateValue(axis, target) },
     ],
-    { duration, easing: CANCEL_EASING }
+    timing
   );
 }
-
-export { flingOut, springBack };
-export type { FlingOptions };

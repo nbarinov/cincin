@@ -174,7 +174,10 @@ describe('attachSwipe', () => {
     // 20px in 50ms: velocity 0.4 px/ms.
     drag(element, [[20, 0, 50]]);
 
-    const target = window.innerWidth + 40; // exitTarget: viewport + buffer
+    // exitTarget measures from the resting box to the viewport edge
+    // plus the buffer; jsdom rects are zeros, so backing the 20px drag
+    // out of the rect shows up as +20 here.
+    const target = window.innerWidth + 20 + 40;
     const [keyframes, timing] = animate.mock.calls[0]! as [
       Keyframe[],
       KeyframeAnimationOptions,

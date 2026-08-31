@@ -86,10 +86,31 @@ describe('createSwipeChannel', () => {
     const element = makeElement();
     const channel = createSwipeChannel(element, ['right', 'down']);
 
-    expect(channel.exitTarget('x', 1)).toBeGreaterThan(0);
-    expect(channel.exitTarget('x', -1)).toBeLessThan(0);
-    expect(channel.exitTarget('y', -1)).toBeLessThan(0);
-    expect(channel.exitTarget('y', 1)).toBeGreaterThan(0);
+    expect(channel.exitTarget('x', 1, 0)).toBeGreaterThan(0);
+    expect(channel.exitTarget('x', -1, 0)).toBeLessThan(0);
+    expect(channel.exitTarget('y', -1, 0)).toBeLessThan(0);
+    expect(channel.exitTarget('y', 1, 0)).toBeGreaterThan(0);
+  });
+
+  it('should measure the exit against the viewport, not the region', () => {
+    // A centered region sits nowhere near the exit edge: the throw
+    // must cover the distance from the card's actual box to the
+    // viewport edge. jsdom rects are all zeros, so the geometry is
+    // pinned through a stubbed box.
+    const element = makeElement();
+    const channel = createSwipeChannel(element, ['left', 'right']);
+    vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({
+      left: 480,
+      right: 800,
+      top: 700,
+      bottom: 744,
+    } as DOMRect);
+
+    // Dragged 30px right already: the resting left is 450, and the
+    // card's left edge must cross the viewport's right edge.
+    expect(channel.exitTarget('x', 1, 30)).toBe(window.innerWidth - 450 + 40);
+    // Leftward, the resting right edge (770) must cross zero.
+    expect(channel.exitTarget('x', -1, 30)).toBe(-770 - 40);
   });
 
   it('should release every claimed channel back to its pre-attach state', () => {
