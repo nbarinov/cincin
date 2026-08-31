@@ -1,5 +1,5 @@
 import type { Presenter } from 'cincin/presenter';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import * as React from 'react';
 import type { FocusEvent } from 'react';
 import type { ToastContent } from './content';
 
@@ -12,18 +12,18 @@ function useRegion(
   options: RegionOptions = {}
 ) {
   const { collapseDelay = 200 } = options;
-  const [expanded, setExpanded] = useState(false);
-  const regionRef = useRef<HTMLOListElement | null>(null);
-  const collapseTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const interacting = useRef(false);
+  const [expanded, setExpanded] = React.useState(false);
+  const regionRef = React.useRef<HTMLOListElement | null>(null);
+  const collapseTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+  const interacting = React.useRef(false);
 
-  const expand = useCallback(() => {
+  const expand = React.useCallback(() => {
     clearTimeout(collapseTimer.current);
     setExpanded(true);
     presenter.pause();
   }, [presenter]);
 
-  const collapse = useCallback(() => {
+  const collapse = React.useCallback(() => {
     if (interacting.current) {
       // Mid-gesture (a swipe drifting off the stack): stay expanded.
       return;
@@ -36,7 +36,7 @@ function useRegion(
     }, collapseDelay);
   }, [presenter, collapseDelay]);
 
-  useEffect(
+  React.useEffect(
     function subscribeRegionResets() {
       const onOutsidePointerDown = (event: PointerEvent) => {
         // iOS Safari emits emulated mouse events only for taps on

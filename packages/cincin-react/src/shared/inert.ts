@@ -1,6 +1,6 @@
-import { version } from 'react';
+import * as React from 'react';
 
-const REACT_MAJOR = Number(version.split('.')[0]);
+const REACT_MAJOR = Number(React.version.split('.')[0]);
 
 /**
  * The `inert` value for the running React. React 19 knows the boolean

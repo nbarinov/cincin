@@ -1,14 +1,14 @@
 'use client';
 
 import type { Toaster, ToastEntry } from 'cincin';
-import { createContext, useContext } from 'react';
+import * as React from 'react';
 import type { ReactNode } from 'react';
 import { useToastEntries as useToastEntriesOf } from './use-toast-entries';
 
 function createToasterContext<Content extends {} = string>(
   defaultToaster?: Toaster<Content>
 ) {
-  const Context = createContext<Toaster<Content> | null>(
+  const Context = React.createContext<Toaster<Content> | null>(
     defaultToaster ?? null
   );
 
@@ -24,7 +24,7 @@ function createToasterContext<Content extends {} = string>(
   }
 
   function useToaster(toaster?: Toaster<Content>): Toaster<Content> {
-    const fromContext = useContext(Context);
+    const fromContext = React.useContext(Context);
     const resolved = toaster ?? fromContext ?? null; // Normalize both nullish values: a JS consumer can mount the provider with an undefined toaster.
 
     if (resolved === null) {

@@ -1,7 +1,7 @@
 import { createSlotObserver } from 'cincin/dom';
 import type { StackLayout, StackSlot } from 'cincin/dom';
 import type { ToastKey } from 'cincin/presenter';
-import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import * as React from 'react';
 import type { RefCallback } from 'react';
 
 type SlotOptions = {
@@ -24,18 +24,18 @@ function useSlot(options: SlotOptions): {
 } {
   const { layout, key } = options;
 
-  const observer = useMemo(
+  const observer = React.useMemo(
     () => createSlotObserver(layout, { key }),
     [layout, key]
   );
 
-  const slot = useSyncExternalStore(
+  const slot = React.useSyncExternalStore(
     observer.subscribe,
     observer.getSnapshot,
     observer.getSnapshot
   );
 
-  const ref: RefCallback<HTMLElement> = useCallback(
+  const ref: RefCallback<HTMLElement> = React.useCallback(
     (element) => (element === null ? undefined : observer.observe(element)),
     [observer]
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import * as React from 'react';
 import { Toaster } from 'cincin-react';
 import { SCENARIOS } from './scenarios';
 import { ThemeToggle } from './theme-toggle';
@@ -15,7 +15,7 @@ const TARGETS = [
 function App() {
   // The panel shows the call behind the last button pressed: the demo
   // and its documentation are the same click.
-  const [snippet, setSnippet] = useState(
+  const [snippet, setSnippet] = React.useState(
     `// from the quick start
 toast.success({ title: 'Saved' })`
   );

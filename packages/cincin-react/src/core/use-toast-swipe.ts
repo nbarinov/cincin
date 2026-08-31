@@ -5,7 +5,7 @@ import {
   createSwipeHandlers,
   touchActionFor,
 } from 'cincin/dom';
-import { useEffect, useLayoutEffect, useMemo } from 'react';
+import * as React from 'react';
 import type { CSSProperties, MouseEvent, PointerEvent } from 'react';
 import { useLatestRef } from '../shared/use-latest-ref';
 
@@ -59,7 +59,7 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
   const { key, presenter, enabled = true, directions, ...tuning } = options;
   const tuningRef = useLatestRef(tuning);
 
-  const controller = useMemo(
+  const controller = React.useMemo(
     () =>
       createSwipeController({
         ...tuningRef.current,
@@ -71,14 +71,14 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
     [key, presenter, tuningRef, directions?.join(' ')]
   );
 
-  useLayoutEffect(
+  React.useLayoutEffect(
     function syncTuning() {
       controller.setOptions(tuning);
     },
     [controller, tuning]
   );
 
-  useLayoutEffect(
+  React.useLayoutEffect(
     function settleOnDisable() {
       if (!enabled) {
         controller.destroy();
@@ -87,14 +87,14 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
     [enabled, controller]
   );
 
-  useEffect(
+  React.useEffect(
     function destroyController() {
       return () => controller.destroy();
     },
     [controller]
   );
 
-  const handlers = useMemo<ToastSwipeHandlers<T>>(() => {
+  const handlers = React.useMemo<ToastSwipeHandlers<T>>(() => {
     const swipe = createSwipeHandlers<PointerEvent<T>, MouseEvent<T>>(
       controller
     );

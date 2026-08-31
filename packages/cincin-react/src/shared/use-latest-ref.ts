@@ -1,10 +1,10 @@
 import type { RefObject } from 'react';
-import { useInsertionEffect, useRef } from 'react';
+import * as React from 'react';
 
 function useLatestRef<T>(value: T): RefObject<T> {
-  const ref = useRef<T>(value);
+  const ref = React.useRef<T>(value);
 
-  useInsertionEffect(function sync() {
+  React.useInsertionEffect(function sync() {
     ref.current = value;
   });
 

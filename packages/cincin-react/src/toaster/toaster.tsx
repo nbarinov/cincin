@@ -3,7 +3,7 @@
 import type { Toaster as ToasterContract } from 'cincin';
 import type { StackLayout, StackSlot, SwipeDirection } from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
-import { useMemo } from 'react';
+import * as React from 'react';
 import type { CSSProperties } from 'react';
 import { inertValue } from '../shared/inert';
 import { useDocumentDirection } from '../shared/use-document-direction';
@@ -60,7 +60,7 @@ function Toaster({
 }: ToasterProps) {
   const presenter = usePresenter(toaster, { max, exitDuration });
   const toasts = useToasts(presenter);
-  const live = useMemo(
+  const live = React.useMemo(
     () => toasts.filter((toast) => toast.phase !== 'queued'),
     [toasts]
   );

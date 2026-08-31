@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import * as React from 'react';
 import { cleanup, render, renderHook } from '@testing-library/react';
 import { createToaster } from 'cincin';
 import { usePresenter } from './use-presenter';
@@ -43,9 +43,9 @@ describe('usePresenter', () => {
     }
 
     render(
-      <StrictMode>
+      <React.StrictMode>
         <Host />
-      </StrictMode>
+      </React.StrictMode>
     );
 
     // mount, unmount, mount: the count lands at one, the region shows.

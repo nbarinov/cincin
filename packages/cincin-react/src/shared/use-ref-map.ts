@@ -1,5 +1,5 @@
 import type { RefCallback } from 'react';
-import { useEffect, useMemo, useRef } from 'react';
+import * as React from 'react';
 import { useLatestRef } from './use-latest-ref';
 
 type RefMapOptions<Key, Value> = {
@@ -36,14 +36,14 @@ const BURIAL_DELAY = 200;
  * the key outright.
  */
 function useRefMap<Key, Value>(options: RefMapOptions<Key, Value> = {}) {
-  const values = useRef(new Map<Key, Value>());
-  const refs = useRef(new Map<Key, RefCallback<Value>>());
+  const values = React.useRef(new Map<Key, Value>());
+  const refs = React.useRef(new Map<Key, RefCallback<Value>>());
   const onChangeRef = useLatestRef(options.onChange);
 
-  const burials = useRef(new Set<Key>());
-  const flushTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const burials = React.useRef(new Set<Key>());
+  const flushTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  useEffect(function cancelBurials() {
+  React.useEffect(function cancelBurials() {
     return () => {
       if (flushTimer.current !== undefined) {
         clearTimeout(flushTimer.current);
@@ -52,7 +52,7 @@ function useRefMap<Key, Value>(options: RefMapOptions<Key, Value> = {}) {
     };
   }, []);
 
-  return useMemo<RefMap<Key, Value>>(
+  return React.useMemo<RefMap<Key, Value>>(
     () => ({
       getRef: (key: Key) => {
         const cached = refs.current.get(key);

@@ -1,7 +1,7 @@
 import type { Toaster } from 'cincin';
 import { createPresenter } from 'cincin/presenter';
 import type { Presenter, PresenterOptions } from 'cincin/presenter';
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import * as React from 'react';
 
 /**
  * A presenter over the given toaster, alive as long as the component:
@@ -17,20 +17,22 @@ function usePresenter<ToastContent extends {} = string>(
 ): Presenter<ToastContent> {
   const { max, exitDuration } = options ?? {};
 
-  const resolvedOptions = useMemo<PresenterOptions>(
+  const resolvedOptions = React.useMemo<PresenterOptions>(
     () => ({ max, exitDuration }),
     [max, exitDuration]
   );
 
-  const [presenter] = useState(() => createPresenter(toaster, resolvedOptions));
+  const [presenter] = React.useState(() =>
+    createPresenter(toaster, resolvedOptions)
+  );
 
-  useEffect(() => {
+  React.useEffect(() => {
     presenter.mount();
 
     return () => presenter.unmount();
   }, [presenter]);
 
-  useLayoutEffect(() => {
+  React.useLayoutEffect(() => {
     presenter.setOptions(resolvedOptions);
   }, [presenter, resolvedOptions]);
 

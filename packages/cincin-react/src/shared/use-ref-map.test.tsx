@@ -1,5 +1,5 @@
 import { cleanup, render, renderHook } from '@testing-library/react';
-import { StrictMode } from 'react';
+import * as React from 'react';
 import { BURIAL_DELAY, useRefMap } from './use-ref-map';
 import type { RefMap } from './use-ref-map';
 
@@ -93,9 +93,9 @@ describe('useRefMap', () => {
     }
 
     render(
-      <StrictMode>
+      <React.StrictMode>
         <Host />
-      </StrictMode>
+      </React.StrictMode>
     );
 
     // StrictMode ran the ref cleanup between its two mounts. A cleanup
@@ -121,9 +121,9 @@ describe('useRefMap', () => {
     }
 
     const view = render(
-      <StrictMode>
+      <React.StrictMode>
         <Host keys={['a']} />
-      </StrictMode>
+      </React.StrictMode>
     );
     const before = map.getRef('a');
 
@@ -133,9 +133,9 @@ describe('useRefMap', () => {
     // cleanup that left the cancelled id in the slot would block every
     // future flush, and no key would ever be buried again.
     view.rerender(
-      <StrictMode>
+      <React.StrictMode>
         <Host keys={[]} />
-      </StrictMode>
+      </React.StrictMode>
     );
     await new Promise((resolve) => setTimeout(resolve, BURIAL_DELAY + 20));
 

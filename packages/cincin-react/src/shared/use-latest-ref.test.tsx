@@ -1,5 +1,5 @@
 import { cleanup, render, renderHook } from '@testing-library/react';
-import { useCallback } from 'react';
+import * as React from 'react';
 import { useLatestRef } from './use-latest-ref';
 
 afterEach(() => {
@@ -40,7 +40,7 @@ describe('useLatestRef', () => {
       // how useToastSwipe reattaches on a direction change. The sync
       // must have happened by then: an effect-based one lags a commit
       // behind and would record the previous value here.
-      const probe = useCallback(
+      const probe = React.useCallback(
         (element: HTMLElement | null) => {
           if (element !== null) {
             seen.push(latest.current);

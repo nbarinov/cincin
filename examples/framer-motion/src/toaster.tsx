@@ -1,7 +1,7 @@
 import { createToaster } from 'cincin';
 import type { ToastEntry } from 'cincin';
+import * as React from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 /**
  * A toaster driven by Motion instead of `cincin/presenter`.
@@ -29,7 +29,7 @@ const toaster = createToaster<ToastContent>();
 /** The entry store is already an external store in React's sense:
  * a stable snapshot swapped on every commit. */
 function useEntries(): ReadonlyArray<Entry> {
-  return useSyncExternalStore(
+  return React.useSyncExternalStore(
     toaster.subscribe,
     toaster.getSnapshot,
     toaster.getSnapshot
@@ -42,13 +42,13 @@ function useEntries(): ReadonlyArray<Entry> {
  * morphing toast; while paused the remaining time is banked, not spent.
  */
 function useExpiry(entry: Entry, paused: boolean): void {
-  const remaining = useRef(entry.duration);
+  const remaining = React.useRef(entry.duration);
 
-  useEffect(() => {
+  React.useEffect(() => {
     remaining.current = entry.duration;
   }, [entry.updatedAt, entry.duration]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (paused || !Number.isFinite(remaining.current)) {
       return;
     }
@@ -110,7 +110,7 @@ function ToastCard({ entry, paused }: { entry: Entry; paused: boolean }) {
 
 function MotionToaster() {
   const entries = useEntries();
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = React.useState(false);
 
   return (
     <MotionConfig reducedMotion="user">

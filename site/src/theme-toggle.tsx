@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 /**
  * Mirrors the vanilla example's toggle (same storage key): an override
@@ -7,12 +7,12 @@ import { useEffect, useState } from 'react';
  * first frame, so this component only has to keep it in sync.
  */
 function ThemeToggle() {
-  const [override, setOverride] = useState<'light' | 'dark' | null>(() =>
+  const [override, setOverride] = React.useState<'light' | 'dark' | null>(() =>
     readOverride()
   );
-  const [systemDark, setSystemDark] = useState(() => matchDark().matches);
+  const [systemDark, setSystemDark] = React.useState(() => matchDark().matches);
 
-  useEffect(function sync() {
+  React.useEffect(function sync() {
     const media = matchDark();
     const onChange = () => setSystemDark(media.matches);
 

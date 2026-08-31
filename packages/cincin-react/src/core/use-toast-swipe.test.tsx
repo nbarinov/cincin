@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import * as React from 'react';
 import { cleanup, render, renderHook } from '@testing-library/react';
 import { createToaster } from 'cincin';
 import { createPresenter } from 'cincin/presenter';
@@ -97,9 +97,9 @@ describe('useToastSwipe', () => {
     const { presenter, key } = setup();
 
     render(
-      <StrictMode>
+      <React.StrictMode>
         <SwipeHost toastKey={key} presenter={presenter} />
-      </StrictMode>
+      </React.StrictMode>
     );
 
     expect(getToastElement().style.touchAction).toBe('none');

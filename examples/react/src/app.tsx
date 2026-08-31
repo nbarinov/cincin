@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { Toaster, toast } from 'cincin-react';
 import type { ToasterPosition } from 'cincin-react';
 
@@ -159,10 +159,10 @@ function App() {
   // purely by CSS inheritance, so projecting dir onto the root is
   // the whole integration. The cleanup restores the attribute-free
   // root on the way back.
-  const [rtl, setRtl] = useState(false);
-  const [position, setPosition] = useState<ToasterPosition | undefined>();
+  const [rtl, setRtl] = React.useState(false);
+  const [position, setPosition] = React.useState<ToasterPosition | undefined>();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (rtl) {
       document.documentElement.dir = 'rtl';
 

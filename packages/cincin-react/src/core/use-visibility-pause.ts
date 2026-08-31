@@ -1,6 +1,6 @@
 import type { Presenter } from 'cincin/presenter';
 import { attachVisibilityPause } from 'cincin/dom';
-import { useEffect } from 'react';
+import * as React from 'react';
 
 /**
  * Freezes the presenter's clocks while the document is hidden. Lifetime
@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 function useVisibilityPause<Content extends {}>(
   presenter: Presenter<Content>
 ): void {
-  useEffect(
+  React.useEffect(
     function setup() {
       return attachVisibilityPause(presenter);
     },

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import * as React from 'react';
 import { createStackLayout } from 'cincin/dom';
 import type { StackLayoutOptions } from 'cincin/dom';
 import type { Toast, ToastKey } from 'cincin/presenter';
@@ -18,21 +18,21 @@ function useStack(
   const { order = 'stack', visible = 3, gap = 12, body } = options;
   // The body locator rides only the creation: it is read once by the
   // layout, and setOptions leaves it alone.
-  const [layout] = useState(() =>
+  const [layout] = React.useState(() =>
     createStackLayout({ order, visible, gap, ...(body && { body }) })
   );
   const cards = useRefMap<ToastKey, HTMLElement>({
     onChange: (key, element) => layout.setCard(key, element),
   });
 
-  useLayoutEffect(
+  React.useLayoutEffect(
     function syncOptions() {
       layout.setOptions({ order, visible, gap });
     },
     [layout, order, visible, gap]
   );
 
-  useLayoutEffect(
+  React.useLayoutEffect(
     function syncEntries() {
       layout.setEntries(
         entries.map((toast) => ({
@@ -44,7 +44,7 @@ function useStack(
     [layout, entries]
   );
 
-  useLayoutEffect(
+  React.useLayoutEffect(
     function destroyOnUnmount() {
       return () => {
         layout.destroy();
