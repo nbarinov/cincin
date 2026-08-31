@@ -99,6 +99,12 @@ better said out loud: prevent the dismiss and re-create the same id as
 `toast.loading({ title: 'Accepting…' })`, and the buttons stop existing
 instead of greying out.
 
+An update inherits the clock and the closability: `duration` and
+`dismissible` re-derive from the type's defaults only when the type
+changes. Answer a sticky ask in a different type — a confirmation
+morphed in the asking type inherits the open-ended clock and strands
+on screen with no cross, no swipe, and no expiry.
+
 The cross is chrome, not permission. `closeButton: false` hides it and
 leaves the toast swipeable, which is what an undo toast wants: the
 button reads as the way out, and the gesture is still there for anyone
@@ -125,6 +131,29 @@ ms; one value drives the presenter's exit clock and, published as
 `--cincin-exit-duration`, the skin's motion durations), `labels` (the
 skin's a11y vocabulary: `{ region, close }`, defaults `'Notifications'`
 and `'Dismiss'`).
+
+## Position
+
+```tsx
+<Toaster position="top-center" />
+```
+
+Six spots: the four corners and the two edge centers. An explicit
+position is physical and final. The default is the bottom inline-end
+corner — `bottom-right`, `bottom-left` under RTL — and it is live: the
+Toaster watches the root's `dir` and follows a flip without a
+re-render. A server-rendered RTL page settles the corner right after
+hydration; pass an explicit position to skip that flip. One Toaster
+owns one spot: for a second corner, mount a second Toaster over its
+own store.
+
+Swiping follows the corner. The default `swipeDirections` set is the
+position's outward edges (`['right', 'down']` at `bottom-right`), so
+the card leaves toward the nearest viewport edge — and a set spanning
+both axes claims `touch-action: none` on the cards, trading scrolling
+over them away, deliberately. A center offers only its vertical edge,
+and the horizontal axis stays with the browser for scrolling. An
+explicit `swipeDirections` overrides the pairing.
 
 ## Headless
 

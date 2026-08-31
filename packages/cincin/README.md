@@ -38,7 +38,9 @@ The store holds `ToastEntry` records: `create`/`update`/`remove` plus
 the type sugar. Content is opaque: `createToaster<MyContent>()` stores
 whatever your renderer understands. Duration and dismissibility derive
 from the type (`loading` is open-ended and locked) unless set
-explicitly. Showing is not the store's business.
+explicitly, and an update re-derives them only when the type changes:
+a content-only update never rewinds the clock, and a morph that must
+restart it changes the type. Showing is not the store's business.
 
 ## The presenter
 
