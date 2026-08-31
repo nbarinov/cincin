@@ -1,6 +1,6 @@
 {
   "name": "cincin-vue",
-  "version": "0.1.0-beta.5",
+  "version": "0.1.0-beta.6",
   "description": "🥂 Vue bindings for cincin: headless composables, primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
@@ -12,6 +12,8 @@
   },
   "keywords": [
     "toast",
+    "snackbar",
+    "toaster",
     "notifications",
     "vue",
     "headless"
