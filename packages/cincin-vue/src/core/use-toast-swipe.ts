@@ -10,17 +10,17 @@ import type { ComputedRef, MaybeRefOrGetter } from 'vue';
 
 type ToastSwipeOptions<Content extends {} = string> = Omit<
   SwipeOptions,
-  'onDismiss' | 'onRemove' | 'direction'
+  'onDismiss' | 'onRemove' | 'directions'
 > & {
   key: ToastKey;
   presenter: Presenter<Content>;
   /**
-   * Physical swipe direction. A changed source recreates the
-   * controller: the axis claim is a creation-time affair.
+   * Directions a swipe may dismiss along. A changed source recreates
+   * the controller: the axes claim is a creation-time affair.
    *
-   * @default 'right'
+   * @default ['right', 'down']
    */
-  direction?: MaybeRefOrGetter<SwipeDirection>;
+  directions?: MaybeRefOrGetter<readonly SwipeDirection[] | undefined>;
   /**
    * Whether the gesture exists at all. A non-dismissible toast gets
    * no swipe: no handlers, and no touch-action claim either.
@@ -50,40 +50,43 @@ type ToastSwipe = {
    * axis before any gesture, so it travels declaratively with
    * the element. `undefined` while disabled.
    */
-  style: ComputedRef<{ touchAction: 'pan-y' | 'pan-x' } | undefined>;
+  style: ComputedRef<{ touchAction: 'pan-y' | 'pan-x' | 'none' } | undefined>;
 };
 
 /**
  * The handlers translate native events into the gesture protocol (the
  * machine takes the element lazily from the first `start`), so no
  * element ref is involved. The controller is recreated on the
- * direction source; the key, the presenter and the tuning are read
- * once, like the slot's identities. `enabled` only projects the
- * return: the lazy machine costs nothing behind a disabled toast, and
- * disabling mid-gesture settles through destroy.
+ * directions source (watched by its joined contents, not the array
+ * identity, so an inline literal getter does not churn it); the key,
+ * the presenter and the tuning are read once, like the slot's
+ * identities. `enabled` only projects the return: the lazy machine
+ * costs nothing behind a disabled toast, and disabling mid-gesture
+ * settles through destroy.
  */
 function useToastSwipe<Content extends {}>(
   options: ToastSwipeOptions<Content>
 ): ToastSwipe {
-  const { key, presenter, direction, enabled = true, ...tuning } = options;
+  const { key, presenter, directions, enabled = true, ...tuning } = options;
 
-  const create = (resolvedDirection: SwipeDirection | undefined) =>
-    createSwipeController({
+  const create = () => {
+    const resolved = toValue(directions);
+
+    return createSwipeController({
       ...tuning,
-      ...(resolvedDirection !== undefined && {
-        direction: resolvedDirection,
-      }),
+      ...(resolved !== undefined && { directions: resolved }),
       onDismiss: () => presenter.dismiss(key),
       onRemove: () => presenter.finish(key),
     });
+  };
 
-  const controller = shallowRef(create(toValue(direction)));
+  const controller = shallowRef(create());
 
   watch(
-    () => toValue(direction),
-    (resolvedDirection) => {
+    () => toValue(directions)?.join(' '),
+    () => {
       controller.value.destroy();
-      controller.value = create(resolvedDirection);
+      controller.value = create();
     }
   );
 
@@ -113,7 +116,7 @@ function useToastSwipe<Content extends {}>(
     handlers: computed(() => (isEnabled.value ? handlers.value : IDLE)),
     style: computed(() =>
       isEnabled.value
-        ? { touchAction: touchActionFor(controller.value.direction) }
+        ? { touchAction: touchActionFor(controller.value.directions) }
         : undefined
     ),
   };

@@ -97,21 +97,23 @@ describe('useToastSwipe', () => {
 
     const view = mountSwipeHost(presenter, key);
     await nextTick();
-    expect(getToastElement().style.touchAction).toBe('pan-y');
+    expect(getToastElement().style.touchAction).toBe('none');
 
     view.unmount();
     presenter.unmount();
   });
 
-  it('should reattach the controller when the direction source changes', async () => {
+  it('should reattach the controller when the directions source changes', async () => {
     const { presenter, key } = setup();
-    const direction = shallowRef<SwipeDirection>('right');
+    const directions = shallowRef<SwipeDirection[]>(['right']);
 
-    mountSwipeHost(presenter, key, { direction });
+    mountSwipeHost(presenter, key, { directions });
     await nextTick();
     expect(getToastElement().style.touchAction).toBe('pan-y');
 
-    direction.value = 'down';
+    // A fresh array with the same contents must not churn the
+    // controller; changed contents must.
+    directions.value = ['down'];
     await nextTick();
     expect(getToastElement().style.touchAction).toBe('pan-x');
 
@@ -171,7 +173,7 @@ describe('useToastSwipe', () => {
 
     enabled.value = true;
     await nextTick();
-    expect(element.style.touchAction).toBe('pan-y');
+    expect(element.style.touchAction).toBe('none');
 
     swipeOut(element);
 
@@ -186,7 +188,7 @@ describe('useToastSwipe', () => {
     mountSwipeHost(presenter, key, { enabled });
     await nextTick();
     const element = getToastElement();
-    expect(element.style.touchAction).toBe('pan-y');
+    expect(element.style.touchAction).toBe('none');
 
     enabled.value = false;
     await nextTick();

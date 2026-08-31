@@ -24,9 +24,11 @@ const props = withDefaults(
      */
     labels?: ToasterLabels;
     /**
-     * @default 'right'
+     * Directions a swipe may dismiss along.
+     *
+     * @default ['right', 'down']
      */
-    swipeDirection?: SwipeDirection;
+    swipeDirections?: readonly SwipeDirection[];
     /**
      * How many toasts peek out of the collapsed stack.
      *
@@ -50,7 +52,6 @@ const props = withDefaults(
   }>(),
   {
     toaster: () => defaultToaster,
-    swipeDirection: 'right',
     visible: 3,
     max: Infinity,
     exitDuration: 400,
@@ -92,7 +93,7 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
         :presenter="presenter"
         :layout="layout"
         :expanded="expanded"
-        :swipe-direction="swipeDirection"
+        :swipe-directions="swipeDirections"
         :close-label="closeLabel"
       />
     </ol>

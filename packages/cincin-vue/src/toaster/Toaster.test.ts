@@ -300,7 +300,7 @@ describe('Toaster close button', () => {
     // is still attached and still claims its cross axis.
     expect(getClose(card)).toBeNull();
     expect(card.dataset.dismissible).toBe('true');
-    expect(card.style.touchAction).toBe('pan-y');
+    expect(card.style.touchAction).toBe('none');
   });
 
   it('should not bring the cross back on a non-dismissible toast', async () => {

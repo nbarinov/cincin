@@ -12,7 +12,7 @@ const props = defineProps<{
   presenter: Presenter<ToastContent>;
   layout: StackLayout;
   expanded: boolean;
-  swipeDirection: SwipeDirection;
+  swipeDirections: readonly SwipeDirection[] | undefined;
   closeLabel: string;
 }>();
 
@@ -25,7 +25,7 @@ const stackSlot = useSlot(card, {
 const { handlers: swipeHandlers, style: swipeStyle } = useToastSwipe({
   key: props.toast.key,
   presenter: props.presenter,
-  direction: () => props.swipeDirection,
+  directions: () => props.swipeDirections,
   enabled: () => props.toast.entry.dismissible,
 });
 
