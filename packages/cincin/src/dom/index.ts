@@ -21,6 +21,7 @@ export type {
 } from './stack-layout';
 export type { SlotObserver, SlotObserverOptions } from './slot-observer';
 export { prefersReducedMotion, touchActionFor } from './utils';
+export { textDirection, observeTextDirection } from './direction';
 export { createSwipeHandlers } from './swipe-handlers';
 export type {
   SwipeHandlers,
