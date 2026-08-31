@@ -123,5 +123,13 @@ interface Gesture {
   samples: VelocitySample[];
 }
 
-export { AXIS, SIGN, directionFor, axisSigns, dampen, trailingVelocity, flingDuration };
+export {
+  AXIS,
+  SIGN,
+  directionFor,
+  axisSigns,
+  dampen,
+  trailingVelocity,
+  flingDuration,
+};
 export type { Gesture, SwipeDirection };

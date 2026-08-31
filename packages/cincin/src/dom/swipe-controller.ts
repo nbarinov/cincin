@@ -225,7 +225,12 @@ class SwipeController {
       (offset * sign > dismiss.distance || velocity > dismiss.velocity);
 
     if (!passed) {
-      this.#overlay = springBack(channel, gesture.axis, offset, cancel.duration);
+      this.#overlay = springBack(
+        channel,
+        gesture.axis,
+        offset,
+        cancel.duration
+      );
       return 'drag';
     }
 

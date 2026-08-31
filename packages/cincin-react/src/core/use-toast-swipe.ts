@@ -1,5 +1,5 @@
 import type { Presenter, ToastKey } from 'cincin/presenter';
-import type { SwipeDirection, SwipeOptions } from 'cincin/dom';
+import type { SwipeOptions } from 'cincin/dom';
 import {
   createSwipeController,
   createSwipeHandlers,
