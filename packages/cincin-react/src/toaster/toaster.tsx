@@ -22,8 +22,8 @@ type ToasterProps = {
   toaster?: ToasterContract<ToastContent>;
   /** The skin's a11y vocabulary, one place for all toasts. */
   labels?: ToasterLabels;
-  /** @default 'right' */
-  swipeDirection?: SwipeDirection;
+  /** Directions a swipe may dismiss along. @default ['right', 'down'] */
+  swipeDirections?: readonly SwipeDirection[];
   /** How many toasts peek out of the collapsed stack. @default 3 */
   visible?: number;
   /** Active presentations at once; the rest queue. @default Infinity */
@@ -37,7 +37,7 @@ type ToasterProps = {
 function Toaster({
   toaster = defaultToaster,
   labels = {},
-  swipeDirection = 'right',
+  swipeDirections,
   visible = 3,
   max = Infinity,
   exitDuration = 400,
@@ -77,7 +77,7 @@ function Toaster({
             presenter={presenter}
             layout={stack.layout}
             expanded={region.expanded}
-            swipeDirection={swipeDirection}
+            swipeDirections={swipeDirections}
             closeLabel={closeLabel}
           />
         ))}
@@ -91,7 +91,7 @@ type ToastCardProps = {
   presenter: Presenter<ToastContent>;
   layout: StackLayout;
   expanded: boolean;
-  swipeDirection: SwipeDirection;
+  swipeDirections: readonly SwipeDirection[] | undefined;
   closeLabel: string;
 };
 
@@ -100,7 +100,7 @@ function ToastCard({
   presenter,
   layout,
   expanded,
-  swipeDirection,
+  swipeDirections,
   closeLabel,
 }: ToastCardProps) {
   const { key, entry, phase } = toast;
@@ -108,7 +108,7 @@ function ToastCard({
   const swipe = useToastSwipe({
     key,
     presenter,
-    direction: swipeDirection,
+    ...(swipeDirections !== undefined && { directions: swipeDirections }),
     enabled: entry.dismissible,
   });
 

@@ -1,5 +1,5 @@
 import type { Presenter, ToastKey } from 'cincin/presenter';
-import type { SwipeOptions } from 'cincin/dom';
+import type { SwipeDirection, SwipeOptions } from 'cincin/dom';
 import {
   createSwipeController,
   createSwipeHandlers,
@@ -49,25 +49,26 @@ type ToastSwipe<T extends HTMLElement> = {
  * and the trailing click the browser synthesizes after a drag
  * is spent by the capture handler on the translator's claim.
  * The controller is recreated on the read-once identities
- * (key, presenter, direction); the tuning rides `setOptions` and lands before paint.
+ * (key, presenter, directions); the tuning rides `setOptions` and lands before paint.
  * `enabled` only projects the return: the lazy machine costs nothing
  * behind a disabled toast, and re-enabling keeps the handler identities.
  */
 function useToastSwipe<T extends HTMLElement, Content extends {}>(
   options: ToastSwipeOptions<Content>
 ): ToastSwipe<T> {
-  const { key, presenter, enabled = true, direction, ...tuning } = options;
+  const { key, presenter, enabled = true, directions, ...tuning } = options;
   const tuningRef = useLatestRef(tuning);
 
   const controller = useMemo(
     () =>
       createSwipeController({
         ...tuningRef.current,
-        ...(direction !== undefined && { direction }),
+        ...(directions !== undefined && { directions }),
         onDismiss: () => presenter.dismiss(key),
         onRemove: () => presenter.finish(key),
       }),
-    [key, presenter, direction, tuningRef]
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- directions is a value, not an identity
+    [key, presenter, tuningRef, directions?.join(' ')]
   );
 
   useLayoutEffect(
@@ -120,7 +121,7 @@ function useToastSwipe<T extends HTMLElement, Content extends {}>(
 
   return {
     handlers,
-    style: { touchAction: touchActionFor(controller.direction) },
+    style: { touchAction: touchActionFor(controller.directions) },
   };
 }
 

@@ -87,7 +87,7 @@ describe('useToastSwipe', () => {
     const { presenter, key } = setup();
 
     const view = render(<SwipeHost toastKey={key} presenter={presenter} />);
-    expect(getToastElement().style.touchAction).toBe('pan-y');
+    expect(getToastElement().style.touchAction).toBe('none');
 
     view.unmount();
     presenter.unmount();
@@ -102,25 +102,26 @@ describe('useToastSwipe', () => {
       </StrictMode>
     );
 
-    expect(getToastElement().style.touchAction).toBe('pan-y');
+    expect(getToastElement().style.touchAction).toBe('none');
     presenter.unmount();
   });
 
-  it('should recreate the controller when the direction changes', () => {
+  it('should recreate the controller when the directions change', () => {
     const { presenter, key } = setup();
 
     const view = render(
       <SwipeHost toastKey={key} presenter={presenter} options={{}} />
     );
-    expect(getToastElement().style.touchAction).toBe('pan-y');
+    expect(getToastElement().style.touchAction).toBe('none');
 
-    // Direction is read-once: a new direction is a new controller, and
-    // the declarative touch-action claim flips with it.
+    // The set is read-once: a new set is a new controller, and the
+    // declarative touch-action claim flips with it. The inline literal
+    // recreates by contents, not by array identity.
     view.rerender(
       <SwipeHost
         toastKey={key}
         presenter={presenter}
-        options={{ direction: 'down' }}
+        options={{ directions: ['down'] }}
       />
     );
     expect(getToastElement().style.touchAction).toBe('pan-x');
@@ -212,7 +213,7 @@ describe('useToastSwipe', () => {
         options={{ enabled: true }}
       />
     );
-    expect(element.style.touchAction).toBe('pan-y');
+    expect(element.style.touchAction).toBe('none');
 
     swipeOut(element);
 
@@ -225,7 +226,7 @@ describe('useToastSwipe', () => {
 
     const view = render(<SwipeHost toastKey={key} presenter={presenter} />);
     const element = getToastElement();
-    expect(element.style.touchAction).toBe('pan-y');
+    expect(element.style.touchAction).toBe('none');
 
     view.rerender(
       <SwipeHost
