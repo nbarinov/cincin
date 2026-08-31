@@ -12,7 +12,7 @@ const props = defineProps<{
   presenter: Presenter<ToastContent>;
   layout: StackLayout;
   expanded: boolean;
-  swipeDirections: readonly SwipeDirection[] | undefined;
+  swipeDirections: readonly SwipeDirection[];
   closeLabel: string;
 }>();
 

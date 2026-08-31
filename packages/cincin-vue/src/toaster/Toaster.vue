@@ -2,11 +2,14 @@
 import type { Toaster as ToasterContract } from 'cincin';
 import type { SwipeDirection } from 'cincin/dom';
 import { computed, useTemplateRef } from 'vue';
+import { useDocumentDirection } from '../core/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import type { ToastContent, ToasterLabels } from './content';
+import { outwardDirections } from './position';
+import type { ToasterPosition } from './position';
 import { toast as defaultToaster } from './toast';
 import { useRegion } from './use-region';
 import ToastCard from './ToastCard.vue';
@@ -24,9 +27,17 @@ const props = withDefaults(
      */
     labels?: ToasterLabels;
     /**
+     * The region's corner (or edge center). Explicit values are
+     * physical and final; the default is the bottom inline-end
+     * corner, live against the document's `dir`.
+     *
+     * @default 'bottom-right', 'bottom-left' under RTL
+     */
+    position?: ToasterPosition;
+    /**
      * Directions a swipe may dismiss along.
      *
-     * @default ['right', 'down']
+     * @default the position's outward edges
      */
     swipeDirections?: readonly SwipeDirection[];
     /**
@@ -73,6 +84,20 @@ const { layout } = useStack(live, () => ({ visible: props.visible }));
 
 useVisibilityPause(presenter);
 
+const direction = useDocumentDirection();
+const resolvedPosition = computed(
+  () =>
+    props.position ??
+    (direction.value === 'rtl' ? 'bottom-left' : 'bottom-right')
+);
+const anchors = computed(() => {
+  const [y, x] = resolvedPosition.value.split('-');
+  return { y, x };
+});
+const directions = computed(
+  () => props.swipeDirections ?? outwardDirections(resolvedPosition.value)
+);
+
 const regionLabel = computed(() => props.labels?.region ?? 'Notifications');
 const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
 </script>
@@ -82,6 +107,8 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
     <ol
       ref="region"
       data-cincin-toaster
+      :data-y="anchors.y"
+      :data-x="anchors.x"
       :data-expanded="expanded"
       :style="{ '--cincin-exit-duration': `${exitDuration}ms` }"
       v-bind="handlers"
@@ -93,7 +120,7 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
         :presenter="presenter"
         :layout="layout"
         :expanded="expanded"
-        :swipe-directions="swipeDirections"
+        :swipe-directions="directions"
         :close-label="closeLabel"
       />
     </ol>
