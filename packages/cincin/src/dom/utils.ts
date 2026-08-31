@@ -66,8 +66,19 @@ function assignStyle(
   };
 }
 
-function touchActionFor(direction: SwipeDirection): 'pan-y' | 'pan-x' {
-  return AXIS[direction] === 'x' ? 'pan-y' : 'pan-x';
+/** The reserved-axis claim for the browser's scroll-vs-app decision.
+ * A single-axis set leaves the cross axis to native scrolling; a
+ * mixed set claims both axes, and scrolling over the card dies. */
+function touchActionFor(
+  directions: readonly SwipeDirection[]
+): 'pan-y' | 'pan-x' | 'none' {
+  const axes = new Set(directions.map((direction) => AXIS[direction]));
+
+  if (axes.size === 2) {
+    return 'none';
+  }
+
+  return axes.has('x') ? 'pan-y' : 'pan-x';
 }
 
 export {

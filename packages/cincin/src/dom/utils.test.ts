@@ -83,9 +83,14 @@ describe('assignStyle', () => {
 
 describe('touchActionFor', () => {
   it('should reserve the cross axis for the browser', () => {
-    expect(touchActionFor('right')).toBe('pan-y');
-    expect(touchActionFor('left')).toBe('pan-y');
-    expect(touchActionFor('up')).toBe('pan-x');
-    expect(touchActionFor('down')).toBe('pan-x');
+    expect(touchActionFor(['right'])).toBe('pan-y');
+    expect(touchActionFor(['left', 'right'])).toBe('pan-y');
+    expect(touchActionFor(['up'])).toBe('pan-x');
+    expect(touchActionFor(['up', 'down'])).toBe('pan-x');
+  });
+
+  it('should claim both axes for a mixed set', () => {
+    expect(touchActionFor(['right', 'down'])).toBe('none');
+    expect(touchActionFor(['left', 'up'])).toBe('none');
   });
 });

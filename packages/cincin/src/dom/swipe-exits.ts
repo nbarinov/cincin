@@ -1,5 +1,6 @@
 import { flingDuration } from './gesture';
 import type { SwipeChannel } from './swipe-channel';
+import type { Axis, Sign } from './types';
 import { prefersReducedMotion, translateValue } from './utils';
 
 interface FlingOptions {
@@ -19,13 +20,15 @@ const CANCEL_EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
 function flingOut(
   channel: SwipeChannel,
+  axis: Axis,
+  sign: Sign,
   from: number,
   velocity: number,
   options: FlingOptions,
   onComplete: () => void
 ): Animation | null {
-  const target = channel.exitTarget();
-  channel.set(target);
+  const target = channel.exitTarget(axis, sign);
+  channel.set(axis, target);
 
   if (prefersReducedMotion()) {
     onComplete();
@@ -42,8 +45,8 @@ function flingOut(
 
   const animation = channel.element.animate(
     [
-      { translate: translateValue(channel.axis, from) },
-      { translate: translateValue(channel.axis, target) },
+      { translate: translateValue(axis, from) },
+      { translate: translateValue(axis, target) },
     ],
     {
       duration,
@@ -60,10 +63,11 @@ function flingOut(
 
 function springBack(
   channel: SwipeChannel,
+  axis: Axis,
   from: number,
   duration: number
 ): Animation | null {
-  channel.set(0);
+  channel.set(axis, 0);
 
   if (prefersReducedMotion()) {
     return null;
@@ -71,8 +75,8 @@ function springBack(
 
   return channel.element.animate(
     [
-      { translate: translateValue(channel.axis, from) },
-      { translate: translateValue(channel.axis, 0) },
+      { translate: translateValue(axis, from) },
+      { translate: translateValue(axis, 0) },
     ],
     { duration, easing: CANCEL_EASING }
   );

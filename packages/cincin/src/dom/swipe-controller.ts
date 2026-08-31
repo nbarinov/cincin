@@ -1,13 +1,15 @@
-import { dampen, trailingVelocity } from './gesture';
+import { devWarn } from '../shared/utils';
+import { axisSigns, dampen, directionFor, trailingVelocity } from './gesture';
 import type { Gesture, SwipeDirection } from './gesture';
 import { createSwipeChannel } from './swipe-channel';
 import type { SwipeChannel } from './swipe-channel';
 import { flingOut, springBack } from './swipe-exits';
 import type { FlingOptions } from './swipe-exits';
+import type { Axis, Sign } from './types';
 
 type SwipeOptions = {
-  /** @default 'right' */
-  direction?: SwipeDirection;
+  /** Directions a swipe may dismiss along. @default ['right', 'down'] */
+  directions?: readonly SwipeDirection[];
   onDismiss: () => void;
   onRemove: () => void;
 
@@ -56,7 +58,7 @@ type SwipePoint = { id: number; x: number; y: number };
 type SwipeRelease = 'tap' | 'drag';
 
 const DEFAULTS = {
-  direction: 'right',
+  directions: ['right', 'down'],
   drag: { lockDistance: 7, damping: 0.7 },
   dismiss: { distance: 45, velocity: 0.11, velocityWindow: 80 },
   fling: { minDuration: 150, maxDuration: 450, slope: 3 },
@@ -73,19 +75,31 @@ const DEFAULTS = {
  * exit animations. The channel is lazy: it binds to the element of the
  * first `start` (and rebinds on a node swap), so a controller that is
  * never touched claims nothing.
+ *
+ * The gesture's axis is chosen at the lock by dominance, among the
+ * axes the directions allow; the committed direction is the actual
+ * travel, decided at release from the offset's sign.
  */
 class SwipeController {
   #options: ResolvedOptions;
+  #signs: Partial<Record<Axis, Set<Sign>>>;
   #channel: SwipeChannel | null = null;
   #gesture: Gesture | null = null;
   #overlay: Animation | null = null;
 
   constructor(options: SwipeOptions) {
     this.#options = resolveOptions(options);
+    this.#signs = axisSigns(this.#options.directions);
+
+    if (this.#options.directions.length === 0) {
+      devWarn(
+        'swipe: `directions` is empty, so every gesture is foreign; omit the option to get the default'
+      );
+    }
   }
 
-  get direction(): SwipeDirection {
-    return this.#options.direction;
+  get directions(): readonly SwipeDirection[] {
+    return this.#options.directions;
   }
 
   setOptions(tuning: SwipeTuning): void {
@@ -108,18 +122,19 @@ class SwipeController {
 
     this.#bind(element);
 
-    const base = this.#channel!.read();
-    this.#channel!.set(base);
+    // Pin before cancelling the overlay: the pin reads the computed
+    // mid-animation value, which the cancel would snap away.
+    const [baseX, baseY] = this.#channel!.pin();
     this.#overlay?.cancel();
 
     this.#gesture = {
       id: point.id,
-      startX: point.x,
-      startY: point.y,
-      base,
+      start: { x: point.x, y: point.y, t: performance.now() },
+      base: { x: baseX, y: baseY },
       locked: false,
       ours: false,
-      samples: [{ t: performance.now(), pos: base }],
+      axis: 'x',
+      samples: [],
     };
   }
 
@@ -131,8 +146,8 @@ class SwipeController {
 
     const channel = this.#channel!;
     const { drag, dismiss } = this.#options;
-    const dx = point.x - gesture.startX;
-    const dy = point.y - gesture.startY;
+    const dx = point.x - gesture.start.x;
+    const dy = point.y - gesture.start.y;
 
     if (!gesture.locked) {
       if (Math.hypot(dx, dy) < drag.lockDistance) {
@@ -140,9 +155,15 @@ class SwipeController {
       }
 
       gesture.locked = true;
-      gesture.ours = Math.abs(dx) >= Math.abs(dy) === (channel.axis === 'x');
+      const axis: Axis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+      gesture.ours = this.#signs[axis] !== undefined;
 
       if (gesture.ours) {
+        // A cross-axis re-grab forfeits the other component's pinned
+        // remainder: the first set() below zeroes it (see the channel).
+        gesture.axis = axis;
+        gesture.samples.push({ t: gesture.start.t, pos: gesture.base[axis] });
+
         // Capture only once the drag is real: pointer capture retargets
         // even the compatibility click, so capturing on the first touch
         // would steal taps from the toast's interactive children.
@@ -157,8 +178,14 @@ class SwipeController {
     }
 
     const now = performance.now();
-    const raw = (channel.axis === 'x' ? dx : dy) + gesture.base;
-    const offset = dampen(raw, channel.sign, drag.damping);
+    const signs = this.#signs[gesture.axis]!;
+    const raw = (gesture.axis === 'x' ? dx : dy) + gesture.base[gesture.axis];
+    // Both signs allowed: the axis is free, there is no "against" to
+    // resist. One sign: the power curve pushes back the other way.
+    const offset =
+      signs.size === 2
+        ? raw
+        : dampen(raw, signs.values().next().value!, drag.damping);
 
     gesture.samples.push({ t: now, pos: offset });
 
@@ -169,7 +196,7 @@ class SwipeController {
       gesture.samples.shift();
     }
 
-    channel.set(offset);
+    channel.set(gesture.axis, offset);
   }
 
   release(point: SwipePoint): SwipeRelease {
@@ -181,22 +208,35 @@ class SwipeController {
     const channel = this.#channel!;
     const { dismiss, fling, cancel } = this.#options;
     const offset = gesture.samples.at(-1)!.pos;
+
+    if (offset === 0) {
+      this.#overlay = springBack(channel, gesture.axis, 0, cancel.duration);
+      return 'drag';
+    }
+
+    // The candidate direction is where the card actually sits; the
+    // velocity counts only when it agrees with it (an inward flick
+    // reads as "changed my mind", not as a dismissal the other way).
+    const sign: Sign = offset > 0 ? 1 : -1;
     const velocity =
-      trailingVelocity(gesture.samples, dismiss.velocityWindow) * channel.sign;
-    const distance = offset * channel.sign;
-    const passed = distance > dismiss.distance || velocity > dismiss.velocity;
+      trailingVelocity(gesture.samples, dismiss.velocityWindow) * sign;
+    const passed =
+      this.#signs[gesture.axis]!.has(sign) &&
+      (offset * sign > dismiss.distance || velocity > dismiss.velocity);
 
     if (!passed) {
-      this.#overlay = springBack(channel, offset, cancel.duration);
+      this.#overlay = springBack(channel, gesture.axis, offset, cancel.duration);
       return 'drag';
     }
 
     // The fling owns the exit: skins must not play their CSS exit
     // animation while data-swipe-direction is present.
-    channel.markExit();
+    channel.markExit(directionFor(gesture.axis, sign));
     this.#options.onDismiss();
     this.#overlay = flingOut(
       channel,
+      gesture.axis,
+      sign,
       offset,
       Math.max(velocity, 0),
       fling,
@@ -214,6 +254,7 @@ class SwipeController {
 
     this.#overlay = springBack(
       this.#channel!,
+      gesture.axis,
       gesture.samples.at(-1)!.pos,
       this.#options.cancel.duration
     );
@@ -228,8 +269,9 @@ class SwipeController {
   }
 
   /** Ends the tracked gesture for a matching contact; null when there
-   * is nothing to settle (a foreign contact, or a contact that never
-   * moved along our axis: a tap, or a foreign-axis gesture). */
+   * is nothing to fling or spring on its own (a foreign contact, or a
+   * contact that never moved along our axes: a tap, or a foreign-axis
+   * gesture). */
   #settle(point: SwipePoint): Gesture | null {
     if (this.#gesture?.id !== point.id) {
       return null;
@@ -240,10 +282,29 @@ class SwipeController {
     this.#channel!.markSwiping(false);
 
     if (gesture.samples.length < 2) {
+      this.#settlePin(gesture);
       return null;
     }
 
     return gesture;
+  }
+
+  /** A grab that caught the cancel spring mid-flight pinned its offset;
+   * when it then ends without a drag (a tap, a foreign-axis gesture),
+   * nothing downstream would move the card, so the pinned remainder is
+   * sent home here or it would hang forever. */
+  #settlePin(gesture: Gesture): void {
+    const axis: Axis = gesture.base.x !== 0 ? 'x' : 'y';
+    const from = gesture.base[axis];
+
+    if (from !== 0) {
+      this.#overlay = springBack(
+        this.#channel!,
+        axis,
+        from,
+        this.#options.cancel.duration
+      );
+    }
   }
 
   #bind(element: HTMLElement): void {
@@ -253,7 +314,7 @@ class SwipeController {
 
     this.#overlay?.cancel();
     this.#channel?.release();
-    this.#channel = createSwipeChannel(element, this.#options.direction);
+    this.#channel = createSwipeChannel(element, this.#options.directions);
   }
 }
 
@@ -267,7 +328,7 @@ export type { SwipeOptions, SwipeTuning, SwipePoint, SwipeRelease };
 // utils
 
 interface ResolvedOptions {
-  direction: SwipeDirection;
+  directions: readonly SwipeDirection[];
   onDismiss: () => void;
   onRemove: () => void;
   drag: Required<NonNullable<SwipeOptions['drag']>>;

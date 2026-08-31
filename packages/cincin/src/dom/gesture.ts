@@ -76,23 +76,52 @@ const SIGN: Record<SwipeDirection, Sign> = {
   left: -1,
 };
 
+/** The reverse of AXIS/SIGN: release names the actual travel. */
+function directionFor(axis: Axis, sign: Sign): SwipeDirection {
+  if (axis === 'x') {
+    return sign === 1 ? 'right' : 'left';
+  }
+
+  return sign === 1 ? 'down' : 'up';
+}
+
+/** The allowed signs per axis; an absent axis is a foreign one. */
+function axisSigns(
+  directions: readonly SwipeDirection[]
+): Partial<Record<Axis, Set<Sign>>> {
+  const signs: Partial<Record<Axis, Set<Sign>>> = {};
+
+  for (const direction of directions) {
+    (signs[AXIS[direction]] ??= new Set()).add(SIGN[direction]);
+  }
+
+  return signs;
+}
+
 /** Mutable state of one in-flight gesture, owned by the swipe controller. */
 interface Gesture {
   /** The contact being tracked, in the protocol's opaque id. */
   id: number;
-  startX: number;
-  startY: number;
-  /** Translate at grab time: a re-grab during the cancel spring continues from there. */
-  base: number;
+  /** The grab anchor in pointer space: deltas, the lock geometry and
+   * the velocity window all measure from here (the lock backdates its
+   * anchor sample to `t`, so the window sees the whole hand movement,
+   * not just the tail past the lock distance). */
+  start: { x: number; y: number; t: number };
+  /** Translate at grab time, in card space, both components (the axis
+   * is not chosen yet): a re-grab during the cancel spring continues
+   * from `base[axis]`. */
+  base: { x: number; y: number };
   locked: boolean;
-  /** The locked axis matches ours. When false we step aside and let scrolling happen. */
+  /** The locked axis is one of ours. When false we step aside and let scrolling happen. */
   ours: boolean;
+  /** The gesture's axis; meaningful once `ours`. */
+  axis: Axis;
   /**
-   * The grab sample plus one per own-axis move, pruned to the trailing
+   * The anchor sample plus one per own-axis move, pruned to the trailing
    * velocity window. Two or more samples mean the toast actually moved.
    */
   samples: VelocitySample[];
 }
 
-export { AXIS, SIGN, dampen, trailingVelocity, flingDuration };
+export { AXIS, SIGN, directionFor, axisSigns, dampen, trailingVelocity, flingDuration };
 export type { Gesture, SwipeDirection };

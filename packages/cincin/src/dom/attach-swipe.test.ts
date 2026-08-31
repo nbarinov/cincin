@@ -51,17 +51,29 @@ afterEach(() => {
 describe('attachSwipe', () => {
   it('should claim touch-action on attach and restore it on detach', () => {
     const element = makeElement();
-    element.style.touchAction = 'none';
+    element.style.touchAction = 'auto';
 
+    // The mixed default claims both axes; scrolling over the card dies.
     const detach = attachSwipe(element, {
       onDismiss: () => {},
       onRemove: () => {},
     });
-    expect(element.style.touchAction).toBe('pan-y');
+    expect(element.style.touchAction).toBe('none');
 
     detach();
-    expect(element.style.touchAction).toBe('none');
+    expect(element.style.touchAction).toBe('auto');
     expect(element.style.translate).toBe('');
+  });
+
+  it('should reserve the cross axis for a single-axis set', () => {
+    const element = makeElement();
+    attachSwipe(element, {
+      directions: ['right'],
+      onDismiss: () => {},
+      onRemove: () => {},
+    });
+
+    expect(element.style.touchAction).toBe('pan-y');
   });
 
   it('should mark data-swiping and move the element once the gesture locks', () => {
@@ -79,7 +91,13 @@ describe('attachSwipe', () => {
 
   it('should step aside for a foreign-axis gesture', () => {
     const element = makeElement();
-    attachSwipe(element, { onDismiss: () => {}, onRemove: () => {} });
+    attachSwipe(element, {
+      // The default set owns both axes; the foreign-axis branch needs
+      // a set that leaves the vertical one to the browser.
+      directions: ['right'],
+      onDismiss: () => {},
+      onRemove: () => {},
+    });
 
     firePointer(element, 'pointerdown', 0, 0);
     vi.advanceTimersByTime(50);
@@ -270,9 +288,8 @@ describe('attachSwipe', () => {
     firePointer(element, 'pointerup', 0, 0);
     expect(capture).not.toHaveBeenCalled();
 
-    // A foreign-axis gesture never captures either.
-    drag(element, [[2, 20, 50]]);
-    expect(capture).not.toHaveBeenCalled();
+    // A vertical drag is ours under the mixed default and captures too,
+    // so the no-capture case here stays a plain tap.
 
     // A drag locked onto our axis does.
     drag(element, [

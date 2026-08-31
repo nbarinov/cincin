@@ -1,22 +1,26 @@
 import type { Axis, Sign } from './types';
 import type { SwipeDirection } from './gesture';
-import { AXIS, SIGN } from './gesture';
-import { assignStyle, parseTranslate, translateValue } from './utils';
+import { AXIS } from './gesture';
+import { assignStyle, parseTranslate } from './utils';
 
 interface SwipeChannel {
   readonly element: HTMLElement;
-  readonly axis: Axis;
-  readonly sign: Sign;
-  /** Writes the offset to the motion channel and the protocol variable. */
-  set(px: number): void;
-  /** Reads the current visual offset from the computed style. */
-  read(): number;
-  /** Signed off-screen target along the direction, with a shadow buffer. */
-  exitTarget(): number;
+  /** Pins the current visual offset as the inline value and returns
+   * both components: the next gesture's axis is not known yet. */
+  pin(): [x: number, y: number];
+  /** Writes the offset along the axis to the motion channel and the
+   * protocol variables. The other component is forfeited to zero: a
+   * single axis moves at a time, and a cross-axis re-grab drops the
+   * orphaned remainder of the spring it caught (bounded by how little
+   * of that spring was left). */
+  set(axis: Axis, px: number): void;
+  /** Signed off-screen target along the axis, with a shadow buffer. */
+  exitTarget(axis: Axis, sign: Sign): number;
   /** Toggles the grabbed state for skins ([data-swiping]). */
   markSwiping(active: boolean): void;
-  /** Enters the departure phase ([data-swipe-direction]). One-way. */
-  markExit(): void;
+  /** Enters the departure phase ([data-swipe-direction]) with the
+   * actual travel, decided at release. One-way. */
+  markExit(direction: SwipeDirection): void;
   /** True once the departure phase started: a dead toast is not grabbable. */
   exiting(): boolean;
   /** Returns every claimed channel to its pre-attach state. */
@@ -25,32 +29,41 @@ interface SwipeChannel {
 
 function createSwipeChannel(
   element: HTMLElement,
-  direction: SwipeDirection
+  directions: readonly SwipeDirection[]
 ): SwipeChannel {
-  const axis = AXIS[direction];
-  const sign = SIGN[direction];
-  const variable = axis === 'x' ? '--cincin-swipe-x' : '--cincin-swipe-y';
+  const axes = new Set(directions.map((direction) => AXIS[direction]));
 
   // Claim our channels up front: the translate rest position and the
-  // protocol variable. One restore returns the element to its pre-bind state.
-  const restore = assignStyle(element, {
-    translate: translateValue(axis, 0),
-    [variable]: '0px',
-  });
+  // protocol variable of every allowed axis. One restore returns the
+  // element to its pre-bind state.
+  const claims: Parameters<typeof assignStyle>[1] = { translate: '0px 0px' };
+  for (const axis of axes) {
+    claims[VARIABLE[axis]] = '0px';
+  }
+  const restore = assignStyle(element, claims);
+
+  const write = (x: number, y: number): void => {
+    element.style.translate = `${x}px ${y}px`;
+
+    if (axes.has('x')) {
+      element.style.setProperty(VARIABLE.x, `${x}px`);
+    }
+    if (axes.has('y')) {
+      element.style.setProperty(VARIABLE.y, `${y}px`);
+    }
+  };
 
   return {
     element,
-    axis,
-    sign,
-    set(px) {
-      element.style.translate = translateValue(axis, px);
-      element.style.setProperty(variable, `${px}px`);
-    },
-    read() {
+    pin() {
       const [x, y] = parseTranslate(element);
-      return axis === 'x' ? x : y;
+      write(x, y);
+      return [x, y];
     },
-    exitTarget() {
+    set(axis, px) {
+      write(axis === 'x' ? px : 0, axis === 'y' ? px : 0);
+    },
+    exitTarget(axis, sign) {
       const container = element.parentElement;
       const size =
         axis === 'x'
@@ -67,7 +80,7 @@ function createSwipeChannel(
         element.removeAttribute('data-swiping');
       }
     },
-    markExit() {
+    markExit(direction) {
       element.setAttribute('data-swipe-direction', direction);
     },
     exiting() {
@@ -82,6 +95,11 @@ function createSwipeChannel(
     },
   };
 }
+
+const VARIABLE = {
+  x: '--cincin-swipe-x',
+  y: '--cincin-swipe-y',
+} as const;
 
 export { createSwipeChannel };
 export type { SwipeChannel };

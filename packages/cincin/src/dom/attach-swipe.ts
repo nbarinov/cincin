@@ -14,7 +14,7 @@ function attachSwipe(element: HTMLElement, options: SwipeOptions): () => void {
   const controller = createSwipeController(options);
   const swipe = createSwipeHandlers(controller);
   const restoreTouchAction = assignStyle(element, {
-    touchAction: touchActionFor(controller.direction),
+    touchAction: touchActionFor(controller.directions),
   });
 
   const listeners = new AbortController();

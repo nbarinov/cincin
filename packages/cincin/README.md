@@ -75,7 +75,7 @@ finished by a safety net, a small grace past the declared
 import { attachSwipe } from 'cincin/dom';
 
 const detach = attachSwipe(element, {
-  direction: 'right',
+  directions: ['right', 'down'],
   onDismiss: () => presenter.dismiss(key),
   onRemove: () => presenter.finish(key),
 });

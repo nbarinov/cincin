@@ -1,4 +1,34 @@
-import { dampen, flingDuration, trailingVelocity } from './gesture';
+import {
+  axisSigns,
+  dampen,
+  directionFor,
+  flingDuration,
+  trailingVelocity,
+} from './gesture';
+
+describe('axisSigns', () => {
+  it('should group the allowed signs by axis', () => {
+    expect(axisSigns(['right', 'down'])).toEqual({
+      x: new Set([1]),
+      y: new Set([1]),
+    });
+    expect(axisSigns(['left', 'right'])).toEqual({ x: new Set([1, -1]) });
+  });
+
+  it('should leave a foreign axis absent', () => {
+    expect(axisSigns(['right'])).not.toHaveProperty('y');
+    expect(axisSigns([])).toEqual({});
+  });
+});
+
+describe('directionFor', () => {
+  it('should name the travel from the axis and the sign', () => {
+    expect(directionFor('x', 1)).toBe('right');
+    expect(directionFor('x', -1)).toBe('left');
+    expect(directionFor('y', 1)).toBe('down');
+    expect(directionFor('y', -1)).toBe('up');
+  });
+});
 
 describe('dampen', () => {
   it('should pass movement along the allowed direction through', () => {
