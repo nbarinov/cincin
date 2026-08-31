@@ -2,7 +2,7 @@ import type { Toaster } from 'cincin';
 
 type ScenarioToaster = Pick<
   Toaster<{ title: string }>,
-  'message' | 'info' | 'remove'
+  'message' | 'info' | 'error' | 'remove'
 >;
 
 type Scenario = {
@@ -25,6 +25,11 @@ function createScenarios(
         counter += 1;
         toast.message({ title: `Toast #${counter}` }, { duration });
       },
+    },
+    {
+      id: 'error',
+      label: 'Error',
+      run: () => toast.error({ title: 'Something broke' }, { duration }),
     },
     {
       id: 'sticky',
