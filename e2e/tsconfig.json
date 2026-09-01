@@ -4,13 +4,12 @@
     "playwright.config.ts",
     "specs",
     "fixtures/shared",
-    "fixtures/react/src",
     "fixtures/react/vite.config.ts",
+    "fixtures/solid/vite.config.ts",
     "fixtures/vue/vite.config.ts"
   ],
   "compilerOptions": {
     "lib": ["es2023", "dom", "dom.iterable"],
-    "jsx": "react-jsx",
     "types": ["vite/client", "node"]
   }
 }

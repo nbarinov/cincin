@@ -5,17 +5,20 @@
   "type": "module",
   "scripts": {
     "dev:react": "vite fixtures/react",
+    "dev:solid": "vite fixtures/solid",
     "dev:vue": "vite fixtures/vue",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p fixtures/react/tsconfig.json && tsc -p fixtures/solid/tsconfig.json"
   },
   "dependencies": {
     "cincin": "workspace:*",
     "cincin-react": "workspace:*",
+    "cincin-solid": "workspace:*",
     "cincin-vue": "workspace:*",
     "react": "^19.2.0",
     "react-dom": "^19.2.8",
+    "solid-js": "^1.9.15",
     "vue": "^3.5.41"
   },
   "devDependencies": {
@@ -25,6 +28,7 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitejs/plugin-vue": "^6.0.1",
+    "vite-plugin-solid": "^2.11.14",
     "typescript": "^7.0.2",
     "vite": "^7.2.4"
   }

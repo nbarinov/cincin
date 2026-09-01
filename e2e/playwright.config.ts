@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const APPS = {
   react: 'http://localhost:4273',
+  solid: 'http://localhost:4275',
   vue: 'http://localhost:4276',
 } as const;
 
@@ -22,6 +23,11 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
+      command: 'pnpm dev:solid',
+      url: APPS.solid,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
       command: 'pnpm dev:vue',
       url: APPS.vue,
       reuseExistingServer: !process.env.CI,
@@ -35,6 +41,14 @@ export default defineConfig({
     {
       name: 'react-webkit',
       use: { ...devices['Desktop Safari'], baseURL: APPS.react },
+    },
+    {
+      name: 'solid-chromium',
+      use: { ...devices['Desktop Chrome'], baseURL: APPS.solid },
+    },
+    {
+      name: 'solid-webkit',
+      use: { ...devices['Desktop Safari'], baseURL: APPS.solid },
     },
     {
       name: 'vue-chromium',
