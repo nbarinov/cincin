@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import Vue from 'unplugin-vue/vite';
+import Solid from 'vite-plugin-solid';
 
 export default defineConfig({
   test: {
@@ -48,6 +49,26 @@ export default defineConfig({
           environment: 'jsdom',
           globals: true,
           include: ['packages/cincin-vue/src/**/*.test.ts'],
+        },
+      },
+      {
+        // `hot: false` keeps the solid-refresh HMR shim out: it is a
+        // virtual module that resolves solid-js from the workspace
+        // root, where the dependency does not exist.
+        plugins: [Solid({ hot: false })],
+        resolve: {
+          // An explicit list displaces Vite's defaults, so solid-js
+          // needs steering back: `browser` picks the client build under
+          // jsdom (the server build renders static markup and
+          // reactivity silently dies), `development` picks the dev
+          // build whose $DEVCOMP the testing library imports.
+          conditions: ['source', 'browser', 'development'],
+        },
+        test: {
+          name: 'solid',
+          environment: 'jsdom',
+          globals: true,
+          include: ['packages/cincin-solid/src/**/*.test.{ts,tsx}'],
         },
       },
     ],

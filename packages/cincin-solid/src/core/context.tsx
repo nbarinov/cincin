@@ -1,0 +1,44 @@
+import type { Toaster, ToastEntry } from 'cincin';
+import { createContext, useContext } from 'solid-js';
+import type { Accessor, JSX } from 'solid-js';
+import { useToastEntries as useToastEntriesOf } from './use-toast-entries';
+
+function createToasterContext<Content extends {} = string>(
+  defaultToaster?: Toaster<Content>
+) {
+  const Context = createContext<Toaster<Content> | undefined>(defaultToaster);
+
+  function ToasterProvider(props: {
+    toaster: Toaster<Content>;
+    children: JSX.Element;
+  }) {
+    return (
+      <Context.Provider value={props.toaster}>
+        {props.children}
+      </Context.Provider>
+    );
+  }
+
+  function useToaster(toaster?: Toaster<Content>): Toaster<Content> {
+    const fromContext = useContext(Context);
+    const resolved = toaster ?? fromContext ?? null; // Normalize both nullish values: a JS consumer can mount the provider with an undefined toaster.
+
+    if (resolved === null) {
+      throw new Error(
+        '[cincin] no toaster available. Pass one to createToasterContext, wrap the tree in <ToasterProvider>, or provide an instance explicitly.'
+      );
+    }
+
+    return resolved;
+  }
+
+  function useToastEntries(
+    toaster?: Toaster<Content>
+  ): Accessor<ReadonlyArray<ToastEntry<Content>>> {
+    return useToastEntriesOf(useToaster(toaster));
+  }
+
+  return { ToasterProvider, useToaster, useToastEntries };
+}
+
+export { createToasterContext };

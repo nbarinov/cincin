@@ -1,0 +1,61 @@
+{
+  "name": "cincin-solid",
+  "version": "0.0.0",
+  "private": true,
+  "description": "🥂 Solid bindings for cincin: headless primitives, ready-to-use skin",
+  "license": "MIT",
+  "author": "Nikita Barinov",
+  "homepage": "https://cincin.nbarinov.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbarinov/cincin.git",
+    "directory": "packages/cincin-solid"
+  },
+  "keywords": [
+    "toast",
+    "snackbar",
+    "toaster",
+    "notifications",
+    "solid",
+    "headless"
+  ],
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "solid": "./dist/index.jsx",
+      "import": "./dist/index.mjs"
+    },
+    "./core": {
+      "source": "./src/core/index.ts",
+      "types": "./dist/core/index.d.mts",
+      "solid": "./dist/core/index.jsx",
+      "import": "./dist/core/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "cincin": "workspace:^"
+  },
+  "peerDependencies": {
+    "cincin": "workspace:^",
+    "solid-js": ">=1.9"
+  },
+  "devDependencies": {
+    "@rolldown-plugin/solid": "^0.1.0",
+    "@solidjs/testing-library": "^0.8.10",
+    "@testing-library/dom": "^10.4.1",
+    "solid-js": "^1.9.15"
+  }
+}
