@@ -1,6 +1,11 @@
 type ToastId = string | number;
 type ToastType =
-  'success' | 'error' | 'warning' | 'info' | 'loading' | 'message';
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'info'
+  | 'loading'
+  | 'message';
 
 interface ToastEntry<Content extends {} = string> {
   readonly id: ToastId;
