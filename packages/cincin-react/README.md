@@ -4,9 +4,6 @@ React bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and
 headless building blocks under `cincin-react/core`.
 
-> **Beta.** The public names are settled; the path to 0.1.0 is
-> additions and fixes.
-
 ## Install
 
 ```bash

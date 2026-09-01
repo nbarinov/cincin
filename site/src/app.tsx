@@ -27,7 +27,7 @@ toast.success({ title: 'Saved' })`
           <a href={REPO_URL} target="_blank" rel="noreferrer">
             🥂 cincin
           </a>
-          <span className="tag">beta</span>
+          <span className="tag">v0.1.0</span>
         </div>
         <nav className="top-actions">
           <a href={REPO_URL} target="_blank" rel="noreferrer">

@@ -3,8 +3,7 @@
 Framework-agnostic toast library: an entry store, a presenter that
 shows it, thin adapters, polished UX.
 
-> **Beta.** The public names are settled; the path to 0.1.0 is
-> additions and fixes. Feedback is welcome in the issues.
+> Feedback is welcome in the issues.
 
 ## Quick start (React)
 

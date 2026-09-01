@@ -4,9 +4,6 @@ The framework-agnostic core of the cincin toast library: an observable
 entry store, a presenter that shows it (`cincin/presenter`), and
 framework-free DOM controllers (`cincin/dom`).
 
-> **Beta.** The public names are settled; the path to 0.1.0 is
-> additions and fixes.
-
 Looking for the React quick start? See [`cincin-react`](https://www.npmjs.com/package/cincin-react).
 
 ## Install
