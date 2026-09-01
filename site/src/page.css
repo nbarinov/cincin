@@ -54,15 +54,6 @@ body {
   text-decoration: none;
 }
 
-.tag {
-  padding: 0.125rem 0.5rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--faint);
-  font-size: 0.6875rem;
-  font-weight: 500;
-}
-
 .top-actions {
   display: flex;
   align-items: center;
