@@ -1,7 +1,6 @@
 {
   "name": "cincin-solid",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "🥂 Solid bindings for cincin: headless primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
