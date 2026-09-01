@@ -16,8 +16,17 @@ function useRegion(
   const expanded = shallowRef(false);
   let collapseTimer: ReturnType<typeof setTimeout> | undefined;
   let interacting = false;
+  // Pointer capture (a real swipe) suppresses boundary events, so the
+  // browser recomputes hover only on release: the gesture's mouseleave
+  // lands AFTER pointerup, when `interacting` is already down, and
+  // would collapse the stack the user is still cleaning up.
+  // lostpointercapture marks the gesture's end ahead of that leave:
+  // it arms a one-shot swallow, disarmed by the next enter/move
+  // (a live pointer back inside the region).
+  let swallowLeave = false;
 
   function expand(): void {
+    swallowLeave = false;
     clearTimeout(collapseTimer);
     expanded.value = true;
     presenter.pause();
@@ -84,7 +93,17 @@ function useRegion(
       // mousemove re-arms after lost boundary events.
       onMouseenter: expand,
       onMousemove: expand,
-      onMouseleave: collapse,
+      onMouseleave: () => {
+        if (swallowLeave) {
+          swallowLeave = false;
+          return;
+        }
+
+        collapse();
+      },
+      onLostpointercapture: () => {
+        swallowLeave = true;
+      },
       // Focus mirrors hover for the keyboard, riding the bubbling
       // focusin/focusout pair (focus itself does not bubble): tabbing
       // onto the front card's controls opens the stack, and the

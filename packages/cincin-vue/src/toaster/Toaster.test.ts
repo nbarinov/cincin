@@ -186,6 +186,38 @@ describe('Toaster a11y', () => {
   });
 });
 
+describe('Toaster region hover', () => {
+  it('should stay expanded through the trailing mouseleave of a swipe', async () => {
+    const toaster = setup();
+
+    toaster.message({ title: 'old' });
+    toaster.message({ title: 'new' });
+    await flushEffects();
+
+    const region = getRegion();
+    await fireEvent.mouseMove(region);
+    expect(region.dataset.expanded).toBe('true');
+
+    // A captured swipe suppresses boundary events, so the browser
+    // recomputes hover only on release: lostpointercapture first,
+    // then the gesture's own mouseleave, both after pointerup.
+    await fireEvent.pointerDown(region);
+    await fireEvent.pointerUp(region);
+    await fireEvent(region, new Event('lostpointercapture', { bubbles: true }));
+    await fireEvent.mouseLeave(region);
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(region.dataset.expanded).toBe('true');
+
+    // The swallow is one-shot: a genuine enter/leave still folds.
+    await fireEvent.mouseMove(region);
+    await fireEvent.mouseLeave(region);
+    vi.advanceTimersByTime(200);
+    await nextTick();
+    expect(region.dataset.expanded).toBe('false');
+  });
+});
+
 describe('Toaster actions', () => {
   function getActions(card: HTMLElement): HTMLElement[] {
     return [...card.querySelectorAll<HTMLElement>('[data-cincin-action]')];

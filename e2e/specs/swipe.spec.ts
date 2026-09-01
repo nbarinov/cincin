@@ -75,3 +75,39 @@ test('a flick below the distance threshold dismisses on velocity', async ({
   await drag(page, { x, y }, 40, 0, { steps: 2 });
   await expect(toast).toHaveCount(0);
 });
+
+test('swiping a card out of the expanded stack keeps it expanded', async ({
+  page,
+}) => {
+  await page.getByTestId('sticky').click();
+  await page.getByTestId('sticky').click();
+  await page.getByTestId('sticky').click();
+  const toast = page.locator(TOAST);
+  await expect(toast).toHaveCount(3);
+
+  const region = page.locator('[data-cincin-toaster]');
+  await page.locator(`${TOAST}[data-front="true"]`).hover();
+  await expect(region).toHaveAttribute('data-expanded', 'true');
+  // Let the stack finish fanning out: the grabbed box must be the
+  // settled one, not a mid-flight frame.
+  await page.waitForTimeout(500);
+
+  // The middle card (DOM keeps snapshot order: oldest first).
+  const box = await toast.nth(1).boundingBox();
+  if (!box) {
+    throw new Error('The middle toast has no box to grab');
+  }
+  await drag(
+    page,
+    { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+    120,
+    0,
+    { steps: 10, settle: true }
+  );
+
+  await expect(toast).toHaveCount(2);
+  // The gesture's trailing mouseleave (pointer capture had suppressed
+  // the boundary events until release) must not fold the survivors.
+  await page.waitForTimeout(300);
+  await expect(region).toHaveAttribute('data-expanded', 'true');
+});

@@ -16,8 +16,17 @@ function useRegion(
   const regionRef = React.useRef<HTMLOListElement | null>(null);
   const collapseTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const interacting = React.useRef(false);
+  // Pointer capture (a real swipe) suppresses boundary events, so the
+  // browser recomputes hover only on release: the gesture's mouseleave
+  // lands AFTER pointerup, when `interacting` is already down, and
+  // would collapse the stack the user is still cleaning up.
+  // lostpointercapture marks the gesture's end ahead of that leave:
+  // it arms a one-shot swallow, disarmed by the next enter/move
+  // (a live pointer back inside the region).
+  const swallowLeave = React.useRef(false);
 
   const expand = React.useCallback(() => {
+    swallowLeave.current = false;
     clearTimeout(collapseTimer.current);
     setExpanded(true);
     presenter.pause();
@@ -79,7 +88,17 @@ function useRegion(
       // mousemove re-arms after lost boundary events.
       onMouseEnter: expand,
       onMouseMove: expand,
-      onMouseLeave: collapse,
+      onMouseLeave: () => {
+        if (swallowLeave.current) {
+          swallowLeave.current = false;
+          return;
+        }
+
+        collapse();
+      },
+      onLostPointerCapture: () => {
+        swallowLeave.current = true;
+      },
       // Focus mirrors hover for the keyboard: tabbing onto the front
       // card's controls opens the stack, and the collapsed backs (inert
       // until then) join the tab order.

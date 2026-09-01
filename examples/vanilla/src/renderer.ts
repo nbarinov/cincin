@@ -212,8 +212,17 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
 
   let collapseTimer: ReturnType<typeof setTimeout> | undefined;
   let interacting = false;
+  // Pointer capture (a real swipe) suppresses boundary events, so the
+  // browser recomputes hover only on release: the gesture's mouseleave
+  // lands AFTER pointerup, when `interacting` is already down, and
+  // would collapse the stack the user is still cleaning up.
+  // lostpointercapture marks the gesture's end ahead of that leave:
+  // it arms a one-shot swallow, disarmed by the next enter/move
+  // (a live pointer back inside the region).
+  let swallowLeave = false;
 
   const expand = () => {
+    swallowLeave = false;
     clearTimeout(collapseTimer);
     collapseTimer = undefined;
     if (region.dataset.expanded !== 'true') {
@@ -240,7 +249,25 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   // mousemove re-arms the expansion: boundary events can get lost when
   // the hovered toast is removed from under the pointer.
   region.addEventListener('mousemove', expand, { signal });
-  region.addEventListener('mouseleave', collapse, { signal });
+  region.addEventListener(
+    'mouseleave',
+    () => {
+      if (swallowLeave) {
+        swallowLeave = false;
+        return;
+      }
+
+      collapse();
+    },
+    { signal }
+  );
+  region.addEventListener(
+    'lostpointercapture',
+    () => {
+      swallowLeave = true;
+    },
+    { signal }
+  );
   // Focus mirrors hover for the keyboard: tabbing onto the front card's
   // controls opens the stack, the collapsed backs join the tab order.
   region.addEventListener('focusin', expand, { signal });
