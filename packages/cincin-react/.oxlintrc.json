@@ -11,5 +11,14 @@
   ],
   "rules": {
     "react/react-in-jsx-scope": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.tsx"],
+      "rules": {
+        "react/globals": "off",
+        "react/refs": "off"
+      }
+    }
+  ]
 }

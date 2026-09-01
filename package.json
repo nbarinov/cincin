@@ -12,24 +12,19 @@
     "format:check": "oxfmt --check",
     "lint": "oxlint --deny-warnings",
     "size": "size-limit",
-    "test": "vitest run",
-    "test:e2e": "pnpm --dir e2e test",
-    "test:watch": "vitest"
+    "test": "pnpm -r --filter \"./packages/*\" test",
+    "test:e2e": "pnpm --dir e2e test"
   },
   "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1",
   "devDependencies": {
     "@size-limit/preset-small-lib": "^13.0.3",
     "@tsdown/css": "0.22.14",
     "@types/node": "^26.2.0",
-    "jsdom": "^30.0.1",
     "oxfmt": "^0.66.0",
     "oxlint": "^1.81.0",
     "size-limit": "^13.0.3",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
-    "unplugin-vue": "^7.2.0",
-    "unrun": "^0.3.1",
-    "vite-plugin-solid": "^2.11.14",
-    "vitest": "^4.1.10"
+    "unrun": "^0.3.1"
   }
 }
