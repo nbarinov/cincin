@@ -65,7 +65,7 @@ function Toaster({
     [toasts]
   );
 
-  const region = useRegion(presenter);
+  const { expanded, ref: regionRef, handlers } = useRegion(presenter);
   const stack = useStack(live, { visible });
 
   useVisibilityPause(presenter);
@@ -87,12 +87,12 @@ function Toaster({
         data-cincin-toaster
         data-y={y}
         data-x={x}
-        data-expanded={region.expanded}
+        data-expanded={expanded}
         style={
           { '--cincin-exit-duration': `${exitDuration}ms` } as CSSProperties
         }
-        ref={region.ref}
-        {...region.handlers}
+        ref={regionRef}
+        {...handlers}
       >
         {live.map((toast) => (
           <ToastCard
@@ -100,7 +100,7 @@ function Toaster({
             toast={toast}
             presenter={presenter}
             layout={stack.layout}
-            expanded={region.expanded}
+            expanded={expanded}
             swipeDirections={directions}
             closeLabel={closeLabel}
           />
