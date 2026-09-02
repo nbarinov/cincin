@@ -1,0 +1,526 @@
+/*
+ * The skin plays by docs/protocol.md:
+ * - all skin motion lives on transform/opacity transitions; the skin
+ *   never writes `translate` (the swipe channel), so a grabbed toast
+ *   keeps its stack position under the drag
+ * - the regular exit is gated on the absence of data-swipe-direction:
+ *   the fling owns that exit
+ * - data-swiping drives the grabbed styling
+ */
+
+[data-cincin-toaster] {
+  --region-inset: 1rem;
+  --inset-top: calc(var(--region-inset) + env(safe-area-inset-top, 0px));
+  --inset-right: calc(var(--region-inset) + env(safe-area-inset-right, 0px));
+  --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
+  --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
+
+  position: fixed;
+  z-index: 999999999;
+  width: 22rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: CanvasText;
+
+  --shadow-soft: light-dark(
+    hsl(220deg 15% 45% / 0.12),
+    hsl(220deg 45% 2% / 0.38)
+  );
+  --shadow-deep: light-dark(
+    hsl(220deg 15% 45% / 0.16),
+    hsl(220deg 45% 2% / 0.5)
+  );
+  /* The hairline edge rides the shadow stack, not a border: the card
+   * forces its height to the body's measured border box, and a real
+   * border would sit inside that box and shave the same 2px off the
+   * body's room. */
+  --shadow-rest:
+    0 0 0 1px var(--toast-edge), 0 1px 2px var(--shadow-soft),
+    0 4px 8px var(--shadow-soft), 0 12px 24px -4px var(--shadow-deep);
+  --shadow-lift:
+    0 0 0 1px var(--toast-edge), 0 2px 4px var(--shadow-soft),
+    0 8px 16px var(--shadow-soft), 0 24px 48px -8px var(--shadow-deep);
+
+  --toast-surface: light-dark(canvas, color-mix(in oklab, canvas 82%, white));
+  --toast-edge: light-dark(rgb(20 20 15 / 0.09), rgb(255 255 255 / 0.09));
+}
+
+/* --- position ------------------------------------------------------ */
+
+/* The corner comes as data-y/data-x, resolved by the component (the
+ * default follows the document's dir). --lift is the stack's growth
+ * sign and --offscreen the off-viewport parking spot: the rest of the
+ * file does its vertical math through these two, so the variants stay
+ * confined to this block. */
+
+[data-cincin-toaster][data-y='bottom'] {
+  --lift: -1;
+  --offscreen: calc(100% + var(--inset-bottom));
+
+  bottom: var(--inset-bottom);
+}
+
+/* The light stays top-down everywhere, but a top stack's front card
+ * outranks the whole pile in z-order and hangs right over the peeking
+ * strips: the full page-length throw would paint them as a dark band.
+ * The surfaces beneath are millimetres away, so the throw shortens to
+ * a contact shadow; the pile's page-facing shadow comes from its
+ * lowest peeking card. */
+[data-cincin-toaster][data-y='top'] {
+  --lift: 1;
+  --offscreen: calc(-100% - var(--inset-top));
+  --shadow-rest:
+    0 0 0 1px var(--toast-edge), 0 1px 2px var(--shadow-soft),
+    0 2px 4px var(--shadow-soft), 0 4px 12px -2px var(--shadow-deep);
+  --shadow-lift:
+    0 0 0 1px var(--toast-edge), 0 1px 3px var(--shadow-soft),
+    0 4px 8px var(--shadow-soft), 0 8px 20px -4px var(--shadow-deep);
+
+  top: var(--inset-top);
+}
+
+[data-cincin-toaster][data-x='right'] {
+  right: var(--inset-right);
+}
+
+[data-cincin-toaster][data-x='left'] {
+  left: var(--inset-left);
+}
+
+[data-cincin-toaster][data-x='center'] {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+[data-cincin-toaster][data-y='bottom'] [data-cincin-toast] {
+  bottom: 0;
+  transform-origin: center bottom;
+}
+
+[data-cincin-toaster][data-y='top'] [data-cincin-toast] {
+  top: 0;
+  transform-origin: center top;
+}
+
+/* Hover bridge over the expanded gap, so the pointer never falls out
+ * of the region between two toasts and collapses the stack. It sits on
+ * the growth side, and its height stays in sync with the stack gap of
+ * use-stack. */
+[data-cincin-toaster][data-expanded='true'][data-y='bottom']
+  [data-cincin-toast]::before {
+  bottom: 100%;
+}
+
+[data-cincin-toaster][data-expanded='true'][data-y='top']
+  [data-cincin-toast]::before {
+  top: 100%;
+}
+
+@media (max-width: 600px) {
+  [data-cincin-toaster] {
+    left: var(--inset-left);
+    right: var(--inset-right);
+    width: auto;
+    transform: none;
+  }
+}
+
+[data-cincin-toast] {
+  position: absolute;
+  inset-inline: 0;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 0.7rem;
+  background: var(--toast-surface);
+  box-shadow: var(--shadow-rest);
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+  /* Always the explicit measured height (the stack layout publishes
+   * it), never `auto`: every state change (promotion, demotion,
+   * expand, content update) is then px→px and rides the height
+   * transition. An `auto` endpoint anywhere would snap instead. The
+   * heights come from the layout observing the card's body, which
+   * always renders at the natural size. */
+  height: var(--cincin-toast-height, auto);
+  /* The forced height is larger than the body's natural one whenever a
+   * collapsed back card borrows the front's height. Centring the body
+   * inside the card makes the box grow and shrink symmetrically around
+   * the content instead of pinning it to the top edge — with
+   * `bottom: 0` and a moving top edge, top-anchored content rode the
+   * whole difference on every promotion. The body keeps its natural
+   * height, so the stack's measurement is untouched. */
+  display: grid;
+  align-content: center;
+  transform: translateY(
+      calc(var(--lift) * var(--cincin-toast-index) * 0.875rem)
+    )
+    scale(calc(1 - var(--cincin-toast-index) * 0.05));
+  /* One value drives the whole exit story: the Toaster publishes its
+   * exitDuration as --cincin-exit-duration and hands the same number
+   * (plus a margin) to the presenter's exit clock, which finishes
+   * leaving toasts on time — no transitionend listeners anywhere. */
+  transition:
+    transform var(--cincin-exit-duration, 400ms),
+    opacity var(--cincin-exit-duration, 400ms),
+    height var(--cincin-exit-duration, 400ms),
+    box-shadow 200ms;
+}
+
+/* A non-dismissible toast carries no swipe controller: nothing to grab. */
+[data-cincin-toast][data-dismissible='false'] {
+  cursor: default;
+}
+
+/* --- slots --------------------------------------------------------- */
+
+/* The card's body: the slot grid and the padding live here, the box
+ * chrome (background, border, shadow, the forced height) stays on the
+ * card. A block child is never clamped by its parent's height, so the
+ * body always renders at the natural size; the stack's
+ * ResizeObserver watches it, and with the padding on board its border
+ * box IS the card's natural height.
+ *
+ * The action sits on its own row rather than beside the text: a toast
+ * with a button grows anyway, and a full-width second row lets the
+ * copy keep the whole first row instead of being squeezed by a label
+ * of unknown length. The row is areas-only, so `message` (which
+ * renders no icon) needs no separate rule — an empty icon column
+ * collapses, and the gaps are margins, not column-gap, so it leaves
+ * no phantom indent. */
+[data-cincin-body] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon content close'
+    'action action action';
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+}
+
+/* Only a toast that HAS an action pays for the second row's gap. */
+[data-cincin-body]:has([data-cincin-action]) {
+  row-gap: 0.5rem;
+}
+
+[data-cincin-body] > [data-cincin-icon] {
+  grid-area: icon;
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  align-self: start;
+  margin-top: 0.08rem;
+  margin-inline-end: 0.65rem;
+  opacity: 0.48;
+}
+
+[data-cincin-toast][data-type='loading']
+  [data-cincin-body]
+  > [data-cincin-icon] {
+  animation: cincin-spin 900ms linear infinite;
+}
+
+[data-cincin-content] {
+  grid-area: content;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+[data-cincin-title] {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+[data-cincin-description] {
+  font-size: 0.78125rem;
+  line-height: 1.4;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  text-wrap: pretty;
+}
+
+/* A lone title arrives in the description slot (see toaster.tsx). It
+ * is the whole message, so it gets full contrast back — but not the
+ * title's weight: with no description under it there is nothing to
+ * outweigh, and 600 on a single line only shouts. The muted body
+ * style is for text that sits UNDER a title. */
+[data-cincin-description]:only-child {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  font-weight: 400;
+  color: inherit;
+}
+
+/* A one-line toast carries a touch more air instead: the extra goes
+ * vertical only, since a different horizontal padding would misalign
+ * the copy between a simple and a rich card in the same stack. */
+[data-cincin-body]:has([data-cincin-description]:only-child) {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+/* One line, no cross, one button: the action moves up into the free
+ * third column, and an undo toast stays exactly one line tall — which
+ * is the point of an undo. The second row comes back the moment the
+ * card has a description or a close button to hold that column, so a
+ * label of unknown length can never squeeze the copy. The selector
+ * keys on the cross being absent rather than on the toast being
+ * locked: `closeButton: false` and a non-dismissible toast both free
+ * that column, and only the markup knows which of the two it is. The
+ * action is required by the selector on purpose: `loading` is
+ * non-dismissible by default, and without that clause a plain loading
+ * toast would take the tighter padding and then change height as the
+ * promise settles into a dismissible one-liner. */
+[data-cincin-body]:not(:has([data-cincin-close])):not(
+    :has([data-cincin-action] ~ [data-cincin-action])
+  ):has([data-cincin-description]:only-child):has([data-cincin-action]) {
+  grid-template-areas: 'icon content action';
+  padding-block: 0.65rem;
+  padding-inline: 0.85rem 0.65rem;
+}
+
+/* In the single row the button, not the copy, sets the row height:
+ * a start-anchored glyph would float above its line, so here it
+ * centres with everything else. */
+[data-cincin-body]:not(:has([data-cincin-close])):not(
+    :has([data-cincin-action] ~ [data-cincin-action])
+  ):has([data-cincin-description]:only-child):has([data-cincin-action])
+  > [data-cincin-icon] {
+  align-self: center;
+  margin-top: 0;
+}
+
+/* The row, not the button, claims the slot: a pair shares one grid
+ * area, and two buttons placed straight into it would sit on top of
+ * each other. Order inside the row is the tuple's, never ours. */
+[data-cincin-actions] {
+  grid-area: action;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-inline-start: 0.65rem;
+}
+
+[data-cincin-action] {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-action]:active {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* A step down in chrome, not in legibility: the quiet button drops its
+ * border and keeps a label well above the 4.5:1 text floor (the cross
+ * may rest at 0.45 only because a non-text control answers to 3:1).
+ * The box is untouched, so the pair never differs in hit area. */
+[data-cincin-action][data-variant='secondary'] {
+  border-color: transparent;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+[data-cincin-close] {
+  grid-area: close;
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  margin-inline-start: 0.65rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  /* Quiet, but not below the floor: 0.45 keeps the resting cross at
+   * roughly 3.3:1 against a light canvas, the 3:1 minimum for
+   * non-text controls. Hover and focus bring it to full. */
+  opacity: 0.45;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-cincin-close]::before {
+  content: '';
+  position: absolute;
+  inset: -0.3rem;
+  border-radius: 0.4rem;
+}
+
+[data-cincin-close] > [data-cincin-icon] {
+  width: 0.78rem;
+  height: 0.78rem;
+}
+
+[data-cincin-close]:active {
+  opacity: 1;
+}
+
+[data-cincin-close]:active::before {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+[data-cincin-action]:focus-visible,
+[data-cincin-close]:focus-visible {
+  outline: 2px solid color-mix(in srgb, currentColor 60%, transparent);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+/* Pointed at, the quiet button borrows the loud one's shape: full
+ * label, and a border of its own that stays under primary's 18% so the
+ * pair keeps its order even while the quiet half is under the cursor. */
+[data-cincin-action][data-variant='secondary']:focus-visible {
+  border-color: color-mix(in srgb, currentColor 10%, transparent);
+  color: inherit;
+}
+
+@media (hover: hover) {
+  [data-cincin-action]:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  [data-cincin-action][data-variant='secondary']:hover {
+    border-color: color-mix(in srgb, currentColor 10%, transparent);
+    color: inherit;
+  }
+
+  [data-cincin-close]:hover {
+    opacity: 1;
+  }
+
+  [data-cincin-close]:hover::before {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+/* --- stack states -------------------------------------------------- */
+
+/* Collapsed, the peeking cards borrow the front card's height (the
+ * stack layout publishes it as --cincin-front-height): mixed natural heights
+ * would otherwise peek unevenly from behind the front toast. */
+[data-cincin-toaster]:not([data-expanded='true'])
+  [data-cincin-toast][data-front='false'] {
+  height: var(--cincin-front-height, auto);
+  /* No overflow clip, deliberately (reviewed by eye): the body fade
+   * hides the content before the clamped edge could expose it. If a
+   * stray sliver ever shows up here, reach for `overflow: hidden`
+   * first. */
+}
+
+/* The peek strip must read as clean surface: the borrowed height can
+ * run the card's top edge straight through its text, so collapsed
+ * back cards fade their body out. 200ms, half the height transition:
+ * on collapse the content must be gone before the clamping edge
+ * reaches the text (a slower fade shows the clipping, and its reveal
+ * reads as a stack of empty cards while expanding). The fade lives on
+ * the body, not the slots: the transition then never intercepts the
+ * close button's own hover opacity, and a promoted card fades its
+ * content in instead of snapping. */
+[data-cincin-body] {
+  transition: opacity 200ms;
+}
+
+[data-cincin-toaster]:not([data-expanded='true'])
+  [data-cincin-toast][data-front='false']
+  [data-cincin-body] {
+  opacity: 0;
+}
+
+[data-cincin-toast][data-hidden='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-cincin-toaster][data-expanded='true'] [data-cincin-toast] {
+  transform: translateY(calc(var(--lift) * var(--cincin-toast-offset)));
+}
+
+[data-cincin-toaster][data-expanded='true']
+  [data-cincin-toast][data-hidden='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The hover bridge's body; its growth-side anchor lives in the
+ * position block above. */
+[data-cincin-toaster][data-expanded='true'] [data-cincin-toast]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: calc(12px + 1px);
+}
+
+/* Enter from beyond the viewport edge: the starting style is what the
+ * first frame transitions FROM. */
+@starting-style {
+  [data-cincin-toast] {
+    transform: translateY(var(--offscreen));
+    opacity: 0;
+  }
+}
+
+/* The regular exit: slide back out the way it came. Swiped toasts skip
+ * it, and the fading toast keeps its pointer-events: it stays the hover
+ * surface while the survivors reflow into its slot. */
+[data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
+  transform: translateY(var(--offscreen));
+  opacity: 0;
+}
+
+/* Expanded, the toast exits in place: the pointer stays over the stack
+ * while the survivors reflow into the vacated slot. */
+[data-cincin-toaster][data-expanded='true']
+  [data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
+  transform: translateY(
+    calc(var(--lift) * (var(--cincin-toast-offset) - 100%))
+  );
+  opacity: 0;
+}
+
+/* --- swipe --------------------------------------------------------- */
+
+/* The tint that used to fill the surface with the accent is gone with
+ * the accents. What is left is honest and enough: the card lifts, and
+ * it follows the finger. */
+[data-cincin-toast][data-swiping] {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lift);
+}
+
+@keyframes cincin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion: crossfades stay, movement snaps. The presenter's
+ * exit clock runs the same either way, and the kept opacity crossfade
+ * fills its window. The loading spin stays: it signals state, not
+ * decoration. */
+@media (prefers-reduced-motion: reduce) {
+  [data-cincin-toast] {
+    transition:
+      opacity var(--cincin-exit-duration, 400ms),
+      box-shadow 200ms;
+  }
+}

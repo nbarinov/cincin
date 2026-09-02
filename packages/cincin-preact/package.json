@@ -1,0 +1,63 @@
+{
+  "name": "cincin-preact",
+  "version": "0.1.0",
+  "private": true,
+  "description": "🥂 Preact bindings for cincin: headless hooks, ready-to-use skin",
+  "license": "MIT",
+  "author": "Nikita Barinov",
+  "homepage": "https://cincin.nbarinov.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbarinov/cincin.git",
+    "directory": "packages/cincin-preact"
+  },
+  "keywords": [
+    "toast",
+    "snackbar",
+    "toaster",
+    "notifications",
+    "preact",
+    "headless"
+  ],
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./core": {
+      "source": "./src/core/index.ts",
+      "types": "./dist/core/index.d.mts",
+      "import": "./dist/core/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "cincin": "workspace:^"
+  },
+  "peerDependencies": {
+    "cincin": "workspace:^",
+    "preact": ">=10.23"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/preact": "^3.2.4",
+    "jsdom": "^30.0.1",
+    "preact": "^10.29.8",
+    "preact-render-to-string": "^6.7.0",
+    "vitest": "^4.1.10"
+  }
+}
