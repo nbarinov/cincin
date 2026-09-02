@@ -9,8 +9,9 @@ const TARGETS = [
   { name: 'React', href: `${REPO_URL}/tree/main/packages/cincin-react` },
   { name: 'Vue', href: `${REPO_URL}/tree/main/packages/cincin-vue` },
   { name: 'Solid', href: `${REPO_URL}/tree/main/packages/cincin-solid` },
+  { name: 'Preact', href: `${REPO_URL}/tree/main/packages/cincin-preact` },
   { name: 'vanilla', href: `${REPO_URL}/tree/main/examples/vanilla` },
-  { name: 'Preact', soon: true },
+  { name: 'Angular', soon: true },
 ];
 
 function App() {
