@@ -1,4 +1,4 @@
-# cincin-solid 🥂
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-solid.png" alt="cincin-solid 🥂">
 
 Solid bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and

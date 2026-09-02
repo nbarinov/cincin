@@ -1,4 +1,4 @@
-# cincin-react 🥂
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-react.png" alt="cincin-react 🥂">
 
 React bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and
