@@ -145,15 +145,15 @@ explicit `swipe-directions` overrides the pairing.
 
 ## Toaster props
 
-| Prop | What it does |
-| --- | --- |
-| `toaster` | Your own store instead of the singleton. Read once, remount to switch. |
-| `max` | How many toasts are active at once, the rest queue. Live. |
-| `visible` | How many peek out of the collapsed stack. |
-| `position` | The region's corner or edge center. Defaults to the bottom inline-end corner, live against the document's `dir`. |
-| `swipe-directions` | Which way a card can be flicked. Defaults to the position's outward edges. |
-| `exit-duration` | The exit animation's length in ms. One value drives the presenter's exit clock and, published as `--cincin-exit-duration`, the skin's motion durations. |
-| `labels` | The skin's a11y vocabulary, `{ region, close }`. Defaults `'Notifications'` and `'Dismiss'`. |
+| Prop               | What it does                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `toaster`          | Your own store instead of the singleton. Read once, remount to switch.                                                                                  |
+| `max`              | How many toasts are active at once, the rest queue. Live.                                                                                               |
+| `visible`          | How many peek out of the collapsed stack.                                                                                                               |
+| `position`         | The region's corner or edge center. Defaults to the bottom inline-end corner, live against the document's `dir`.                                        |
+| `swipe-directions` | Which way a card can be flicked. Defaults to the position's outward edges.                                                                              |
+| `exit-duration`    | The exit animation's length in ms. One value drives the presenter's exit clock and, published as `--cincin-exit-duration`, the skin's motion durations. |
+| `labels`           | The skin's a11y vocabulary, `{ region, close }`. Defaults `'Notifications'` and `'Dismiss'`.                                                            |
 
 ## Advanced
 
