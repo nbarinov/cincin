@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const APPS = {
   react: 'http://localhost:4273',
+  preact: 'http://localhost:4274',
   solid: 'http://localhost:4275',
   vue: 'http://localhost:4276',
 } as const;
@@ -17,6 +18,11 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: [
+    {
+      command: 'pnpm dev:preact',
+      url: APPS.preact,
+      reuseExistingServer: !process.env.CI,
+    },
     {
       command: 'pnpm dev:react',
       url: APPS.react,
@@ -34,6 +40,14 @@ export default defineConfig({
     },
   ],
   projects: [
+    {
+      name: 'preact-chromium',
+      use: { ...devices['Desktop Chrome'], baseURL: APPS.preact },
+    },
+    {
+      name: 'preact-webkit',
+      use: { ...devices['Desktop Safari'], baseURL: APPS.preact },
+    },
     {
       name: 'react-chromium',
       use: { ...devices['Desktop Chrome'], baseURL: APPS.react },
