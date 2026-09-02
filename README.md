@@ -4,8 +4,8 @@
 </picture>
 
 [cincin](https://cincin.nbarinov.io) is a framework-agnostic toast library:
-one tiny core owns the store and the queue, thin adapters bind it to React,
-Vue and Solid, and a headless layer is there for when the bundled skin stops
+one tiny core owns the store and the queue, thin adapters bind it to React, Preact,
+Vue, and Solid, and a headless layer is there for when the bundled skin stops
 fitting.
 
 ## Usage
@@ -13,7 +13,7 @@ fitting.
 Two steps. Install the adapter for your framework:
 
 ```bash
-npm install cincin-react   # or cincin-vue, cincin-solid
+npm install cincin-react   # or cincin-vue, cincin-solid, cincin-preact
 ```
 
 Then mount `<Toaster />` once, anywhere in the tree. The stylesheet rides
@@ -43,8 +43,9 @@ The [demo](https://cincin.nbarinov.io) shows every scenario live, with the
 call behind it one click away. Each package README covers its own API:
 [`cincin`](./packages/cincin) for the store, the presenter and the DOM
 controllers, [`cincin-react`](./packages/cincin-react),
-[`cincin-vue`](./packages/cincin-vue) and
-[`cincin-solid`](./packages/cincin-solid) for the bindings, headless
+[`cincin-vue`](./packages/cincin-vue),
+[`cincin-solid`](./packages/cincin-solid) and
+[`cincin-preact`](./packages/cincin-preact) for the bindings, headless
 layers included. Runnable apps for every framework, including vanilla DOM
 and a [Motion](https://motion.dev)-driven renderer, are in
 [`examples/`](./examples).
