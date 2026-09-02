@@ -49,5 +49,17 @@
     "path": "packages/cincin-solid/dist/core/index.mjs",
     "limit": "1.25 kB",
     "ignore": ["cincin", "solid-js"]
+  },
+  {
+    "name": "cincin-preact (toaster)",
+    "path": "packages/cincin-preact/dist/index.mjs",
+    "limit": "4.75 kB",
+    "ignore": ["cincin", "preact"]
+  },
+  {
+    "name": "cincin-preact/core",
+    "path": "packages/cincin-preact/dist/core/index.mjs",
+    "limit": "1.5 kB",
+    "ignore": ["cincin", "preact"]
   }
 ]
