@@ -6,10 +6,10 @@ import { ThemeToggle } from './theme-toggle';
 const REPO_URL = 'https://github.com/nbarinov/cincin';
 
 const TARGETS = [
-  { name: 'Vanilla JS', href: `${REPO_URL}/tree/main/examples/vanilla` },
   { name: 'React', href: `${REPO_URL}/tree/main/packages/cincin-react` },
   { name: 'Vue', href: `${REPO_URL}/tree/main/packages/cincin-vue` },
   { name: 'Solid', href: `${REPO_URL}/tree/main/packages/cincin-solid` },
+  { name: 'vanilla', href: `${REPO_URL}/tree/main/examples/vanilla` },
   { name: 'Preact', soon: true },
 ];
 
