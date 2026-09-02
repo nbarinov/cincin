@@ -1,4 +1,4 @@
-# cincin 🥂
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-core.png" alt="cincin 🥂">
 
 The framework-agnostic core of the cincin toast library: an observable
 entry store, a presenter that shows it (`cincin/presenter`), and

@@ -1,4 +1,7 @@
-![cincin 🥂](.github/assets/hero.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/hero-dark.png">
+  <img src=".github/assets/hero-light.png" alt="cincin 🥂">
+</picture>
 
 [cincin](https://cincin.nbarinov.io) is a framework-agnostic toast library:
 one tiny core owns the store and the queue, thin adapters bind it to React,
@@ -7,15 +10,15 @@ fitting.
 
 ## Usage
 
-To start using the library, install the adapter for your framework:
+Two steps. Install the adapter for your framework:
 
 ```bash
 npm install cincin-react   # or cincin-vue, cincin-solid
 ```
 
-Add `<Toaster />` to your app. It renders a ready-to-use stack and brings
-its stylesheet along with the import. After that you can call `toast` from
-anywhere on the client.
+Then mount `<Toaster />` once, anywhere in the tree. The stylesheet rides
+in with the import, so there is nothing else to wire up, and the `toast`
+store is ready to call from any client code.
 
 ```jsx
 import { Toaster, toast } from 'cincin-react';
