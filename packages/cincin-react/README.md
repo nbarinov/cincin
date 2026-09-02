@@ -7,7 +7,7 @@ headless building blocks under `cincin-react/core`.
 ## Install
 
 ```bash
-pnpm add cincin-react
+npm install cincin-react
 ```
 
 Requires React 18.
@@ -29,8 +29,9 @@ function App() {
 
 `<Toaster />` renders a swipeable stack that collapses to a clean edge,
 expands on hover or tap, and pauses its timers while open and while the
-tab is hidden; the stylesheet comes along with the import. `toast` is a package-wide store callable from anywhere on the
-client (calls on the server do nothing useful).
+tab is hidden; the stylesheet comes along with the import. `toast` is a
+package-wide store callable from anywhere on the client (calls on the
+server do nothing useful).
 
 ```ts
 toast.error({
@@ -49,6 +50,8 @@ toast.promise(upload(), {
 const id = toast.info({ title: 'Connected' });
 toast.remove(id);
 ```
+
+## Actions
 
 A toast takes one or two actions, and a click on either dismisses it.
 The handler receives the click event and can cancel that with
@@ -96,9 +99,11 @@ better said out loud: prevent the dismiss and re-create the same id as
 `toast.loading({ title: 'Accepting…' })`, and the buttons stop existing
 instead of greying out.
 
+## Duration and dismissal
+
 An update inherits the clock and the closability: `duration` and
 `dismissible` re-derive from the type's defaults only when the type
-changes. Answer a sticky ask in a different type — a confirmation
+changes. Answer a sticky ask in a different type. A confirmation
 morphed in the asking type inherits the open-ended clock and strands
 on screen with no cross, no swipe, and no expiry.
 
@@ -117,18 +122,6 @@ toast.message({
 });
 ```
 
-`<Toaster />` props: `toaster` (your own store instead of the
-singleton; read once, remount to switch), `max` (active toasts at once,
-the rest queue; live), `visible` (how many peek out of the collapsed
-stack), `position` (the region's corner or edge center; the default
-is the bottom inline-end corner, live against the document's `dir`),
-`swipeDirections` (defaults to the position's outward edges),
-`exitDuration` (the exit animation's length,
-ms; one value drives the presenter's exit clock and, published as
-`--cincin-exit-duration`, the skin's motion durations), `labels` (the
-skin's a11y vocabulary: `{ region, close }`, defaults `'Notifications'`
-and `'Dismiss'`).
-
 ## Position
 
 ```tsx
@@ -137,7 +130,7 @@ and `'Dismiss'`).
 
 Six spots: the four corners and the two edge centers. An explicit
 position is physical and final. The default is the bottom inline-end
-corner — `bottom-right`, `bottom-left` under RTL — and it is live: the
+corner (`bottom-right`, `bottom-left` under RTL) and it is live: the
 Toaster watches the root's `dir` and follows a flip without a
 re-render. A server-rendered RTL page settles the corner right after
 hydration; pass an explicit position to skip that flip. One Toaster
@@ -146,13 +139,30 @@ own store.
 
 Swiping follows the corner. The default `swipeDirections` set is the
 position's outward edges (`['right', 'down']` at `bottom-right`), so
-the card leaves toward the nearest viewport edge — and a set spanning
+the card leaves toward the nearest viewport edge, and a set spanning
 both axes claims `touch-action: none` on the cards, trading scrolling
 over them away, deliberately. A center offers only its vertical edge,
 and the horizontal axis stays with the browser for scrolling. An
 explicit `swipeDirections` overrides the pairing.
 
-## Headless
+## Toaster props
+
+| Prop | What it does |
+| --- | --- |
+| `toaster` | Your own store instead of the singleton. Read once, remount to switch. |
+| `max` | How many toasts are active at once, the rest queue. Live. |
+| `visible` | How many peek out of the collapsed stack. |
+| `position` | The region's corner or edge center. Defaults to the bottom inline-end corner, live against the document's `dir`. |
+| `swipeDirections` | Which way a card can be flicked. Defaults to the position's outward edges. |
+| `exitDuration` | The exit animation's length in ms. One value drives the presenter's exit clock and, published as `--cincin-exit-duration`, the skin's motion durations. |
+| `labels` | The skin's a11y vocabulary, `{ region, close }`. Defaults `'Notifications'` and `'Dismiss'`. |
+
+## Advanced
+
+### Headless
+
+The skin is one opinion built from public primitives. When it stops
+fitting, drop down a level instead of fighting it.
 
 ```tsx
 import { usePresenter, useToasts, useToastSwipe } from 'cincin-react/core';
@@ -193,19 +203,31 @@ The rest of the toolbox: `useStack(toasts, { visible, gap })` owns a
 `front`/`leaving` for the `inert` rule) and returns the ref that
 registers the card for measurement; `useVisibilityPause(presenter)`
 pauses the toasts while the document is hidden; `useToastEntries(toaster)`
-subscribes to the store records instead of the showings;
-`createToasterContext<MyContent>()` returns a `ToasterProvider` with
-context-aware `useToaster` / `useToastEntries` for a typed content
-payload. The primitives take their instances explicitly and carry no
-CSS.
+subscribes to the store records instead of the showings. The primitives
+take their instances explicitly and carry no CSS.
+
+### Your own store
+
+The `toast` singleton is a convenience, not the only way in. Build a
+store yourself and hand it to the Toaster:
+
+```tsx
+import { createToaster } from 'cincin';
+import { Toaster } from 'cincin-react';
+
+const toaster = createToaster({ duration: 4000 });
+
+<Toaster toaster={toaster} />;
+```
+
+The prop is read once, so remount the Toaster to switch stores. For a
+typed content payload, `createToasterContext<MyContent>()` returns a
+`ToasterProvider` with context-aware `useToaster` and `useToastEntries`.
 
 ## Browser support
 
-Ships untranspiled modern JS (`AbortSignal.any`, ES2023 array methods)
-over `ResizeObserver`: Chrome 116+, Safari 17.4+, Firefox 124+,
-Node 20.3+ for SSR. The bundled skin's CSS (`@starting-style`,
-`light-dark()`) wants 2024-class browsers.
+Chrome 116+, Safari 17.4+, Firefox 124+, Node 20.3+ for SSR. The
+bundled skin's CSS wants 2024-class browsers. See
+[`cincin`](https://www.npmjs.com/package/cincin) for the details.
 
-## Documentation and source
-
-[github.com/nbarinov/cincin](https://github.com/nbarinov/cincin)
+Source and issues: [github.com/nbarinov/cincin](https://github.com/nbarinov/cincin)

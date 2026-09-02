@@ -9,7 +9,7 @@ Looking for the React quick start? See [`cincin-react`](https://www.npmjs.com/pa
 ## Install
 
 ```bash
-pnpm add cincin
+npm install cincin
 ```
 
 ## The store
@@ -68,6 +68,12 @@ leaving ghost and plays the exit. A leaving toast nobody finishes is
 finished by a safety net, a small grace past the declared
 `exitDuration`.
 
+## DOM controllers
+
+Framework-free controllers from `cincin/dom`. They take an element and
+a presenter, write no styling of their own, and are what the adapters
+are built on.
+
 ### Swipe to dismiss
 
 ```ts
@@ -112,7 +118,7 @@ The layout measures each card's body with a `ResizeObserver`, computes
 a `StackSlot` per card (`index`, `offset`, `zIndex`, `hidden`, `front`,
 `leaving` and the measured heights) and publishes changes through the
 observers; it writes nothing to the DOM itself. The consumer puts the
-slots on screen — the CSS protocol for skins, `inert` for semantics —
+slots on screen (the CSS protocol for skins, `inert` for semantics)
 and turns the numbers into motion with its own transitions; mixed
 natural heights collapse into one clean edge. Slot references are
 stable between changes, so `subscribe`/`getSnapshot` plug straight
@@ -131,14 +137,12 @@ return, composing with other pause sources (hover).
 
 ## Browser support
 
-The package ships untranspiled modern JS — the newest APIs are
+The package ships untranspiled modern JS. The newest APIs are
 `AbortSignal.any` (the swipe controller) and ES2023's
 `Array.prototype.toReversed` (the stack layout), with sizes coming
 from `ResizeObserver`: Chrome 116+, Safari 17.4+, Firefox 124+,
-Node 20.3+. Skins may raise the bar further with their CSS — the react
+Node 20.3+. Skins may raise the bar further with their CSS: the react
 skin's stylesheet uses `@starting-style` and `light-dark()`, which
 want 2024-class browsers.
 
-## Documentation and source
-
-[github.com/nbarinov/cincin](https://github.com/nbarinov/cincin)
+Source and issues: [github.com/nbarinov/cincin](https://github.com/nbarinov/cincin)
