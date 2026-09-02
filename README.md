@@ -34,12 +34,17 @@ Toasts are swipeable, the stack collapses to a clean edge and expands on
 hover (or on tap), timers pause while it is open and while the tab is
 hidden, and reduced motion is respected.
 
-## Documentation
+## Learn more
 
-The full API reference, the Vue and Solid pairs, and the headless guide live
-in the [documentation](https://cincin.nbarinov.io). Runnable apps for every
-framework, including vanilla DOM and a [Motion](https://motion.dev)-driven
-renderer, are in [`examples/`](./examples).
+The [demo](https://cincin.nbarinov.io) shows every scenario live, with the
+call behind it one click away. Each package README covers its own API:
+[`cincin`](./packages/cincin) for the store, the presenter and the DOM
+controllers, [`cincin-react`](./packages/cincin-react),
+[`cincin-vue`](./packages/cincin-vue) and
+[`cincin-solid`](./packages/cincin-solid) for the bindings, headless
+layers included. Runnable apps for every framework, including vanilla DOM
+and a [Motion](https://motion.dev)-driven renderer, are in
+[`examples/`](./examples).
 
 cincin ships untranspiled modern JS as ESM only; `cincin-react` works with
 React 18 and newer.
