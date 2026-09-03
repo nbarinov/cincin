@@ -39,6 +39,23 @@
     },
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs"
+      },
+      "./dom": {
+        "types": "./dist/dom/index.d.mts",
+        "import": "./dist/dom/index.mjs"
+      },
+      "./presenter": {
+        "types": "./dist/presenter/index.d.mts",
+        "import": "./dist/presenter/index.mjs"
+      },
+      "./package.json": "./package.json"
+    }
+  },
   "scripts": {
     "build": "tsdown",
     "test": "vitest run",
