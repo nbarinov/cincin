@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-core.png" alt="cincin 🥂">
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/v0.1.1/.github/assets/hero-core.png" alt="cincin 🥂">
 
 The framework-agnostic core of the cincin toast library: an observable
 entry store, a presenter that shows it (`cincin/presenter`), and
@@ -11,6 +11,8 @@ Looking for the React quick start? See [`cincin-react`](https://www.npmjs.com/pa
 ```bash
 npm install cincin
 ```
+
+The package ships untranspiled modern JS as ESM only.
 
 ## The store
 

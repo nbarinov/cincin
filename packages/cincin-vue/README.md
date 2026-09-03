@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-vue.png" alt="cincin-vue 🥂">
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/v0.1.1/.github/assets/hero-vue.png" alt="cincin-vue 🥂">
 
 Vue bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and
@@ -10,7 +10,7 @@ headless building blocks under `cincin-vue/core`.
 npm install cincin-vue
 ```
 
-Requires Vue 3.5.
+Requires Vue 3.5. The package ships untranspiled modern JS as ESM only.
 
 ## Quick start
 

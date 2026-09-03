@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-solid.png" alt="cincin-solid 🥂">
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/v0.1.1/.github/assets/hero-solid.png" alt="cincin-solid 🥂">
 
 Solid bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and
@@ -13,7 +13,7 @@ npm install cincin-solid
 Requires Solid 1.9. The package ships its preserved-JSX build under
 the `solid` export condition, so your bundler's Solid plugin
 (vite-plugin-solid and friends) compiles the components for DOM or
-SSR itself.
+SSR itself. The package ships untranspiled modern JS as ESM only.
 
 ## Quick start
 

@@ -5,6 +5,7 @@
   "license": "MIT",
   "author": "Nikita Barinov",
   "homepage": "https://cincin.nbarinov.io",
+  "bugs": "https://github.com/nbarinov/cincin/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nbarinov/cincin.git",

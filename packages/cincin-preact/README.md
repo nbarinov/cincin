@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-preact.png" alt="cincin-preact 🥂">
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/v0.1.1/.github/assets/hero-preact.png" alt="cincin-preact 🥂">
 
 Preact bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and
@@ -12,7 +12,7 @@ npm install cincin-preact
 
 Requires Preact 10.23 or newer (the ref cleanup contract). The package
 is native Preact: it imports `preact` and `preact/hooks` only, nothing
-to alias.
+to alias. The package ships untranspiled modern JS as ESM only.
 
 ## Quick start
 
