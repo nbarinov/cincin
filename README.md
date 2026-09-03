@@ -53,6 +53,11 @@ and a [Motion](https://motion.dev)-driven renderer, are in
 cincin ships untranspiled modern JS as ESM only; `cincin-react` works with
 React 18 and newer.
 
+## Contributing
+
+Bug reports and small fixes are welcome as they are; for new behavior,
+open an issue first. The short version is in [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Acknowledgements
 
 The stack, the hover expansion and the swipe are inspired by Emil
