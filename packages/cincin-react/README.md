@@ -11,6 +11,8 @@ npm install cincin-react
 ```
 
 Requires React 18. The package ships untranspiled modern JS as ESM only.
+With yarn, add `cincin` next to it: the adapter declares the core as a
+peer, and yarn does not install peers on its own.
 
 ## Quick start
 

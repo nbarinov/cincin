@@ -58,14 +58,12 @@
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json"
   },
-  "dependencies": {
-    "cincin": "workspace:^"
-  },
   "peerDependencies": {
     "cincin": "workspace:^",
     "preact": ">=10.23"
   },
   "devDependencies": {
+    "cincin": "workspace:*",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/preact": "^3.2.4",
     "jsdom": "^30.0.1",

@@ -13,7 +13,9 @@ npm install cincin-solid
 Requires Solid 1.9. The package ships its preserved-JSX build under
 the `solid` export condition, so your bundler's Solid plugin
 (vite-plugin-solid and friends) compiles the components for DOM or
-SSR itself. The package ships untranspiled modern JS as ESM only.
+SSR itself. The package ships untranspiled modern JS as ESM only. With
+yarn, add `cincin` next to it: the adapter declares the core as a peer,
+and yarn does not install peers on its own.
 
 ## Quick start
 

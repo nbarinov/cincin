@@ -12,7 +12,9 @@ npm install cincin-preact
 
 Requires Preact 10.23 or newer (the ref cleanup contract). The package
 is native Preact: it imports `preact` and `preact/hooks` only, nothing
-to alias. The package ships untranspiled modern JS as ESM only.
+to alias. The package ships untranspiled modern JS as ESM only. With
+yarn, add `cincin` next to it: the adapter declares the core as a peer,
+and yarn does not install peers on its own.
 
 ## Quick start
 
