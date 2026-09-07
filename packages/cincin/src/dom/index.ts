@@ -1,5 +1,6 @@
 export { attachSwipe } from './attach-swipe';
 export { attachVisibilityPause } from './attach-visibility-pause';
+export { attachHotkey } from './hotkey';
 export { createStackLayout } from './stack-layout';
 export { createSlotObserver } from './slot-observer';
 export { createSwipeController } from './swipe-controller';
@@ -22,6 +23,12 @@ export type {
 export type { SlotObserver, SlotObserverOptions } from './slot-observer';
 export { prefersReducedMotion, touchActionFor } from './utils';
 export { textDirection, observeTextDirection } from './direction';
+export type {
+  Hotkey,
+  HotkeyKey,
+  HotkeyModifier,
+  HotkeyOptions,
+} from './hotkey';
 export { createSwipeHandlers } from './swipe-handlers';
 export type {
   SwipeHandlers,

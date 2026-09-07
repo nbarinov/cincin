@@ -137,6 +137,27 @@ const detach = attachVisibilityPause(presenter);
 Pauses every toast while the document is hidden and resumes its own on
 return, composing with other pause sources (hover).
 
+### Hotkey
+
+```ts
+import { attachHotkey } from 'cincin/dom';
+
+const detach = attachHotkey('Alt+T', () => {
+  region.focus({ preventScroll: true });
+});
+```
+
+Listens on the document (or `options.target`) and calls back on the
+match, after `preventDefault` so the keystroke neither types a
+character nor opens a browser menu. Detach with the returned function
+or by aborting `options.signal`. The string names at least one of
+`Control`, `Alt` or `Meta`, then `Shift` if wanted, then the key, in
+that order: letters, digits, `F1` to `F12`, the arrows, `Home`, `End`,
+`PageUp`, `PageDown`, `Enter`, `Escape`, `Space`, `Tab`, `Backspace`
+and `Delete`. Letters and digits match the physical key, so `Alt+T`
+fires on the T key under any layout. The grammar is the one
+`aria-keyshortcuts` reads, so the same string announces the hotkey.
+
 ## Browser support
 
 The package ships untranspiled modern JS. The newest APIs are
