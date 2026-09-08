@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import type { Toaster as ToasterContract } from 'cincin';
 import type { SwipeDirection } from 'cincin/dom';
-import { computed, useTemplateRef } from 'vue';
+import { computed } from 'vue';
 import { useDocumentDirection } from '../core/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
+import { useViewport } from '../core/use-viewport';
 import type { ToastContent, ToasterLabels } from './content';
 import { outwardDirections } from './position';
 import type { ToasterPosition } from './position';
 import { toast as defaultToaster } from './toast';
-import { useRegion } from './use-region';
 import ToastCard from './ToastCard.vue';
 
 const props = withDefaults(
@@ -78,8 +78,7 @@ const live = computed(() =>
   toasts.value.filter((toast) => toast.phase !== 'queued')
 );
 
-const region = useTemplateRef<HTMLElement>('region');
-const { expanded, handlers } = useRegion(region, presenter);
+const { expanded, handlers } = useViewport(presenter);
 const { layout } = useStack(live, () => ({ visible: props.visible }));
 
 useVisibilityPause(presenter);
@@ -105,13 +104,12 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
 <template>
   <section tabindex="-1" :aria-label="regionLabel">
     <ol
-      ref="region"
       data-cincin-toaster
       :data-y="anchors.y"
       :data-x="anchors.x"
       :data-expanded="expanded"
       :style="{ '--cincin-exit-duration': `${exitDuration}ms` }"
-      v-bind="handlers"
+      v-on="handlers"
     >
       <ToastCard
         v-for="toast of live"

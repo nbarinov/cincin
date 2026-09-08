@@ -1,0 +1,110 @@
+import { createViewportController, createViewportHandlers } from 'cincin/dom';
+import type { ViewportOptions } from 'cincin/dom';
+import type { Presenter } from 'cincin/presenter';
+import {
+  onMounted,
+  onScopeDispose,
+  onUnmounted,
+  shallowRef,
+  toValue,
+  watch,
+  watchEffect,
+} from 'vue';
+import type { MaybeRefOrGetter, Ref } from 'vue';
+
+type ViewportHandlers = {
+  mouseenter: (event: MouseEvent) => void;
+  mousemove: (event: MouseEvent) => void;
+  mouseleave: (event: MouseEvent) => void;
+  lostpointercapture: (event: PointerEvent) => void;
+  pointerdown: (event: PointerEvent) => void;
+  pointerup: (event: PointerEvent) => void;
+  pointercancel: (event: PointerEvent) => void;
+  focusin: (event: FocusEvent) => void;
+  focusout: (event: FocusEvent) => void;
+};
+
+type Viewport = {
+  expanded: Readonly<Ref<boolean>>;
+  handlers: ViewportHandlers;
+};
+
+function useViewport<Content extends {}>(
+  presenter: Presenter<Content>,
+  options?: MaybeRefOrGetter<ViewportOptions | undefined>
+): Viewport {
+  const controller = createViewportController(toValue(options));
+  const viewport = createViewportHandlers(controller);
+
+  onScopeDispose(() => controller.destroy());
+
+  watchEffect(function syncOptions() {
+    controller.setOptions(toValue(options) ?? {});
+  });
+
+  const expanded = shallowRef(controller.getSnapshot());
+
+  if (typeof window !== 'undefined') {
+    onScopeDispose(
+      controller.subscribe((value) => {
+        expanded.value = value;
+      })
+    );
+
+    onScopeDispose(
+      presenter.subscribe(function endHoverWhenEmpty() {
+        if (presenter.count() === 0) {
+          controller.hover(false);
+        }
+      })
+    );
+  }
+
+  onMounted(function listenOutside() {
+    document.addEventListener('pointerdown', viewport.document.pointerdown);
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener('pointerdown', viewport.document.pointerdown);
+  });
+
+  watch(
+    expanded,
+    function holdWhileOpen(open, _, onCleanup) {
+      if (!open) {
+        return;
+      }
+
+      presenter.pause();
+      const unsubscribe = presenter.subscribe((event) => {
+        if (event.type === 'entered') {
+          presenter.pause(event.toast.key);
+        }
+      });
+
+      onCleanup(() => {
+        unsubscribe();
+        presenter.resume();
+      });
+    },
+    { immediate: true }
+  );
+
+  return {
+    expanded,
+    handlers: {
+      mouseenter: viewport.element.mouseenter,
+      mousemove: viewport.element.mousemove,
+      mouseleave: viewport.element.mouseleave,
+      lostpointercapture: viewport.element.lostpointercapture,
+      pointerdown: viewport.element.pointerdown,
+      pointerup: viewport.element.pointerup,
+      pointercancel: viewport.element.pointercancel,
+      focusin: viewport.element.focusin,
+      focusout: viewport.element.focusout,
+    },
+  };
+}
+
+export { useViewport };
+export type { ViewportHandlers, Viewport };

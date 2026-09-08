@@ -212,8 +212,12 @@ const { handlers, style } = useToastSwipe({
 
 The composables return refs and take options as plain values, refs or
 getters (`MaybeRefOrGetter`): a getter over your props keeps an option
-live. The rest of the toolbox: `useStack(toasts, options)` owns a
-`cincin/dom` stack layout and mirrors the rendered list into it;
+live. The rest of the toolbox: `useViewport(presenter, options)` owns
+the stack's attention (open under the pointer or focus, fold a delay
+after both leave, pause the toasts while open) and returns `expanded`
+plus the handlers to bind on the list with `v-on`;
+`useStack(toasts, options)` owns a `cincin/dom` stack layout and
+mirrors the rendered list into it;
 `useSlot(element, { layout, key })` registers the card's element for
 measurement and reads its live slot (geometry, `front`/`leaving` for
 the `inert` rule); `useVisibilityPause(presenter)` pauses the toasts
