@@ -1,0 +1,253 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  --page-pad: 2rem;
+
+  box-sizing: border-box;
+  margin: 0;
+  min-height: 100dvh;
+  padding: max(var(--page-pad), env(safe-area-inset-top, 0px))
+    max(var(--page-pad), env(safe-area-inset-right, 0px))
+    max(var(--page-pad), env(safe-area-inset-bottom, 0px))
+    max(var(--page-pad), env(safe-area-inset-left, 0px));
+}
+
+@media (max-width: 600px) {
+  body {
+    --page-pad: 1.25rem;
+  }
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Scoped to the demo section: a bare `button` selector reaches the
+ * toast's own buttons too. */
+section button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  section button:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}
+
+section button:active {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+kbd {
+  padding: 0.05rem 0.3rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.3rem;
+  font-size: 0.85em;
+}
+
+/* --- the toast stack ---------------------------------------------- */
+
+/* Radix's viewport: the list every toast is portaled into, and the
+ * element the F8 hotkey focuses. */
+.toasts {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: min(22rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  outline: none;
+  z-index: 10;
+}
+
+.toast {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 0.75rem;
+  background: light-dark(#fff, #232327);
+  box-shadow: 0 6px 24px -8px rgb(0 0 0 / 0.25);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Radix drives these two states; the exit runs on the same value the
+ * presenter was given, so nobody has to listen for animationend. */
+.toast[data-state='open'] {
+  animation: toast-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast[data-state='closed'] {
+  animation: toast-out var(--toast-exit-duration, 200ms) ease-in forwards;
+}
+
+/* The swipe: Radix publishes the offset, the stylesheet spends it.
+ * These come after the state rules on purpose — a card let go past the
+ * threshold flies out instead of fading. */
+.toast[data-swipe='move'] {
+  transform: translateX(var(--radix-toast-swipe-move-x));
+}
+
+.toast[data-swipe='cancel'] {
+  transform: translateX(0);
+  transition: transform 180ms ease-out;
+}
+
+.toast[data-swipe='end'] {
+  animation: toast-swipe-out var(--toast-exit-duration, 200ms) ease-out forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem) scale(0.96);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes toast-swipe-out {
+  from {
+    transform: translateX(var(--radix-toast-swipe-end-x));
+  }
+  to {
+    opacity: 0;
+    transform: translateX(calc(100% + 1.5rem));
+  }
+}
+
+/* No motion means no animationend either, so Radix unmounts the card at
+ * once; the presenter's exit clock still finishes the showing. */
+@media (prefers-reduced-motion: reduce) {
+  .toast[data-state],
+  .toast[data-swipe] {
+    animation: none;
+    transition: none;
+  }
+}
+
+.toast-dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.375rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+.toast[data-type='success'] .toast-dot {
+  background: light-dark(#15803d, #4ade80);
+  opacity: 1;
+}
+
+.toast[data-type='error'] .toast-dot {
+  background: light-dark(#b91c1c, #f87171);
+  opacity: 1;
+}
+
+.toast[data-type='warning'] .toast-dot {
+  background: light-dark(#b45309, #fbbf24);
+  opacity: 1;
+}
+
+.toast[data-type='info'] .toast-dot {
+  background: light-dark(#1d4ed8, #60a5fa);
+  opacity: 1;
+}
+
+.toast[data-type='loading'] .toast-dot {
+  animation: toast-dot-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes toast-dot-pulse {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast[data-type='loading'] .toast-dot {
+    animation: none;
+  }
+}
+
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-description {
+  margin-top: 0.125rem;
+  opacity: 0.7;
+}
+
+.toast-action,
+.toast-close {
+  flex: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toast-action {
+  align-self: center;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.4rem;
+  font-size: 0.8125rem;
+}
+
+.toast-close {
+  margin: -0.125rem -0.25rem 0 0;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.375rem;
+  line-height: 1;
+  opacity: 0.5;
+}
+
+@media (hover: hover) {
+  .toast-action:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  .toast-close:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    opacity: 0.9;
+  }
+}
