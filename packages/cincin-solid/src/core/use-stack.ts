@@ -7,35 +7,14 @@ import type { MaybeAccessor } from '../shared/maybe-accessor';
 
 type StackOptions = StackLayoutOptions;
 
-/**
- * A thin binding over the `cincin/dom` stack layout: the primitive
- * owns the instance and feeds it entries from an effect — after the
- * render phase, so every card's ref has registered its element by
- * then (the pass skips unregistered keys), and still before paint.
- * Cards read their slots through `useSlot(element, { layout, key })`.
- */
 function useStack(
   entries: MaybeAccessor<ReadonlyArray<Pick<Toast, 'key' | 'phase'>>>,
   options?: MaybeAccessor<StackOptions | undefined>
 ): { layout: StackLayout } {
-  // The body locator rides only the creation: it is read once by the
-  // layout, and setOptions leaves it alone.
-  const initial = access(options) ?? {};
-  const layout = createStackLayout({
-    order: initial.order ?? 'stack',
-    visible: initial.visible ?? 3,
-    gap: initial.gap ?? 12,
-    ...(initial.body && { body: initial.body }),
-  });
+  const layout = createStackLayout(access(options));
 
   createEffect(function syncOptions() {
-    const live = access(options) ?? {};
-
-    layout.setOptions({
-      order: live.order ?? 'stack',
-      visible: live.visible ?? 3,
-      gap: live.gap ?? 12,
-    });
+    layout.setOptions(access(options) ?? {});
   });
 
   createEffect(function syncEntries() {
