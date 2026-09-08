@@ -4,6 +4,7 @@ export { usePresenter } from './use-presenter';
 export { useToastSwipe } from './use-toast-swipe';
 export { useStack } from './use-stack';
 export { useSlot } from './use-slot';
+export { useViewport } from './use-viewport';
 export { useVisibilityPause } from './use-visibility-pause';
 export type {
   ToastSwipeOptions,
@@ -13,6 +14,7 @@ export type {
 } from './use-toast-swipe';
 export type { StackOptions } from './use-stack';
 export type { SlotOptions } from './use-slot';
+export type { Viewport, ViewportHandlers } from './use-viewport';
 
 export { createToasterContext } from './context';
 
