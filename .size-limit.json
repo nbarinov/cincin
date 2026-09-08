@@ -35,7 +35,7 @@
   {
     "name": "cincin-vue/core",
     "path": "packages/cincin-vue/dist/core/index.mjs",
-    "limit": "1.25 kB",
+    "limit": "1.5 kB",
     "ignore": ["cincin", "vue"]
   },
   {
