@@ -1,6 +1,6 @@
 import { createViewportController, createViewportHandlers } from 'cincin/dom';
-import type { ViewportOptions } from 'cincin/dom';
-import type { Presenter } from 'cincin/presenter';
+import type { ViewportOptions as ControllerOptions } from 'cincin/dom';
+import type { Presenter, PresenterHolder } from 'cincin/presenter';
 import {
   onMounted,
   onScopeDispose,
@@ -24,15 +24,18 @@ type ViewportHandlers = {
   focusout: (event: FocusEvent) => void;
 };
 
+type ViewportOptions = ControllerOptions & {
+  presenter: Presenter<{}>;
+  holder?: PresenterHolder;
+};
+
 type Viewport = {
   expanded: Readonly<Ref<boolean>>;
   handlers: ViewportHandlers;
 };
 
-function useViewport<Content extends {}>(
-  presenter: Presenter<Content>,
-  options?: MaybeRefOrGetter<ViewportOptions | undefined>
-): Viewport {
+function useViewport(options: MaybeRefOrGetter<ViewportOptions>): Viewport {
+  const { presenter, holder } = toValue(options);
   const controller = createViewportController(toValue(options));
   const viewport = createViewportHandlers(controller);
 
@@ -64,21 +67,11 @@ function useViewport<Content extends {}>(
   watch(
     expanded,
     function holdWhileOpen(open, _, onCleanup) {
-      if (!open) {
+      if (!open || holder === undefined) {
         return;
       }
 
-      presenter.pause();
-      const unsubscribe = presenter.subscribe((event) => {
-        if (event.type === 'entered') {
-          presenter.pause(event.toast.key);
-        }
-      });
-
-      onCleanup(() => {
-        unsubscribe();
-        presenter.resume();
-      });
+      onCleanup(holder.hold(Symbol('viewport')));
     },
     { immediate: true }
   );
@@ -100,4 +93,4 @@ function useViewport<Content extends {}>(
 }
 
 export { useViewport };
-export type { ViewportHandlers, Viewport };
+export type { ViewportOptions, ViewportHandlers, Viewport };

@@ -1,16 +1,15 @@
-import type { Presenter } from 'cincin/presenter';
+import type { PresenterHolder } from 'cincin/presenter';
 import { attachVisibilityPause } from 'cincin/dom';
 import { onCleanup, onMount } from 'solid-js';
 
 /**
- * Freezes the presenter's clocks while the document is hidden. Lifetime
- * follows the component: attach on mount, detach (and thaw) on cleanup.
+ * Holds the presenter's clocks while the document is hidden. Lifetime
+ * follows the component: attach on mount, detach (and release) on
+ * cleanup.
  */
-function useVisibilityPause<Content extends {}>(
-  presenter: Presenter<Content>
-): void {
+function useVisibilityPause(holder: PresenterHolder): void {
   onMount(() => {
-    onCleanup(attachVisibilityPause(presenter));
+    onCleanup(attachVisibilityPause(holder));
   });
 }
 

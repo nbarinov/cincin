@@ -203,15 +203,17 @@ function Card({ toast, presenter }) {
 
 The swipe handlers are typed against the native `PointerEvent` and
 `MouseEvent`, which is what Preact delivers: spread them onto any
-element. The rest of the toolbox: `useViewport(presenter)` owns the
-stack's attention (open under the pointer or focus, fold a delay after
-both leave, pause the toasts while open) and returns `expanded` plus
-the handlers to spread on the list; `useStack(toasts, { visible, gap })`
+element. The rest of the toolbox: `usePresenterHolder(presenter)` is
+the one holder of the presenter's clocks, which the sources below hold
+by name; `useViewport({ presenter, holder })` owns the stack's
+attention (open under the pointer or focus, fold a delay after both
+leave, hold the clocks while open) and returns `expanded` plus the
+handlers to spread on the list; `useStack(toasts, { visible, gap })`
 owns a `cincin/dom` stack layout and mirrors the rendered list into
 it; `useSlot({ layout, key })` reads one card's live slot (geometry,
 `front`/`leaving` for the `inert` rule) and returns the ref that
-registers the card for measurement; `useVisibilityPause(presenter)`
-pauses the toasts while the document is hidden; `useToastEntries(toaster)`
+registers the card for measurement; `useVisibilityPause(holder)`
+holds the clocks while the document is hidden; `useToastEntries(toaster)`
 subscribes to the store records instead of the showings. The primitives
 take their instances explicitly and carry no CSS.
 

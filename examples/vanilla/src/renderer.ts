@@ -6,7 +6,7 @@ import {
   createStackLayout,
   createViewportController,
 } from 'cincin/dom';
-import { createPresenter } from 'cincin/presenter';
+import { createPresenter, createPresenterHolder } from 'cincin/presenter';
 import type { Toaster } from 'cincin';
 import type { StackSlot } from 'cincin/dom';
 import type { Toast, ToastKey } from 'cincin/presenter';
@@ -214,24 +214,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   const controller = new AbortController();
   const { signal } = controller;
 
-  // The presenter is held while the stack is open: every toast paused
-  // on opening, a toast entering an open stack paused as it enters,
-  // and closing resumes. Anonymous pause, consumer-side hold (ADR-0011).
-  let release: (() => void) | undefined;
-  const hold = () => {
-    presenter.pause();
-    const unsubscribeEntered = presenter.subscribe((event) => {
-      if (event.type === 'entered') {
-        presenter.pause(event.toast.key);
-      }
-    });
-
-    release = () => {
-      release = undefined;
-      unsubscribeEntered();
-      presenter.resume();
-    };
-  };
+  const holder = createPresenterHolder(presenter);
 
   region.dataset.expanded = 'false';
   const unsubscribeViewport = viewport.subscribe((expanded) => {
@@ -239,9 +222,9 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     applyInertAll();
 
     if (expanded) {
-      hold();
+      holder.hold('viewport');
     } else {
-      release?.();
+      holder.release('viewport');
     }
   });
   attachViewport(region, viewport, { signal });
@@ -251,7 +234,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   });
   presenter.mount();
 
-  const detachVisibilityPause = attachVisibilityPause(presenter);
+  const detachVisibilityPause = attachVisibilityPause(holder);
   render();
 
   return () => {
@@ -260,7 +243,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     controller.abort();
     unsubscribeViewport();
     viewport.destroy();
-    release?.();
+    holder.release('viewport');
     delete region.dataset.expanded;
     region.style.removeProperty('--cincin-exit-duration');
 

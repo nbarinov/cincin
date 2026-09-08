@@ -1,18 +1,17 @@
-import type { Presenter } from 'cincin/presenter';
+import type { PresenterHolder } from 'cincin/presenter';
 import { attachVisibilityPause } from 'cincin/dom';
 import { onMounted, onUnmounted } from 'vue';
 
 /**
- * Freezes the presenter's clocks while the document is hidden. Lifetime
- * follows the component: attach on mount, detach (and thaw) on unmount.
+ * Holds the presenter's clocks while the document is hidden. Lifetime
+ * follows the component: attach on mount, detach (and release) on
+ * unmount.
  */
-function useVisibilityPause<Content extends {}>(
-  presenter: Presenter<Content>
-): void {
+function useVisibilityPause(holder: PresenterHolder): void {
   let detach: (() => void) | undefined;
 
   onMounted(() => {
-    detach = attachVisibilityPause(presenter);
+    detach = attachVisibilityPause(holder);
   });
 
   onUnmounted(() => {

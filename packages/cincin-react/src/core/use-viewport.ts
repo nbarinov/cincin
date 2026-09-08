@@ -1,8 +1,13 @@
-import type { Presenter } from 'cincin/presenter';
+import type { Presenter, PresenterHolder } from 'cincin/presenter';
 import { createViewportController, createViewportHandlers } from 'cincin/dom';
-import type { ViewportOptions } from 'cincin/dom';
+import type { ViewportOptions as ControllerOptions } from 'cincin/dom';
 import * as React from 'react';
 import type { FocusEvent, SyntheticEvent } from 'react';
+
+type ViewportOptions = ControllerOptions & {
+  presenter: Presenter<{}>;
+  holder?: PresenterHolder;
+};
 
 type ViewportHandlers<T extends HTMLElement> = {
   onMouseEnter: (event: SyntheticEvent<T>) => void;
@@ -21,11 +26,10 @@ type Viewport<T extends HTMLElement> = {
   handlers: ViewportHandlers<T>;
 };
 
-function useViewport<T extends HTMLElement, Content extends {}>(
-  presenter: Presenter<Content>,
-  options: ViewportOptions = {}
+function useViewport<T extends HTMLElement>(
+  options: ViewportOptions
 ): Viewport<T> {
-  const { collapseDelay } = options;
+  const { presenter, holder, collapseDelay } = options;
 
   const [{ controller, viewport }] = React.useState(() => {
     const c = createViewportController({ collapseDelay });
@@ -83,23 +87,13 @@ function useViewport<T extends HTMLElement, Content extends {}>(
 
   React.useEffect(
     function holdWhileOpen() {
-      if (!expanded) {
+      if (!expanded || holder === undefined) {
         return;
       }
 
-      presenter.pause();
-      const unsubscribe = presenter.subscribe((event) => {
-        if (event.type === 'entered') {
-          presenter.pause(event.toast.key);
-        }
-      });
-
-      return () => {
-        unsubscribe();
-        presenter.resume();
-      };
+      return holder.hold(Symbol('viewport'));
     },
-    [presenter, expanded]
+    [holder, expanded]
   );
 
   return {
@@ -119,7 +113,7 @@ function useViewport<T extends HTMLElement, Content extends {}>(
 }
 
 export { useViewport };
-export type { ViewportHandlers, Viewport };
+export type { ViewportOptions, ViewportHandlers, Viewport };
 
 // utils
 

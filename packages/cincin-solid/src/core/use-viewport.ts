@@ -1,9 +1,8 @@
 import { createViewportController, createViewportHandlers } from 'cincin/dom';
-import type { ViewportOptions } from 'cincin/dom';
-import type { Presenter } from 'cincin/presenter';
+import type { ViewportOptions as ControllerOptions } from 'cincin/dom';
+import type { Presenter, PresenterHolder } from 'cincin/presenter';
 import { createEffect, on, onCleanup, onMount } from 'solid-js';
 import type { Accessor } from 'solid-js';
-import { access } from '../shared/maybe-accessor';
 import type { MaybeAccessor } from '../shared/maybe-accessor';
 import { createSnapshotAccessor } from '../shared/snapshot-accessor';
 
@@ -19,22 +18,27 @@ type ViewportHandlers = {
   onFocusOut: (event: FocusEvent) => void;
 };
 
+type ViewportOptions = ControllerOptions & {
+  presenter: Presenter<{}>;
+  holder?: PresenterHolder;
+};
+
 type Viewport = {
   expanded: Accessor<boolean>;
   handlers: ViewportHandlers;
 };
 
-function useViewport<Content extends {}>(
-  presenter: Presenter<Content>,
-  options?: MaybeAccessor<ViewportOptions | undefined>
-): Viewport {
-  const controller = createViewportController(access(options));
+function useViewport(options: MaybeAccessor<ViewportOptions>): Viewport {
+  const read = (): ViewportOptions =>
+    typeof options === 'function' ? options() : options;
+  const { presenter, holder } = read();
+  const controller = createViewportController(read());
   const viewport = createViewportHandlers(controller);
 
   onCleanup(() => controller.destroy());
 
   createEffect(function syncOptions() {
-    controller.setOptions(access(options) ?? {});
+    controller.setOptions(read());
   });
 
   const expanded = createSnapshotAccessor(controller);
@@ -59,21 +63,11 @@ function useViewport<Content extends {}>(
 
   createEffect(
     on(expanded, function holdWhileOpen(open) {
-      if (!open) {
+      if (!open || holder === undefined) {
         return;
       }
 
-      presenter.pause();
-      const unsubscribe = presenter.subscribe((event) => {
-        if (event.type === 'entered') {
-          presenter.pause(event.toast.key);
-        }
-      });
-
-      onCleanup(() => {
-        unsubscribe();
-        presenter.resume();
-      });
+      onCleanup(holder.hold(Symbol('viewport')));
     })
   );
 
@@ -94,4 +88,4 @@ function useViewport<Content extends {}>(
 }
 
 export { useViewport };
-export type { ViewportHandlers, Viewport };
+export type { ViewportOptions, ViewportHandlers, Viewport };

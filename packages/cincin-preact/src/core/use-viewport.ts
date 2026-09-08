@@ -1,6 +1,6 @@
-import type { Presenter } from 'cincin/presenter';
+import type { Presenter, PresenterHolder } from 'cincin/presenter';
 import { createViewportController, createViewportHandlers } from 'cincin/dom';
-import type { ViewportOptions } from 'cincin/dom';
+import type { ViewportOptions as ControllerOptions } from 'cincin/dom';
 import { useEffect, useState } from 'preact/hooks';
 import { useSyncExternalStore } from '../shared/use-sync-external-store';
 
@@ -16,16 +16,18 @@ type ViewportHandlers = {
   onFocusOut: (event: FocusEvent) => void;
 };
 
+type ViewportOptions = ControllerOptions & {
+  presenter: Presenter<{}>;
+  holder?: PresenterHolder;
+};
+
 type Viewport = {
   expanded: boolean;
   handlers: ViewportHandlers;
 };
 
-function useViewport<Content extends {}>(
-  presenter: Presenter<Content>,
-  options: ViewportOptions = {}
-): Viewport {
-  const { collapseDelay } = options;
+function useViewport(options: ViewportOptions): Viewport {
+  const { presenter, holder, collapseDelay } = options;
 
   const [{ controller, viewport }] = useState(() => {
     const c = createViewportController({ collapseDelay });
@@ -83,23 +85,13 @@ function useViewport<Content extends {}>(
 
   useEffect(
     function holdWhileOpen() {
-      if (!expanded) {
+      if (!expanded || holder === undefined) {
         return;
       }
 
-      presenter.pause();
-      const unsubscribe = presenter.subscribe((event) => {
-        if (event.type === 'entered') {
-          presenter.pause(event.toast.key);
-        }
-      });
-
-      return () => {
-        unsubscribe();
-        presenter.resume();
-      };
+      return holder.hold(Symbol('viewport'));
     },
-    [presenter, expanded]
+    [holder, expanded]
   );
 
   return {
@@ -120,7 +112,7 @@ function useViewport<Content extends {}>(
 }
 
 export { useViewport };
-export type { ViewportHandlers, Viewport };
+export type { ViewportOptions, ViewportHandlers, Viewport };
 
 // utils
 

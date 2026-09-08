@@ -221,14 +221,16 @@ exactly how the bundled Toaster renders.
 
 The primitives return accessors and take options as plain values or
 getters (`MaybeAccessor`): a getter over your props keeps an option
-live. The rest of the toolbox: `useViewport(presenter, options)` owns
-the stack's attention (open under the pointer or focus, fold a delay
-after both leave, pause the toasts while open) and returns `expanded`
-plus the handlers to spread on the list; `useStack(toasts, options)` owns a
+live. The rest of the toolbox: `usePresenterHolder(presenter)` is the
+one holder of the presenter's clocks, which the sources below hold by
+name; `useViewport({ presenter, holder, ...options })` owns the stack's
+attention (open under the pointer or focus, fold a delay after both
+leave, hold the clocks while open) and returns `expanded` plus the
+handlers to spread on the list; `useStack(toasts, options)` owns a
 `cincin/dom` stack layout and mirrors the rendered list into it;
 `useSlot(element, { layout, key })` registers the card's element for
 measurement and reads its live slot (geometry, `front`/`leaving` for
-the `inert` rule); `useVisibilityPause(presenter)` pauses the toasts
+the `inert` rule); `useVisibilityPause(holder)` holds the clocks
 while the document is hidden; `useToastEntries(toaster)` subscribes to
 the store records instead of the showings. The primitives take their
 instances explicitly and carry no CSS.

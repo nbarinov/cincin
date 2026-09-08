@@ -13,6 +13,7 @@ import type { JSX } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
+import { usePresenterHolder } from '../core/use-presenter-holder';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useSlot } from '../core/use-slot';
@@ -51,8 +52,10 @@ type ToasterProps = {
   /** Active presentations at once; the rest queue. @default Infinity */
   max?: number;
   /**
-   * The exit animation's length, ms. One value drives both sides: the
-   * presenter's exit clock and, published as `--cincin-exit-duration`,
+   * The exit animation's length, ms.
+   * One value drives both sides:
+   * the presenter's exit clock and,
+   * published as `--cincin-exit-duration`,
    * the skin's motion durations.
    *
    * @default 400
@@ -83,13 +86,14 @@ function Toaster(props: ToasterProps) {
     projection().filter((item) => item.toast().phase !== 'queued')
   );
 
-  const viewport = useViewport(presenter);
+  const holder = usePresenterHolder(presenter);
+  const viewport = useViewport({ presenter, holder });
   const { layout } = useStack(
     () => live().map((item) => item.toast()),
     () => ({ visible: merged.visible })
   );
 
-  useVisibilityPause(presenter);
+  useVisibilityPause(holder);
 
   const direction = useDocumentDirection();
   const position = createMemo(
