@@ -12,12 +12,12 @@ import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useSlot } from '../core/use-slot';
+import { useViewport } from '../core/use-viewport';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent, ToasterLabels } from './content';
 import { outwardDirections } from './position';
 import type { ToasterPosition } from './position';
 import { toast as defaultToaster } from './toast';
-import { useRegion } from './use-region';
 import { CLOSE_ICON, TYPE_ICONS } from './icons';
 
 type ToasterProps = {
@@ -65,7 +65,7 @@ function Toaster({
     [toasts]
   );
 
-  const { expanded, ref: regionRef, handlers } = useRegion(presenter);
+  const { expanded, handlers } = useViewport(presenter);
   const stack = useStack(live, { visible });
 
   useVisibilityPause(presenter);
@@ -91,7 +91,6 @@ function Toaster({
         style={
           { '--cincin-exit-duration': `${exitDuration}ms` } as CSSProperties
         }
-        ref={regionRef}
         {...handlers}
       >
         {live.map((toast) => (

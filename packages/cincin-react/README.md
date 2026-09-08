@@ -199,7 +199,10 @@ function Card({ toast, presenter }) {
 }
 ```
 
-The rest of the toolbox: `useStack(toasts, { visible, gap })` owns a
+The rest of the toolbox: `useViewport(presenter)` owns the stack's
+attention (open under the pointer or focus, fold a delay after both
+leave, pause the toasts while open) and returns `expanded` plus the
+handlers to spread on the list; `useStack(toasts, { visible, gap })` owns a
 `cincin/dom` stack layout and mirrors the rendered list into it;
 `useSlot({ layout, key })` reads one card's live slot (geometry,
 `front`/`leaving` for the `inert` rule) and returns the ref that
