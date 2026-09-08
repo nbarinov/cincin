@@ -16,13 +16,13 @@ import { usePresenter } from '../core/use-presenter';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useSlot } from '../core/use-slot';
+import { useViewport } from '../core/use-viewport';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent, ToasterLabels } from './content';
 import { outwardDirections } from './position';
 import type { ToasterPosition } from './position';
 import { createToastProjection } from './projection';
 import { toast as defaultToaster } from './toast';
-import { useRegion } from './use-region';
 import { CloseIcon, TYPE_ICONS } from './icons';
 
 type ToasterProps = {
@@ -83,8 +83,7 @@ function Toaster(props: ToasterProps) {
     projection().filter((item) => item.toast().phase !== 'queued')
   );
 
-  const [regionElement, setRegionElement] = createSignal<HTMLOListElement>();
-  const region = useRegion(regionElement, presenter);
+  const viewport = useViewport(presenter);
   const { layout } = useStack(
     () => live().map((item) => item.toast()),
     () => ({ visible: merged.visible })
@@ -115,10 +114,9 @@ function Toaster(props: ToasterProps) {
         data-cincin-toaster
         data-y={anchors().y}
         data-x={anchors().x}
-        data-expanded={String(region.expanded())}
+        data-expanded={String(viewport.expanded())}
         style={{ '--cincin-exit-duration': `${merged.exitDuration}ms` }}
-        ref={setRegionElement}
-        {...region.handlers}
+        {...viewport.handlers}
       >
         <For each={live()}>
           {(item) => (
@@ -126,7 +124,7 @@ function Toaster(props: ToasterProps) {
               toast={item.toast()}
               presenter={presenter}
               layout={layout}
-              expanded={region.expanded()}
+              expanded={viewport.expanded()}
               swipeDirections={directions()}
               closeLabel={merged.labels?.close ?? 'Dismiss'}
             />
