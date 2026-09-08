@@ -1,29 +1,25 @@
 import * as React from 'react';
 import { createStackLayout } from 'cincin/dom';
 import type { StackLayoutOptions } from 'cincin/dom';
-import type { Toast, ToastKey } from 'cincin/presenter';
-import { useRefMap } from '../shared/use-ref-map';
+import type { Toast } from 'cincin/presenter';
 
 type StackOptions = StackLayoutOptions;
 
-/** A thin binding over the `cincin/dom` stack layout: the hook owns
- * the instance and feeds it commits; cards read their slots through
- * `useSlot(layout, key)` (which also registers their elements).
- * `cardRef` is the older imperative registration path, kept for
- * consumers that apply the protocol without slots. */
+/**
+ * A thin binding over the `cincin/dom` stack layout:
+ * the hook owns the instance and feeds it commits;
+ * cards read their slots through `useSlot({ layout, key })`,
+ * which also registers their elements.
+ */
 function useStack(
   entries: ReadonlyArray<Pick<Toast, 'key' | 'phase'>>,
   options: StackOptions = {}
 ) {
   const { order = 'stack', visible = 3, gap = 12, body } = options;
-  // The body locator rides only the creation: it is read once by the
-  // layout, and setOptions leaves it alone.
+
   const [layout] = React.useState(() =>
-    createStackLayout({ order, visible, gap, ...(body && { body }) })
+    createStackLayout({ order, visible, gap, body })
   );
-  const cards = useRefMap<ToastKey, HTMLElement>({
-    onChange: (key, element) => layout.setCard(key, element),
-  });
 
   React.useLayoutEffect(
     function syncOptions() {
@@ -53,7 +49,7 @@ function useStack(
     [layout]
   );
 
-  return { layout, cardRef: cards.getRef };
+  return { layout };
 }
 
 export { useStack };
