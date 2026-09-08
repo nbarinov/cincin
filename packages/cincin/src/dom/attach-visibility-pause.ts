@@ -1,66 +1,29 @@
-import type { Presenter, ToastKey } from '../presenter';
+import type { PresenterHolder } from '../presenter';
 
-function attachVisibilityPause<Content extends {}>(
-  presenter: Presenter<Content>
-): () => void {
-  const owned = new Set<ToastKey>();
-  let unsubscribe: (() => void) | undefined;
+/**
+ * Holds the presenter while the document is hidden: one name among
+ * the holder's, `'hidden'`. The holder keeps the ledger
+ * and the overlap with other sources (an open viewport, app code); this
+ * attach only reports the document's visibility. Detaching releases
+ * the hold and stops listening.
+ */
+function attachVisibilityPause(holder: PresenterHolder): () => void {
+  const id = Symbol('hidden');
 
-  const freeze = () => {
-    const toasts = presenter.getSnapshot();
-
-    for (const toast of toasts) {
-      if (toast.phase !== 'leaving' && !toast.paused) {
-        owned.add(toast.key);
-      }
-    }
-
-    unsubscribe?.();
-    presenter.pause();
-
-    unsubscribe = presenter.subscribe((e) => {
-      if (e.type === 'left') {
-        owned.delete(e.toast.key);
-
-        return;
-      }
-
-      if (
-        e.type === 'entered' ||
-        (e.type === 'updated' && e.prev.paused && !e.toast.paused)
-      ) {
-        owned.add(e.toast.key);
-        presenter.pause(e.toast.key);
-
-        return;
-      }
-    });
-  };
-
-  const unfreeze = () => {
-    unsubscribe?.();
-    unsubscribe = undefined;
-    presenter.resume([...owned.values()]);
-    owned.clear();
-  };
-
-  const onVisibilityChange = () => {
+  const sync = () => {
     if (document.visibilityState === 'hidden') {
-      freeze();
+      holder.hold(id);
     } else {
-      unfreeze();
+      holder.release(id);
     }
   };
 
-  document.addEventListener('visibilitychange', onVisibilityChange);
-
-  if (document.visibilityState === 'hidden') {
-    freeze();
-  }
+  document.addEventListener('visibilitychange', sync);
+  sync();
 
   return () => {
-    document.removeEventListener('visibilitychange', onVisibilityChange);
-    unfreeze();
+    document.removeEventListener('visibilitychange', sync);
+    holder.release(id);
   };
 }
 

@@ -1,21 +1,21 @@
 import { createToaster } from '../core/toaster';
-import { createPresenter } from '../presenter';
+import { createPresenterHolder, createPresenter } from '../presenter';
 import { attachVisibilityPause } from './attach-visibility-pause';
 import type { Toaster } from '../core/types';
-import type { Presenter } from '../presenter';
+import type { PresenterHolder, Presenter } from '../presenter';
 
-/** A mounted presenter over a fresh toaster. */
-function setup(): { t: Toaster; p: Presenter } {
+/** A mounted presenter over a fresh toaster, with its holder. */
+function setup(): { t: Toaster; p: Presenter; holder: PresenterHolder } {
   const t = createToaster();
   const p = createPresenter(t);
   p.mount();
-  return { t, p };
+  return { t, p, holder: createPresenterHolder(p) };
 }
 
 const detachers: Array<() => void> = [];
 
-function attach(p: Presenter): () => void {
-  const detach = attachVisibilityPause(p);
+function attach(holder: PresenterHolder): () => void {
+  const detach = attachVisibilityPause(holder);
   detachers.push(detach);
   return detach;
 }
@@ -30,11 +30,6 @@ function setVisibility(state: DocumentVisibilityState): void {
 }
 
 const pausedFlags = (p: Presenter) => p.getSnapshot().map((x) => x.paused);
-const phases = (p: Presenter) => p.getSnapshot().map((x) => x.phase);
-
-beforeEach(() => {
-  vi.useFakeTimers();
-});
 
 afterEach(() => {
   while (detachers.length > 0) {
@@ -42,110 +37,59 @@ afterEach(() => {
   }
   // Restore the prototype getter jsdom provides.
   delete (document as { visibilityState?: unknown }).visibilityState;
-  vi.useRealTimers();
-  vi.restoreAllMocks();
 });
 
+// The freeze itself is the holder's and is tested there; this
+// suite covers the source: what the document's visibility reports.
 describe('attachVisibilityPause', () => {
-  it('should freeze every running toast when the document hides', () => {
-    const { t, p } = setup();
+  it('should hold when the document hides and release when it shows', () => {
+    const { t, p, holder } = setup();
     t.message('a');
-    t.message('b');
-    attach(p);
+    attach(holder);
 
     setVisibility('hidden');
-
-    expect(pausedFlags(p)).toEqual([true, true]);
-  });
-
-  it('should keep time still while hidden and resume on visible', () => {
-    const { t, p } = setup();
-    t.message('a');
-    attach(p);
-
-    setVisibility('hidden');
-    vi.advanceTimersByTime(60_000);
-    expect(phases(p)).toEqual(['active']);
-
-    setVisibility('visible');
-    expect(pausedFlags(p)).toEqual([false]);
-    vi.advanceTimersByTime(4000);
-    expect(phases(p)).toEqual(['leaving']);
-  });
-
-  it('should leave a foreign pause frozen after visible', () => {
-    const { t, p } = setup();
-    const hovered = t.message('hovered');
-    t.message('running');
-    const key = p.getSnapshot().find((x) => x.entry.id === hovered)!.key;
-    p.pause(key);
-    attach(p);
-
-    setVisibility('hidden');
-    setVisibility('visible');
-
-    const byKey = (k: string) => p.getSnapshot().find((x) => x.key === k)!;
-    expect(byKey(key).paused).toBe(true);
-    expect(p.getSnapshot().filter((x) => x.key !== key)[0]!.paused).toBe(false);
-  });
-
-  it('should freeze a toast that enters while hidden', () => {
-    const { t, p } = setup();
-    attach(p);
-
-    setVisibility('hidden');
-    t.message('from background work');
-
-    expect(pausedFlags(p)).toEqual([true]);
-    vi.advanceTimersByTime(60_000);
-    expect(phases(p)).toEqual(['active']);
-
-    setVisibility('visible');
-    expect(pausedFlags(p)).toEqual([false]);
-  });
-
-  it('should re-freeze a foreign resume while hidden and adopt it', () => {
-    const { t, p } = setup();
-    t.message('a');
-    p.pause();
-    attach(p);
-
-    setVisibility('hidden');
-    // A collapse timer scheduled before the tab left fires in the dark.
-    p.resume();
+    expect(holder.held()).toBe(true);
     expect(pausedFlags(p)).toEqual([true]);
 
     setVisibility('visible');
-    // The previous owner relinquished: now the freeze was ours to lift.
+    expect(holder.held()).toBe(false);
     expect(pausedFlags(p)).toEqual([false]);
   });
 
-  it('should freeze right away when attached into a hidden document', () => {
-    const { t, p } = setup();
-    t.message('a');
+  it('should hold right away when attached into a hidden document', () => {
+    const { holder } = setup();
     Object.defineProperty(document, 'visibilityState', {
       configurable: true,
       get: () => 'hidden',
     });
 
-    attach(p);
+    attach(holder);
 
-    expect(pausedFlags(p)).toEqual([true]);
+    expect(holder.held()).toBe(true);
   });
 
-  it('should thaw and stop listening on detach', () => {
-    const { t, p } = setup();
-    t.message('a');
-    const detach = attach(p);
+  it('should leave another source holding when the document shows', () => {
+    const { holder } = setup();
+    holder.hold('viewport');
+    attach(holder);
 
     setVisibility('hidden');
-    expect(pausedFlags(p)).toEqual([true]);
+    setVisibility('visible');
+
+    expect(holder.held()).toBe(true);
+  });
+
+  it('should release and stop listening on detach', () => {
+    const { holder } = setup();
+    const detach = attach(holder);
+
+    setVisibility('hidden');
+    expect(holder.held()).toBe(true);
 
     detach();
-    // Detaching must not strand frozen timers.
-    expect(pausedFlags(p)).toEqual([false]);
+    expect(holder.held()).toBe(false);
 
     setVisibility('hidden');
-    expect(pausedFlags(p)).toEqual([false]);
+    expect(holder.held()).toBe(false);
   });
 });
