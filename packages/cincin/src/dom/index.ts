@@ -30,6 +30,20 @@ export type {
   HotkeyOptions,
 } from './hotkey';
 export { createSwipeHandlers } from './swipe-handlers';
+export { createViewportController } from './viewport-controller';
+export type {
+  ViewportController,
+  ViewportOptions,
+} from './viewport-controller';
+export { createViewportHandlers } from './viewport-handlers';
+export type {
+  ViewportHandlers,
+  ElementEventLike,
+  FocusEventLike,
+  TargetEventLike,
+} from './viewport-handlers';
+export { attachViewport } from './attach-viewport';
+export type { AttachViewportOptions } from './attach-viewport';
 export type {
   SwipeHandlers,
   PointerEventLike,
