@@ -1,20 +1,35 @@
 import { createToaster } from 'cincin';
-import { usePresenter, useToasts } from 'cincin-react/core';
-import type { Presenter, Toast as Showing } from 'cincin-react/core';
+import type { ToastEntry } from 'cincin';
 import * as React from 'react';
 import * as Toast from '@radix-ui/react-toast';
 
 /**
- * A toaster drawn by Radix's Toast primitives.
+ * A toaster drawn by Radix's Toast primitives, over the bare entry store.
  *
- * The split is the whole example: Radix owns the interaction and the
- * accessibility — the live region and its announcer, the F8 hotkey, the
- * focus rotation, the swipe, Escape — and cincin owns the records and
- * the showing: the store, the queue, the expiry clocks, and the leaving
- * phase an exit animation needs. Nothing is built twice. Radix's own
- * `duration` timer stays off, and the pause it already detects (a
- * pointer over the stack, focus inside it, a blurred window) drives
- * cincin's clocks instead of a second set of listeners.
+ * Radix's Toast is already a presenter: it runs the expiry clock and
+ * pauses it while the stack is being read (a pointer over it, focus
+ * inside it, a blurred window), it plays a card's exit before unmounting
+ * it, and it owns the accessibility — the live region and its announcer,
+ * the F8 hotkey, the focus rotation, the swipe, Escape. So this example
+ * subscribes to the records and stops there: no `cincin/presenter`, no
+ * second clock, no second set of listeners.
+ *
+ * Two things go with the presenter, and they are worth knowing before
+ * copying this:
+ *
+ * - A record removed from app code (`toaster.remove(id)`, the page's
+ *   "Dismiss all") takes its card with it. Radix plays an exit per card,
+ *   and a card React has already unmounted plays nothing. Keeping the
+ *   showing alive as a ghost until its exit is over is precisely what
+ *   the presenter is for.
+ * - Radix restarts its clock only when the `duration` prop changes
+ *   value, so a toast morphed in place inherits what is left of the
+ *   original span instead of the fresh one the presenter would hand it.
+ *
+ * The Motion example next door drops the presenter too and has neither
+ * problem: `AnimatePresence` owns the exit for the whole list, so the
+ * ghost comes for free there. Radix owns it per card, which is where
+ * the difference comes from.
  */
 
 interface ToastAction {
@@ -31,50 +46,34 @@ interface ToastContent {
   action?: ToastAction;
 }
 
-/** Declared once: the presenter finishes a leaving toast on this clock
- * (no animationend listener), and the stylesheet reads the same value
- * off the viewport to animate the exit. */
+/** The exit animation's length: the stylesheet reads it off the viewport,
+ * and a closing card holds its record back for exactly that long. */
 const EXIT_DURATION = 200;
+
+/** Cards on screen at once. The rest wait in the store. */
+const MAX = 3;
 
 /** The example-wide store: call it from anywhere on the page. */
 const toaster = createToaster<ToastContent>();
 
 function RadixToaster() {
-  const presenter = usePresenter(toaster, {
-    max: 3,
-    exitDuration: EXIT_DURATION,
-  });
-  const toasts = useToasts(presenter);
-  const [paused, setPaused] = React.useState(false);
-
-  // Radix decides when the stack is being read and says so per toast;
-  // cincin's clocks obey. `toasts` sits in the deps on purpose: a toast
-  // promoted out of the queue while the pointer rests on the stack has
-  // to start frozen too, and Radix will not announce a pause it already
-  // announced. Both calls are idempotent.
-  React.useEffect(() => {
-    if (paused) {
-      presenter.pause();
-    } else {
-      presenter.resume();
-    }
-  }, [presenter, paused, toasts]);
+  // The entry store is already an external store in React's sense:
+  // a stable snapshot swapped on every commit.
+  const entries = React.useSyncExternalStore(
+    toaster.subscribe,
+    toaster.getSnapshot,
+    toaster.getSnapshot
+  );
 
   return (
     <Toast.Provider label="Notification" swipeDirection="right">
-      {toasts
-        // A queued toast has no element: it is waiting for a slot.
-        .filter((toast) => toast.phase !== 'queued')
-        .map((toast) => (
-          <ToastCard
-            key={toast.key}
-            toast={toast}
-            presenter={presenter}
-            onPausedChange={setPaused}
-          />
-        ))}
+      {/* The queue, for free: an entry with no card has no Radix clock
+          either, so its span starts when a slot frees. */}
+      {entries.slice(0, MAX).map((entry) => (
+        <ToastCard key={entry.id} entry={entry} />
+      ))}
 
-      {/* Radix portals every toast in here, so the region keeps its
+      {/* Radix portals every card in here, so the region keeps its
           reading order no matter where the cards are rendered. */}
       <Toast.Viewport
         className="toasts"
@@ -88,17 +87,16 @@ function RadixToaster() {
   );
 }
 
-function ToastCard({
-  toast,
-  presenter,
-  onPausedChange,
-}: {
-  toast: Showing<ToastContent>;
-  presenter: Presenter<ToastContent>;
-  onPausedChange: (paused: boolean) => void;
-}) {
-  const { entry } = toast;
+function ToastCard({ entry }: { entry: ToastEntry<ToastContent> }) {
   const { title, description, action } = entry.content;
+
+  // Open is controlled so that a create over this id can reopen a card
+  // already on its way out: cincin reads a create as "show it", and an
+  // uncontrolled Radix toast would stay closed until it is remounted.
+  const [open, setOpen] = React.useState(true);
+  React.useEffect(() => {
+    setOpen(true);
+  }, [entry.updatedAt]);
 
   // Radix has no notion of a locked toast (a pending promise), so the
   // ways out are stopped at the source for one: no swipe, no Escape.
@@ -115,29 +113,28 @@ function ToastCard({
       data-type={entry.type}
       // An error interrupts; everything else is announced politely.
       type={entry.type === 'error' ? 'foreground' : 'background'}
-      // One clock, and it is cincin's: it rewinds when a toast morphs in
-      // place, banks its remainder while paused, and does not start at
-      // all until the queue lets the toast on screen. Radix restarts its
-      // own timer only when the `duration` prop changes value, so with
-      // both running the staler one would win — the Undo confirmation,
-      // morphed into a card that has already spent three of its four
-      // seconds, would be cut to one. Hence Infinity: Radix reads that
-      // as "no timer" and leaves the expiry to the presenter.
-      duration={Infinity}
-      // The entry is gone the moment it is removed; the presenter keeps
-      // the showing alive as a ghost so the exit can play, and that is
-      // exactly what `open` animates.
-      open={toast.phase !== 'leaving'}
-      onOpenChange={(open) => {
-        // Radix asks to close (the cross, a swipe, Escape); cincin
-        // decides what it means: the toast starts leaving, and the
-        // entry goes once the exit is finished.
-        if (!open) {
-          presenter.dismiss(toast.key);
+      // The only clock here. `Infinity` — a sticky toast, or the pending
+      // phase of a promise — reads as "no timer" to Radix.
+      duration={entry.duration}
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) {
+          return;
         }
+
+        // The card is playing its exit; the record leaves when that is
+        // over, unless a create reopened the card in the meantime.
+        const closedAt = entry.updatedAt;
+        window.setTimeout(() => {
+          const live = toaster
+            .getSnapshot()
+            .find((candidate) => candidate.id === entry.id);
+          if (live?.updatedAt === closedAt) {
+            toaster.remove(entry.id);
+          }
+        }, EXIT_DURATION);
       }}
-      onPause={() => onPausedChange(true)}
-      onResume={() => onPausedChange(false)}
       onEscapeKeyDown={lockIfNeeded}
       onSwipeStart={lockIfNeeded}
       onSwipeMove={lockIfNeeded}
@@ -153,7 +150,7 @@ function ToastCard({
         )}
       </div>
       {action !== undefined && (
-        // A click on an action closes the toast, unless the handler
+        // A click on an action closes the card, unless the handler
         // prevents the event: the Undo scenario does exactly that to
         // morph the same card into its confirmation.
         <Toast.Action

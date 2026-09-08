@@ -28,10 +28,12 @@ const scenarios: Array<[label: string, run: () => void]> = [
       ),
   ],
   [
-    // The click would close the toast, exactly like the cross does;
+    // The click would close the card, exactly like the cross does;
     // preventing it lets the confirmation morph the same card in place
-    // instead. The type change to success also rewinds the clock, so
-    // the answer gets its own four seconds.
+    // instead. The clock is Radix's here, and it restarts only when the
+    // `duration` prop changes value: both types run on the same four
+    // seconds, so the confirmation inherits what is left of them rather
+    // than starting a fresh span the way `cincin/presenter` would.
     'Undo',
     () => {
       const toastId = toaster.message({
@@ -49,7 +51,9 @@ const scenarios: Array<[label: string, run: () => void]> = [
   ],
   [
     // The pending phase is locked: no cross, no swipe, no Escape, and
-    // no expiry either. It leaves when the promise settles.
+    // no expiry either. It leaves when the promise settles, and the
+    // settled card does get a full four seconds: the duration went from
+    // Infinity to a number, which is Radix's cue to start a clock.
     'Promise',
     () =>
       void toaster
@@ -75,7 +79,14 @@ const scenarios: Array<[label: string, run: () => void]> = [
       }
     },
   ],
-  ['Dismiss all', () => toaster.remove()],
+  [
+    // The one place the missing presenter shows: removing the records
+    // takes their cards with them, with no exit to play. Radix animates
+    // a card out on its way to closing, and these are gone from the
+    // tree before that starts.
+    'Dismiss all',
+    () => toaster.remove(),
+  ],
 ];
 
 function App() {
@@ -83,7 +94,7 @@ function App() {
     <main>
       <h1>🥂 cincin · radix ui</h1>
       <p>
-        cincin's store and <code>cincin/presenter</code> behind{' '}
+        cincin's bare entry store behind{' '}
         <a
           href="https://www.radix-ui.com/primitives/docs/components/toast"
           target="_blank"
@@ -91,10 +102,12 @@ function App() {
         >
           Radix Toast
         </a>
-        : Radix brings the live region, the swipe, Escape and the <kbd>F8</kbd>{' '}
-        hotkey that focuses the stack, cincin brings the records, the queue
-        (three at a time here), the clocks and the leaving phase the exit
-        animation plays on. Hover the stack, or leave the tab, to pause it.
+        , no <code>cincin/presenter</code>: Radix already runs the clocks and
+        the pauses, plays each card's exit, and owns the live region, the swipe,
+        Escape and the <kbd>F8</kbd> hotkey that focuses the stack. cincin keeps
+        the records and their vocabulary — types, promises, morphing a live
+        toast in place — and the queue is a <code>slice</code> away, three at a
+        time here. Hover the stack, or leave the tab, to pause it.
       </p>
       <section>
         {scenarios.map(([label, run]) => (

@@ -161,9 +161,6 @@ importers:
       cincin:
         specifier: workspace:*
         version: link:../../packages/cincin
-      cincin-react:
-        specifier: workspace:*
-        version: link:../../packages/cincin-react
       react:
         specifier: ^19.2.0
         version: 19.2.8

@@ -10,7 +10,6 @@
   "dependencies": {
     "@radix-ui/react-toast": "^1.2.23",
     "cincin": "workspace:*",
-    "cincin-react": "workspace:*",
     "react": "^19.2.0",
     "react-dom": "^19.2.8"
   },
