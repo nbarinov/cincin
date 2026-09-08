@@ -1,7 +1,7 @@
 import type { Presenter, PresenterHolder } from 'cincin/presenter';
 import { createViewportController, createViewportHandlers } from 'cincin/dom';
 import type { ViewportOptions as ControllerOptions } from 'cincin/dom';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useState } from 'preact/hooks';
 import { useSyncExternalStore } from '../shared/use-sync-external-store';
 
 type ViewportHandlers = {
@@ -83,7 +83,10 @@ function useViewport(options: ViewportOptions): Viewport {
     [presenter, controller]
   );
 
-  useEffect(
+  // Before paint, as the store bridge subscribes:
+  // Preact runs passive effects a frame later,
+  // and a clock must not tick under an open stack for that frame.
+  useLayoutEffect(
     function holdWhileOpen() {
       if (!expanded || holder === undefined) {
         return;
