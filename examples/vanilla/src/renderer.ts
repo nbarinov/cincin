@@ -1,8 +1,10 @@
 import {
   attachSwipe,
+  attachViewport,
   attachVisibilityPause,
   createSlotObserver,
   createStackLayout,
+  createViewportController,
 } from 'cincin/dom';
 import { createPresenter } from 'cincin/presenter';
 import type { Toaster } from 'cincin';
@@ -40,6 +42,11 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     body: (card) => card,
   });
   const mounted = new Map<ToastKey, MountedToast>();
+  // The stack's attention: open under the pointer or focus, folded a
+  // delay after both leave. The machine publishes `expanded`; the
+  // subscription below writes it to the region and holds the presenter
+  // while open. The listeners come from `attachViewport`.
+  const viewport = createViewportController({ collapseDelay: COLLAPSE_DELAY });
 
   // One value drives the whole exit story: the same number feeds the
   // presenter's exit clock above and, through this variable, every
@@ -143,7 +150,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   // the front marker comes with its exclusivity guarantees. Mirrors
   // the react skin.
   const applyInert = (element: HTMLElement, slot: StackSlot | undefined) => {
-    const expanded = region.dataset.expanded === 'true';
+    const expanded = viewport.getSnapshot();
     element.inert =
       slot === undefined || slot.leaving || (!expanded && !slot.front);
   };
@@ -167,13 +174,10 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
       }
     }
 
-    if (shown.length === 0 && region.dataset.expanded === 'true') {
-      // An emptied region has nothing to hover: reset the collapsed
-      // state (and the pause that came with it) right away, so the next
-      // toast arrives into a fresh stack with a live clock.
-      clearTimeout(collapseTimer);
-      region.dataset.expanded = 'false';
-      presenter.resume();
+    if (presenter.count() === 0) {
+      // An emptied viewport ends the hover: no mouseleave arrives for a
+      // stack that vanished under the pointer.
+      viewport.hover(false);
     }
 
     // DOM keeps the snapshot order (oldest first) for reading order;
@@ -210,118 +214,37 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   const controller = new AbortController();
   const { signal } = controller;
 
-  let collapseTimer: ReturnType<typeof setTimeout> | undefined;
-  let interacting = false;
-  // Pointer capture (a real swipe) suppresses boundary events, so the
-  // browser recomputes hover only on release: the gesture's mouseleave
-  // lands AFTER pointerup, when `interacting` is already down, and
-  // would collapse the stack the user is still cleaning up.
-  // lostpointercapture marks the gesture's end ahead of that leave:
-  // it arms a one-shot swallow, disarmed by the next enter/move
-  // (a live pointer back inside the region).
-  let swallowLeave = false;
-
-  const expand = () => {
-    swallowLeave = false;
-    clearTimeout(collapseTimer);
-    collapseTimer = undefined;
-    if (region.dataset.expanded !== 'true') {
-      region.dataset.expanded = 'true';
-      applyInertAll();
-    }
+  // The presenter is held while the stack is open: every toast paused
+  // on opening, a toast entering an open stack paused as it enters,
+  // and closing resumes. Anonymous pause, consumer-side hold (ADR-0011).
+  let release: (() => void) | undefined;
+  const hold = () => {
     presenter.pause();
-  };
-  const collapse = () => {
-    if (interacting) {
-      // Mid-gesture (a swipe drifting off the stack): stay expanded.
-      return;
-    }
+    const unsubscribeEntered = presenter.subscribe((event) => {
+      if (event.type === 'entered') {
+        presenter.pause(event.toast.key);
+      }
+    });
 
-    clearTimeout(collapseTimer);
-    collapseTimer = setTimeout(() => {
-      region.dataset.expanded = 'false';
-      applyInertAll();
+    release = () => {
+      release = undefined;
+      unsubscribeEntered();
       presenter.resume();
-    }, COLLAPSE_DELAY);
+    };
   };
+
   region.dataset.expanded = 'false';
-  region.addEventListener('mouseenter', expand, { signal });
-  // mousemove re-arms the expansion: boundary events can get lost when
-  // the hovered toast is removed from under the pointer.
-  region.addEventListener('mousemove', expand, { signal });
-  region.addEventListener(
-    'mouseleave',
-    () => {
-      if (swallowLeave) {
-        swallowLeave = false;
-        return;
-      }
+  const unsubscribeViewport = viewport.subscribe((expanded) => {
+    region.dataset.expanded = String(expanded);
+    applyInertAll();
 
-      collapse();
-    },
-    { signal }
-  );
-  region.addEventListener(
-    'lostpointercapture',
-    () => {
-      swallowLeave = true;
-    },
-    { signal }
-  );
-  // Focus mirrors hover for the keyboard: tabbing onto the front card's
-  // controls opens the stack, the collapsed backs join the tab order.
-  region.addEventListener('focusin', expand, { signal });
-  region.addEventListener(
-    'focusout',
-    (event) => {
-      if (region.contains(event.relatedTarget as Node | null)) {
-        return;
-      }
-
-      // A dismissed control drops focus to the body while the pointer
-      // still parks on the stack: the hover keeps the region open.
-      if (region.matches(':hover')) {
-        return;
-      }
-
-      collapse();
-    },
-    { signal }
-  );
-  region.addEventListener(
-    'pointerdown',
-    () => {
-      interacting = true;
-    },
-    { signal }
-  );
-  region.addEventListener(
-    'pointerup',
-    () => {
-      interacting = false;
-    },
-    { signal }
-  );
-  region.addEventListener(
-    'pointercancel',
-    () => {
-      interacting = false;
-    },
-    { signal }
-  );
-  // iOS Safari emits emulated mouse events only for taps on "clickable"
-  // targets: a tap on empty page space fires no mouseleave, and the
-  // expanded stack would never collapse. An explicit outside pointerdown
-  // covers that deterministically.
-  document.addEventListener(
-    'pointerdown',
-    (event) => {
-      if (!region.contains(event.target as Node)) {
-        collapse();
-      }
-    },
-    { signal }
-  );
+    if (expanded) {
+      hold();
+    } else {
+      release?.();
+    }
+  });
+  attachViewport(region, viewport, { signal });
 
   const unsubscribe = presenter.subscribe(() => {
     render();
@@ -334,8 +257,10 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   return () => {
     detachVisibilityPause();
     unsubscribe();
-    clearTimeout(collapseTimer);
     controller.abort();
+    unsubscribeViewport();
+    viewport.destroy();
+    release?.();
     delete region.dataset.expanded;
     region.style.removeProperty('--cincin-exit-duration');
 
