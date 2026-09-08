@@ -115,10 +115,14 @@ function ToastCard({
       data-type={entry.type}
       // An error interrupts; everything else is announced politely.
       type={entry.type === 'error' ? 'foreground' : 'background'}
-      // The clock is cincin's: it rewinds when a toast morphs in place,
-      // banks its remainder while paused, and does not start at all
-      // until the queue lets the toast on screen. Radix's timer would
-      // know none of that, so it stays off.
+      // One clock, and it is cincin's: it rewinds when a toast morphs in
+      // place, banks its remainder while paused, and does not start at
+      // all until the queue lets the toast on screen. Radix restarts its
+      // own timer only when the `duration` prop changes value, so with
+      // both running the staler one would win — the Undo confirmation,
+      // morphed into a card that has already spent three of its four
+      // seconds, would be cut to one. Hence Infinity: Radix reads that
+      // as "no timer" and leaves the expiry to the presenter.
       duration={Infinity}
       // The entry is gone the moment it is removed; the presenter keeps
       // the showing alive as a ghost so the exit can play, and that is
