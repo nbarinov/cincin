@@ -72,6 +72,7 @@ class Presenter<Content extends {} = string>
     this.pause = this.pause.bind(this);
     this.resume = this.resume.bind(this);
     this.getRemainingMs = this.getRemainingMs.bind(this);
+    this.count = this.count.bind(this);
     this.setOptions = this.setOptions.bind(this);
   }
 
@@ -308,6 +309,10 @@ class Presenter<Content extends {} = string>
     if (this.#store.count((t) => t.entry.id === id) === 0) {
       this.#toaster.remove(id);
     }
+  }
+
+  count(): number {
+    return this.#store.count();
   }
 
   getRemainingMs(key: ToastKey): number {

@@ -77,13 +77,11 @@ interface Presenter<Content extends {} = string> {
 
   finish(key: ToastKey): void;
 
+  count(): number;
+
   getSnapshot(): ReadonlyArray<Toast<Content>>;
   subscribe(listener: (event: ToastEvent<Content>) => void): () => void;
 
-  /** Starts showing: the toaster's current entries enter, the clocks run.
-   * Mounts are counted; the last unmount stops the clocks, drops every
-   * toast at once (no exits: there is no region to animate) and leaves
-   * the entry store untouched. */
   mount(): void;
   unmount(): void;
 }

@@ -31,6 +31,31 @@ describe('presenter', () => {
     vi.useRealTimers();
   });
 
+  describe('count', () => {
+    it('should count every showing, leaving ghosts included', () => {
+      const { t, p } = setup();
+      expect(p.count()).toBe(0);
+
+      t.message('a');
+      t.message('b');
+      expect(p.count()).toBe(2);
+
+      p.dismiss(keys(p)[0]!);
+      expect(p.count()).toBe(2);
+
+      p.finish(keys(p)[0]!);
+      expect(p.count()).toBe(1);
+    });
+
+    it('should count queued toasts too', () => {
+      const { t, p } = setup({ max: 1 });
+      t.message('a');
+      t.message('b');
+      expect(phases(p)).toEqual(['active', 'queued']);
+      expect(p.count()).toBe(2);
+    });
+  });
+
   describe('mount', () => {
     it('should show nothing until mounted', () => {
       const t = createToaster();
