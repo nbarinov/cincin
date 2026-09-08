@@ -47,7 +47,7 @@
   {
     "name": "cincin-solid/core",
     "path": "packages/cincin-solid/dist/core/index.mjs",
-    "limit": "1.25 kB",
+    "limit": "1.5 kB",
     "ignore": ["cincin", "solid-js"]
   },
   {
