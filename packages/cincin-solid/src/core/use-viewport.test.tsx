@@ -57,6 +57,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+// Lifecycle facts only: the attention rules live in the machine's
+// own suite in `cincin/dom` and are not restated here.
 describe('useViewport', () => {
   it('should start folded and open on mouse enter', () => {
     const { viewport } = setup();
@@ -64,16 +66,6 @@ describe('useViewport', () => {
 
     fireEvent.mouseEnter(viewport);
     expect(isExpanded(viewport)).toBe(true);
-  });
-
-  it('should fold a delay after the mouse leaves', () => {
-    const { viewport } = setup();
-    fireEvent.mouseEnter(viewport);
-    fireEvent.mouseLeave(viewport);
-
-    expect(isExpanded(viewport)).toBe(true);
-    vi.advanceTimersByTime(DELAY);
-    expect(isExpanded(viewport)).toBe(false);
   });
 
   it('should read the collapse delay from the options', () => {
@@ -115,24 +107,11 @@ describe('useViewport', () => {
     expect(paused(presenter)).toEqual([false]);
   });
 
-  it('should open on focus within and keep open through a mouse leave', () => {
+  it('should open on focus within', () => {
+    // Focus does not bubble: the adapter maps the bubbling pair.
     const { viewport, inside } = setup();
     inside.focus();
     expect(isExpanded(viewport)).toBe(true);
-
-    fireEvent.mouseEnter(viewport);
-    fireEvent.mouseLeave(viewport);
-    vi.advanceTimersByTime(DELAY);
-    expect(isExpanded(viewport)).toBe(true);
-  });
-
-  it('should fold after focus leaves the stack', () => {
-    const { viewport, inside } = setup();
-    inside.focus();
-    inside.blur();
-
-    vi.advanceTimersByTime(DELAY);
-    expect(isExpanded(viewport)).toBe(false);
   });
 
   it('should fold on a pointerdown outside the stack', () => {
@@ -142,16 +121,6 @@ describe('useViewport', () => {
     fireEvent.pointerDown(document.body);
     vi.advanceTimersByTime(DELAY);
     expect(isExpanded(viewport)).toBe(false);
-  });
-
-  it('should stay open on a pointerdown inside the stack', () => {
-    const { viewport, inside } = setup();
-    fireEvent.mouseEnter(viewport);
-
-    fireEvent.pointerDown(inside);
-    fireEvent.pointerUp(inside);
-    vi.advanceTimersByTime(DELAY);
-    expect(isExpanded(viewport)).toBe(true);
   });
 
   it('should stop listening to the document on unmount', () => {

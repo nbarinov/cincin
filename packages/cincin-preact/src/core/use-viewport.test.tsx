@@ -60,6 +60,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+// Lifecycle facts only: the attention rules live in the machine's
+// own suite in `cincin/dom` and are not restated here.
 describe('useViewport', () => {
   it('should start folded and open on mouse enter', async () => {
     const { viewport } = setup();
@@ -69,22 +71,6 @@ describe('useViewport', () => {
       fireEvent.mouseEnter(viewport);
     });
     expect(isExpanded(viewport)).toBe(true);
-  });
-
-  it('should fold a delay after the mouse leaves', async () => {
-    const { viewport } = setup();
-    await act(() => {
-      fireEvent.mouseEnter(viewport);
-    });
-    await act(() => {
-      fireEvent.mouseLeave(viewport);
-    });
-
-    expect(isExpanded(viewport)).toBe(true);
-    await act(() => {
-      vi.advanceTimersByTime(DELAY);
-    });
-    expect(isExpanded(viewport)).toBe(false);
   });
 
   it('should read the collapse delay from the options', async () => {
@@ -144,39 +130,13 @@ describe('useViewport', () => {
     expect(paused(presenter)).toEqual([false]);
   });
 
-  it('should open on focus within and keep open through a mouse leave', async () => {
+  it('should open on focus within', async () => {
+    // Focus does not bubble: the adapter maps the bubbling pair.
     const { viewport, view } = setup();
     await act(() => {
       view.getByTestId('inside').focus();
     });
     expect(isExpanded(viewport)).toBe(true);
-
-    await act(() => {
-      fireEvent.mouseEnter(viewport);
-    });
-    await act(() => {
-      fireEvent.mouseLeave(viewport);
-    });
-    await act(() => {
-      vi.advanceTimersByTime(DELAY);
-    });
-    expect(isExpanded(viewport)).toBe(true);
-  });
-
-  it('should fold after focus leaves the stack', async () => {
-    const { viewport, view } = setup();
-    const inside = view.getByTestId('inside');
-    await act(() => {
-      inside.focus();
-    });
-    await act(() => {
-      inside.blur();
-    });
-
-    await act(() => {
-      vi.advanceTimersByTime(DELAY);
-    });
-    expect(isExpanded(viewport)).toBe(false);
   });
 
   it('should fold on a pointerdown outside the stack', async () => {
@@ -192,24 +152,6 @@ describe('useViewport', () => {
       vi.advanceTimersByTime(DELAY);
     });
     expect(isExpanded(viewport)).toBe(false);
-  });
-
-  it('should stay open on a pointerdown inside the stack', async () => {
-    const { viewport, view } = setup();
-    await act(() => {
-      fireEvent.mouseEnter(viewport);
-    });
-
-    await act(() => {
-      fireEvent.pointerDown(view.getByTestId('inside'));
-    });
-    await act(() => {
-      fireEvent.pointerUp(view.getByTestId('inside'));
-    });
-    await act(() => {
-      vi.advanceTimersByTime(DELAY);
-    });
-    expect(isExpanded(viewport)).toBe(true);
   });
 
   it('should stop listening to the document on unmount', async () => {
