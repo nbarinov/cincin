@@ -1,8 +1,9 @@
 import { createSlotObserver } from 'cincin/dom';
 import type { StackLayout, StackSlot } from 'cincin/dom';
 import type { ToastKey } from 'cincin/presenter';
-import { onScopeDispose, shallowRef, toValue, watch } from 'vue';
+import { toValue, watch } from 'vue';
 import type { MaybeRefOrGetter, Ref } from 'vue';
+import { useSnapshot } from '../shared/use-snapshot';
 
 type SlotOptions = {
   layout: StackLayout;
@@ -24,15 +25,7 @@ function useSlot(
   const { layout, key } = options;
   const observer = createSlotObserver(layout, { key });
 
-  const slot = shallowRef(observer.getSnapshot());
-
-  if (typeof window !== 'undefined') {
-    onScopeDispose(
-      observer.subscribe(() => {
-        slot.value = observer.getSnapshot();
-      })
-    );
-  }
+  const slot = useSnapshot(observer);
 
   // Sync, not post: the layout protocol wants every card registered
   // before the region's post-flush `setEntries` pass (the pass skips

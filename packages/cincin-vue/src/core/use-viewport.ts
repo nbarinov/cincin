@@ -5,12 +5,12 @@ import {
   onMounted,
   onScopeDispose,
   onUnmounted,
-  shallowRef,
   toValue,
   watch,
   watchEffect,
 } from 'vue';
 import type { MaybeRefOrGetter, Ref } from 'vue';
+import { useSnapshot } from '../shared/use-snapshot';
 
 type ViewportHandlers = {
   mouseenter: (event: MouseEvent) => void;
@@ -42,30 +42,23 @@ function useViewport<Content extends {}>(
     controller.setOptions(toValue(options) ?? {});
   });
 
-  const expanded = shallowRef(controller.getSnapshot());
+  const expanded = useSnapshot(controller);
 
-  if (typeof window !== 'undefined') {
-    onScopeDispose(
-      controller.subscribe((value) => {
-        expanded.value = value;
-      })
-    );
-
-    onScopeDispose(
-      presenter.subscribe(function endHoverWhenEmpty() {
-        if (presenter.count() === 0) {
-          controller.hover(false);
-        }
-      })
-    );
-  }
+  let unsubscribeEmpty: (() => void) | undefined;
 
   onMounted(function listenOutside() {
     document.addEventListener('pointerdown', viewport.document.pointerdown);
+    unsubscribeEmpty = presenter.subscribe(function endHoverWhenEmpty() {
+      if (presenter.count() === 0) {
+        controller.hover(false);
+      }
+    });
   });
 
   onUnmounted(() => {
     document.removeEventListener('pointerdown', viewport.document.pointerdown);
+    unsubscribeEmpty?.();
+    unsubscribeEmpty = undefined;
   });
 
   watch(
