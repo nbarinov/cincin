@@ -45,7 +45,9 @@ class ViewportController extends Subscribable<ViewportListener> {
   }
 
   setOptions(options: ViewportOptions): void {
-    this.#options = { ...this.#options, ...options };
+    this.#options = {
+      collapseDelay: options.collapseDelay ?? this.#options.collapseDelay,
+    };
   }
 
   hover(on: boolean): void {
