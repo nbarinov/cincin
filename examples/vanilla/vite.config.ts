@@ -1,11 +1,19 @@
+import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { defineConfig } from 'vite';
 
+// Sources where they exist, published dist where they do not: the
+// workspace symlink carries src, a copy of this folder does not.
+// DIST=1 forces dist here too.
+const packageDir = dirname(
+  createRequire(import.meta.url).resolve('cincin/package.json')
+);
+const useSource =
+  process.env.DIST === undefined && existsSync(join(packageDir, 'src'));
+
 export default defineConfig({
-  resolve: {
-    // Follow the workspace "source" condition: the example runs on the
-    // library sources directly, no dist build required.
-    conditions: ['source'],
-  },
+  resolve: useSource ? { conditions: ['source'] } : {},
   server: {
     strictPort: true,
     // Expose on the LAN so the example can be tested from a phone.

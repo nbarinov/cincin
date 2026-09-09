@@ -1,8 +1,20 @@
 {
-  "extends": "../../tsconfig.base.json",
+  // Self-contained: this folder also runs on its own, where an extends
+  // on the repository root resolves to nothing. `pnpm check` holds it
+  // to tsconfig.base.json.
   "include": ["src", "vite.config.ts"],
   "compilerOptions": {
+    "target": "es2022",
     "lib": ["es2023", "dom", "dom.iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "customConditions": ["source"],
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "noEmit": true,
     "types": ["vite/client"]
   }
 }

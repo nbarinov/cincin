@@ -7,7 +7,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "check": "pnpm format:check && pnpm lint && pnpm -r typecheck && pnpm test && pnpm -r build && node scripts/probe-core.mjs && pnpm size",
+    "check": "pnpm format:check && pnpm lint && pnpm -r typecheck && pnpm test && pnpm -r build && node scripts/probe-core.mjs && node scripts/probe-examples.mjs && pnpm size",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint --deny-warnings",

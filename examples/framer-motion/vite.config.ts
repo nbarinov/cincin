@@ -1,14 +1,21 @@
+import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-// Follow the workspace "source" condition: the example runs on the
-// library sources directly, no dist build required. Set DIST=1 to
-// exercise the built packages instead, the way consumers get them.
-const useDist = process.env.DIST !== undefined;
+// Sources where they exist, published dist where they do not: the
+// workspace symlink carries src, a copy of this folder does not.
+// DIST=1 forces dist here too.
+const packageDir = dirname(
+  createRequire(import.meta.url).resolve('cincin/package.json')
+);
+const useSource =
+  process.env.DIST === undefined && existsSync(join(packageDir, 'src'));
 
 export default defineConfig({
   plugins: [react()],
-  resolve: useDist ? {} : { conditions: ['source'] },
+  resolve: useSource ? { conditions: ['source'] } : {},
   server: {
     port: 5177,
     strictPort: true,

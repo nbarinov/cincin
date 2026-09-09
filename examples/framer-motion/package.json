@@ -8,7 +8,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "cincin": "workspace:*",
+    "cincin": "^0.1.0",
     "motion": "^12.23.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.8"
