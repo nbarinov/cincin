@@ -46,6 +46,20 @@ export type {
 export { attachViewport } from './attach-viewport';
 export { attachViewportBox } from './attach-viewport-box';
 export type { AttachViewportOptions } from './attach-viewport';
+export { createFocusLoopController } from './focus-loop-controller';
+export type {
+  FocusLoopController,
+  FocusLoopEntry,
+} from './focus-loop-controller';
+export { createFocusLoopHandlers } from './focus-loop-handlers';
+export type {
+  FocusLoopHandlers,
+  FocusInEventLike,
+  FocusOutEventLike,
+  KeyEventLike,
+} from './focus-loop-handlers';
+export { attachFocusLoop } from './attach-focus-loop';
+export type { AttachFocusLoopOptions } from './attach-focus-loop';
 export type {
   SwipeHandlers,
   PointerEventLike,

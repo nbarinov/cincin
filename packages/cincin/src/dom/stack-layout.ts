@@ -159,9 +159,35 @@ class StackLayout extends Subscribable<StackSlotListener> {
     return this.#box;
   }
 
-  /** Mirrors the rendered list. Call it after the current composition's
+  getCard(key: ToastKey): HTMLElement | undefined {
+    return this.#cards.get(key);
+  }
+
+  keyOf(node: Node): ToastKey | undefined {
+    for (const [key, element] of this.#cards) {
+      if (element.contains(node)) {
+        return key;
+      }
+    }
+
+    return undefined;
+  }
+
+  getFront(): HTMLElement | null {
+    for (const [key, slot] of this.#slots) {
+      if (slot.front) {
+        return this.#cards.get(key) ?? null;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Mirrors the rendered list. Call it after the current composition's
    * cards are registered; a card registered later is caught up by its
-   * body's first size delivery. */
+   * body's first size delivery.
+   */
   setEntries(entries: ReadonlyArray<StackLayoutEntry>): void {
     // Departure is decided here, by the data, never by node lifecycles:
     // ref cleanups re-run while a card is alive, the rendered list
@@ -201,12 +227,14 @@ class StackLayout extends Subscribable<StackSlotListener> {
     this.#apply();
   }
 
-  /** Registers a card's element; `null` on unmount. Registration is
+  /**
+   * Registers a card's element; `null` on unmount. Registration is
    * silent: the pass runs on `setEntries`, size deliveries and options
    * changes, when the composition is complete. Detaching deliberately
    * leaves the body observation alone: ref cleanups re-run while a
-   * card is alive (StrictMode replays), and only the data (a key
-   * leaving `setEntries`) decides that a body is truly gone. */
+   * card is alive (StrictMode replays), and only the data
+   * (a key leaving `setEntries`) decides that a body is truly gone.
+   */
   setCard(key: ToastKey, element: HTMLElement | null): void {
     if (element === null) {
       this.#cards.delete(key);
@@ -242,9 +270,11 @@ class StackLayout extends Subscribable<StackSlotListener> {
     }
   }
 
-  /** Re-locates the card's body on every pass: a body replaced by a
+  /**
+   * Re-locates the card's body on every pass: a body replaced by a
    * content re-render moves under observation on the same commit's
-   * pass, so the watched node can never go stale. */
+   * pass, so the watched node can never go stale.
+   */
   #syncBody(key: ToastKey, card: HTMLElement): void {
     const body = this.#bodyOf(card);
     const observed = this.#bodies.get(key);

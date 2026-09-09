@@ -133,6 +133,39 @@ describe('createStackLayout', () => {
     );
   });
 
+  it('resolves a node to the key of the card holding it', () => {
+    const layout = createStackLayout();
+    const a = mount(layout, 'a');
+
+    expect(layout.keyOf(a.card)).toBe(key('a'));
+    expect(layout.keyOf(a.body)).toBe(key('a'));
+    expect(layout.keyOf(document.body)).toBeUndefined();
+  });
+
+  it('hands out the live front card and null while nothing is live', () => {
+    const layout = createStackLayout();
+    const a = mount(layout, 'a');
+    const b = mount(layout, 'b');
+
+    expect(layout.getFront()).toBeNull();
+
+    layout.setEntries([
+      { key: key('a'), leaving: false },
+      { key: key('b'), leaving: false },
+    ]);
+    expect(layout.getFront()).toBe(b.card);
+
+    // A leaving front sheds the marker in the same pass; the survivor takes it.
+    layout.setEntries([
+      { key: key('a'), leaving: false },
+      { key: key('b'), leaving: true },
+    ]);
+    expect(layout.getFront()).toBe(a.card);
+
+    layout.setEntries([{ key: key('b'), leaving: true }]);
+    expect(layout.getFront()).toBeNull();
+  });
+
   it('leaves height variables unwritten until a size is delivered', () => {
     const layout = createStackLayout();
     const a = mount(layout, 'a');
