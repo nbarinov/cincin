@@ -37,7 +37,6 @@ function handlersFor(loop: FocusLoopController) {
 }
 
 afterEach(() => {
-  vi.restoreAllMocks();
   document.body.innerHTML = '';
 });
 

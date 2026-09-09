@@ -1,22 +1,10 @@
 import { cleanup, render } from '@testing-library/preact';
 import { useStack } from './use-stack';
 
-/** jsdom lacks ResizeObserver; the layout tolerates silent stubs. */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 function Host() {
   const stack = useStack([]);
   return <ol data-testid="viewport" ref={stack.ref} />;
 }
-
-beforeEach(() => {
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
-});
 
 afterEach(() => {
   cleanup();

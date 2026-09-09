@@ -40,7 +40,6 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
-  vi.restoreAllMocks();
   document.body.innerHTML = '';
 });
 
@@ -302,13 +301,15 @@ describe('SwipeController caught spring', () => {
     const element = makeElement();
     const { controller } = makeController();
     catchSpringAt(controller, element, '12px 0px');
-    const animate = vi.spyOn(Element.prototype, 'animate');
+    const animate = vi.mocked(Element.prototype.animate);
 
     controller.start(element, point(1, 0));
     expect(controller.release(point(1, 0))).toBe('tap');
 
     expect(element.style.translate).toBe('0px 0px');
-    expect(animate).toHaveBeenCalledWith(
+    // The catch left its own call behind, so the assertion reads the
+    // last one: the way home.
+    expect(animate).toHaveBeenLastCalledWith(
       [{ translate: '12px 0px' }, { translate: '0px 0px' }],
       { duration: 300, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }
     );

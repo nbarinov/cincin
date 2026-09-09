@@ -8,6 +8,9 @@ export default defineConfig({
     name: 'react',
     environment: 'jsdom',
     globals: true,
+    restoreMocks: true,
+    clearMocks: true,
     include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['vitest.setup.ts'],
   },
 });

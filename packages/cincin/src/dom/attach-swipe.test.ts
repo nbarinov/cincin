@@ -44,7 +44,6 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
-  vi.restoreAllMocks();
   document.body.innerHTML = '';
 });
 
@@ -110,7 +109,7 @@ describe('attachSwipe', () => {
   it('should spring back below both thresholds', () => {
     const element = makeElement();
     const onDismiss = vi.fn();
-    const animate = vi.spyOn(Element.prototype, 'animate');
+    const animate = vi.mocked(Element.prototype.animate);
     attachSwipe(element, { onDismiss, onRemove: () => {} });
 
     // 20px total: distance misses the 45px gate, and the trailing 80ms
@@ -163,7 +162,7 @@ describe('attachSwipe', () => {
 
   it('should wire the release velocity into the fling duration and easing', () => {
     const element = makeElement();
-    const animate = vi.spyOn(Element.prototype, 'animate');
+    const animate = vi.mocked(Element.prototype.animate);
     attachSwipe(element, {
       onDismiss: () => {},
       onRemove: () => {},
@@ -322,7 +321,7 @@ describe('attachSwipe', () => {
 
     const element = makeElement();
     const onRemove = vi.fn();
-    const animate = vi.spyOn(Element.prototype, 'animate');
+    const animate = vi.mocked(Element.prototype.animate);
     attachSwipe(element, { onDismiss: () => {}, onRemove });
 
     drag(element, [

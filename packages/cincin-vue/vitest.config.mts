@@ -10,6 +10,9 @@ export default defineConfig({
     name: 'vue',
     environment: 'jsdom',
     globals: true,
+    restoreMocks: true,
+    clearMocks: true,
     include: ['src/**/*.test.ts'],
+    setupFiles: ['vitest.setup.ts'],
   },
 });
