@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from '@solidjs/testing-library';
+import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library';
 import { createToaster } from 'cincin';
 import { Toaster } from './toaster';
 import type { ToastAction, ToastContent, ToasterLabels } from './content';
@@ -77,6 +77,27 @@ describe('Toaster a11y', () => {
     );
     const close = getRegion().querySelector('[data-cincin-close]');
     expect(close!.getAttribute('aria-label')).toBe('Close');
+  });
+
+  it('should make the card a tab stop named by its title', () => {
+    const toaster = setup();
+    toaster.message({ title: 'Saved', description: 'Two copies kept' });
+
+    const card = screen.getByRole('status', {
+      name: 'Saved',
+      description: 'Two copies kept',
+    });
+    expect(card).toBe(getCards()[0]);
+    expect(card.tabIndex).toBe(0);
+  });
+
+  it('should name a lone-title card the same way', () => {
+    const toaster = setup();
+    toaster.message({ title: 'Saved' });
+
+    const card = screen.getByRole('status', { name: 'Saved' });
+    expect(card).toBe(getCards()[0]);
+    expect(card.hasAttribute('aria-describedby')).toBe(false);
   });
 
   it('should keep collapsed back cards inert and the front card live', () => {
