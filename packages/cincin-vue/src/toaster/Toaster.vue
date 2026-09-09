@@ -83,7 +83,9 @@ const live = computed(() =>
 
 const holder = usePresenterHolder(presenter);
 const { expanded, handlers } = useViewport({ presenter, holder });
-const { layout } = useStack(live, () => ({ visible: props.visible }));
+const { layout, ref: viewportRef } = useStack(live, () => ({
+  visible: props.visible,
+}));
 
 useVisibilityPause(holder);
 
@@ -108,6 +110,7 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
 <template>
   <section tabindex="-1" :aria-label="regionLabel">
     <ol
+      :ref="viewportRef"
       data-cincin-toaster
       :data-y="anchors.y"
       :data-x="anchors.x"
