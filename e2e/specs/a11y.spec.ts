@@ -67,3 +67,22 @@ test('the close button carries its label and works from the keyboard', async ({
   await page.keyboard.press('Enter');
   await expect(page.locator(TOAST)).toHaveCount(0);
 });
+
+test('tab reaches the card before its cross and hears the title', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByTestId('sticky').click();
+  await expect(page.locator(TOAST)).toHaveCount(1);
+
+  // Land on the card first: a screen reader hears the toast, not just
+  // "Dismiss, button".
+  const card = page.getByRole('status', { name: 'Sticky toast' });
+  await card.focus();
+  await expect(card).toBeFocused();
+
+  await page.keyboard.press('Tab');
+  await expect(
+    page.getByRole('button', { name: 'Dismiss', exact: true })
+  ).toBeFocused();
+});

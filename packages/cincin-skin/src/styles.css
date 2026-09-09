@@ -308,6 +308,7 @@
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
+[data-cincin-toast]:focus-visible,
 [data-cincin-action]:focus-visible,
 [data-cincin-close]:focus-visible {
   outline: 2px solid color-mix(in srgb, currentColor 60%, transparent);
