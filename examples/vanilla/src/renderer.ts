@@ -57,9 +57,12 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   const createCard = (key: ToastKey): MountedToast => {
     const element = document.createElement('li');
     element.className = 'toast';
+    element.tabIndex = 0;
 
     const content = document.createElement('p');
     content.className = 'toast-content';
+    content.id = `toast-${key}-content`;
+    element.setAttribute('aria-labelledby', content.id);
 
     const close = document.createElement('button');
     close.className = 'toast-close';
