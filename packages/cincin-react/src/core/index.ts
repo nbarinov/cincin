@@ -7,6 +7,7 @@ export { useStack } from './use-stack';
 export { useSlot } from './use-slot';
 export { useViewport } from './use-viewport';
 export { useHotkey } from './use-hotkey';
+export { useFocusLoop } from './use-focus-loop';
 export { useVisibilityPause } from './use-visibility-pause';
 export type {
   ToastSwipeOptions,
@@ -20,6 +21,11 @@ export type {
   ViewportOptions,
   ViewportHandlers,
 } from './use-viewport';
+export type {
+  FocusLoop,
+  FocusLoopOptions,
+  FocusLoopHandlers,
+} from './use-focus-loop';
 
 export { createToasterContext } from './context';
 
