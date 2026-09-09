@@ -1,26 +1,14 @@
-// Two ways an example can drift out of the repository it demos, both
-// invisible until someone opens the folder on its own.
-//
-// One: it names its cincin packages by published version, not by
-// `workspace:*`, so the folder also stands alone: opened in StackBlitz
-// or copied out of the repo, it installs from npm and runs. Inside the
-// workspace pnpm links the local copies over those ranges, which is
-// what keeps the source loop — but only while the range still matches
-// what the workspace ships. This probe fails the release that forgets
-// to move it, before a stale example quietly demos an old library.
-//
-// Two: its tsconfig spells the base config out instead of extending it,
-// because a standalone folder has no repository root above it to extend.
-// That copy is only honest while it still says what tsconfig.base.json
-// says, so the base stays the source of truth and this probe is what
-// makes it one.
+// An example has to work as a bare folder too, so it names published
+// versions and spells tsconfig.base.json out instead of extending it.
+// Both copies rot in silence; this fails the check when they stop
+// matching the workspace.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
-// The example tsconfigs carry whole-line comments and nothing fancier.
+// The tsconfigs carry whole-line comments and nothing fancier.
 const read = (path) =>
   JSON.parse(
     readFileSync(path, 'utf8')
@@ -56,8 +44,7 @@ for (const dir of dirs('examples')) {
   }
 }
 
-// `lib` is the one base option an example is expected to widen (the DOM);
-// anything else it adds — jsx, types — the base never spoke about.
+// `lib` is the one base option an example may widen, for the DOM.
 const base = read(join(root, 'tsconfig.base.json')).compilerOptions;
 
 for (const dir of dirs('examples')) {
