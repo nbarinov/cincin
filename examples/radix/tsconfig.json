@@ -5,7 +5,9 @@
   // one repository-flavoured line: inside the workspace it aims the
   // typecheck at the packages' TypeScript. Vite reads this file for the
   // target and the jsx settings and resolves modules on its own, so the
-  // condition costs a standalone copy nothing.
+  // condition costs a standalone copy nothing. The rest is
+  // tsconfig.base.json, spelled out; `pnpm check` fails when the two
+  // drift apart, so the base is still the one that decides.
   "include": ["src", "vite.config.ts"],
   "compilerOptions": {
     "target": "es2022",
