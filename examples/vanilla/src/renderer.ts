@@ -1,6 +1,7 @@
 import {
   attachSwipe,
   attachViewport,
+  attachViewportBox,
   attachVisibilityPause,
   createSlotObserver,
   createStackLayout,
@@ -228,6 +229,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     }
   });
   attachViewport(region, viewport, { signal });
+  const detachViewportBox = attachViewportBox(region, layout);
 
   const unsubscribe = presenter.subscribe(() => {
     render();
@@ -241,6 +243,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
     detachVisibilityPause();
     unsubscribe();
     controller.abort();
+    detachViewportBox();
     unsubscribeViewport();
     viewport.destroy();
     holder.release('viewport');
