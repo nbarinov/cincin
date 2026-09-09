@@ -1,5 +1,10 @@
 import type { Toaster as ToasterContract } from 'cincin';
-import type { StackLayout, StackSlot, SwipeDirection } from 'cincin/dom';
+import type {
+  Hotkey,
+  StackLayout,
+  StackSlot,
+  SwipeDirection,
+} from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
 import {
   For,
@@ -21,6 +26,8 @@ import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useSlot } from '../core/use-slot';
 import { useViewport } from '../core/use-viewport';
+import { useFocusLoop } from '../core/use-focus-loop';
+import { useHotkey } from '../core/use-hotkey';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent, ToasterLabels } from './content';
 import { createToastProjection } from './projection';
@@ -64,11 +71,20 @@ type ToasterProps = {
   exitDuration?: number;
   /** The skin's a11y vocabulary, one place for all toasts. */
   labels?: ToasterLabels;
+  /**
+   * Moves focus onto the front toast from anywhere on the page.
+   * `false` drops the shortcut; Tab and Escape still work.
+   *
+   * @default 'Alt+T'
+   */
+  hotkey?: Hotkey | false;
 };
+
+const DEFAULT_HOTKEY: Hotkey = 'Alt+T';
 
 function Toaster(props: ToasterProps) {
   const merged = mergeProps(
-    { visible: 3, max: Infinity, exitDuration: 400 },
+    { visible: 3, max: Infinity, exitDuration: 400, hotkey: DEFAULT_HOTKEY },
     props
   );
 
@@ -84,16 +100,20 @@ function Toaster(props: ToasterProps) {
   // memo reads every item's signal; the filter is cheap, and `For`
   // reconciles by the stable item identities anyway.
   const live = createMemo(() =>
-    projection().filter((item) => item.toast().phase !== 'queued')
+    projection()
+      .filter((item) => item.toast().phase !== 'queued')
+      .toReversed()
   );
 
   const holder = usePresenterHolder(presenter);
-  const viewport = useViewport({ presenter, holder });
   const { layout, ref: viewportRef } = useStack(
     () => live().map((item) => item.toast()),
-    () => ({ visible: merged.visible })
+    () => ({ visible: merged.visible, order: 'queue' })
   );
+  const viewport = useViewport({ presenter, holder });
+  const focusLoop = useFocusLoop({ layout });
 
+  useHotkey(() => ({ hotkey: merged.hotkey, onPress: focusLoop.loop.jump }));
   useVisibilityPause(holder);
 
   const direction = useDocumentDirection();
@@ -114,6 +134,8 @@ function Toaster(props: ToasterProps) {
     <section
       tabIndex={-1}
       aria-label={merged.labels?.region ?? 'Notifications'}
+      aria-keyshortcuts={merged.hotkey === false ? undefined : merged.hotkey}
+      {...focusLoop.handlers}
     >
       <ol
         ref={viewportRef}

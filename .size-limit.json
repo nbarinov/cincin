@@ -29,7 +29,7 @@
   {
     "name": "cincin-vue (toaster)",
     "path": "packages/cincin-vue/dist/index.mjs",
-    "limit": "4.75 kB",
+    "limit": "5 kB",
     "ignore": ["cincin", "vue"]
   },
   {
@@ -41,7 +41,7 @@
   {
     "name": "cincin-solid (toaster)",
     "path": "packages/cincin-solid/dist/index.mjs",
-    "limit": "4.75 kB",
+    "limit": "5 kB",
     "ignore": ["cincin", "solid-js"]
   },
   {
