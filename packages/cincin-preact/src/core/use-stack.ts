@@ -1,7 +1,8 @@
-import { createStackLayout } from 'cincin/dom';
+import { attachViewportBox, createStackLayout } from 'cincin/dom';
 import type { StackLayoutOptions } from 'cincin/dom';
 import type { Toast } from 'cincin/presenter';
-import { useLayoutEffect, useState } from 'preact/hooks';
+import type { RefCallback } from 'preact';
+import { useCallback, useLayoutEffect, useRef, useState } from 'preact/hooks';
 
 type StackOptions = StackLayoutOptions;
 
@@ -41,7 +42,17 @@ function useStack(
     [layout]
   );
 
-  return { layout };
+  const detach = useRef<(() => void) | undefined>(undefined);
+  const ref: RefCallback<HTMLElement> = useCallback(
+    (element) => {
+      detach.current?.();
+      detach.current =
+        element === null ? undefined : attachViewportBox(element, layout);
+    },
+    [layout]
+  );
+
+  return { layout, ref };
 }
 
 export { useStack };

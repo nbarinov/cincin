@@ -71,7 +71,7 @@ function Toaster({
   );
 
   const { expanded, handlers } = useViewport({ presenter, holder });
-  const stack = useStack(live, { visible });
+  const { layout, ref: viewportRef } = useStack(live, { visible });
 
   useVisibilityPause(holder);
 
@@ -89,6 +89,7 @@ function Toaster({
   return (
     <section tabIndex={-1} aria-label={regionLabel}>
       <ol
+        ref={viewportRef}
         data-cincin-toaster
         data-y={y}
         data-x={x}
@@ -101,7 +102,7 @@ function Toaster({
             key={toast.key}
             toast={toast}
             presenter={presenter}
-            layout={stack.layout}
+            layout={layout}
             expanded={expanded}
             swipeDirections={directions}
             closeLabel={closeLabel}
