@@ -46,9 +46,10 @@ controllers, [`cincin-react`](./packages/cincin-react),
 [`cincin-vue`](./packages/cincin-vue),
 [`cincin-solid`](./packages/cincin-solid) and
 [`cincin-preact`](./packages/cincin-preact) for the bindings, headless
-layers included. Runnable apps for every framework, including vanilla DOM
-and a [Motion](https://motion.dev)-driven renderer, are in
-[`examples/`](./examples).
+layers included. Runnable apps for every framework, including vanilla DOM,
+a [Motion](https://motion.dev)-driven renderer and one drawn by
+[Radix](https://www.radix-ui.com/primitives/docs/components/toast) Toast
+primitives, are in [`examples/`](./examples).
 
 cincin ships untranspiled modern JS as ESM only; `cincin-react` works with
 React 18 and newer.
