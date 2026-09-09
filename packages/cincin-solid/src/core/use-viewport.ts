@@ -44,11 +44,14 @@ function useViewport(options: MaybeAccessor<ViewportOptions>): Viewport {
   const expanded = createSnapshotAccessor(controller);
 
   onMount(function listenOutside() {
-    document.addEventListener('pointerdown', viewport.document.pointerdown);
+    const { pointerdown, pointerover } = viewport.document;
+    document.addEventListener('pointerdown', pointerdown);
+    document.addEventListener('pointerover', pointerover);
 
-    onCleanup(() =>
-      document.removeEventListener('pointerdown', viewport.document.pointerdown)
-    );
+    onCleanup(() => {
+      document.removeEventListener('pointerdown', pointerdown);
+      document.removeEventListener('pointerover', pointerover);
+    });
   });
 
   onMount(function endHoverWhenEmpty() {

@@ -61,15 +61,16 @@ function useViewport(options: ViewportOptions): Viewport {
 
   useEffect(
     function listenOutside() {
-      document.addEventListener('pointerdown', viewport.document.pointerdown);
+      const { pointerdown, pointerover } = viewport.document;
+      document.addEventListener('pointerdown', pointerdown);
+      document.addEventListener('pointerover', pointerover);
 
-      return () =>
-        document.removeEventListener(
-          'pointerdown',
-          viewport.document.pointerdown
-        );
+      return () => {
+        document.removeEventListener('pointerdown', pointerdown);
+        document.removeEventListener('pointerover', pointerover);
+      };
     },
-    [viewport.document.pointerdown]
+    [viewport.document]
   );
 
   useEffect(

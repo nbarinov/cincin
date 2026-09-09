@@ -51,6 +51,7 @@ function useViewport(options: MaybeRefOrGetter<ViewportOptions>): Viewport {
 
   onMounted(function listenOutside() {
     document.addEventListener('pointerdown', viewport.document.pointerdown);
+    document.addEventListener('pointerover', viewport.document.pointerover);
     unsubscribeEmpty = presenter.subscribe(function endHoverWhenEmpty() {
       if (presenter.count() === 0) {
         controller.hover(false);
@@ -60,6 +61,7 @@ function useViewport(options: MaybeRefOrGetter<ViewportOptions>): Viewport {
 
   onUnmounted(() => {
     document.removeEventListener('pointerdown', viewport.document.pointerdown);
+    document.removeEventListener('pointerover', viewport.document.pointerover);
     unsubscribeEmpty?.();
     unsubscribeEmpty = undefined;
   });

@@ -11,6 +11,9 @@ type FocusLoopHandlers<T extends HTMLElement> = {
   onFocus: (event: FocusEvent<T>) => void;
   onBlur: (event: FocusEvent<T>) => void;
   onKeyDown: (event: KeyboardEvent<T>) => void;
+  onPointerDown: () => void;
+  onPointerUp: () => void;
+  onPointerCancel: () => void;
 };
 
 type FocusLoop<T extends HTMLElement> = {
@@ -37,6 +40,9 @@ function useFocusLoop<T extends HTMLElement>(
         onFocus: element.focusin,
         onBlur: element.focusout,
         onKeyDown: element.keydown,
+        onPointerDown: element.pointerdown,
+        onPointerUp: element.pointerup,
+        onPointerCancel: element.pointercancel,
       },
     };
   });
