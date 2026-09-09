@@ -1,21 +1,25 @@
 import {
+  attachFocusLoop,
+  attachHotkey,
   attachSwipe,
   attachViewport,
   attachViewportBox,
   attachVisibilityPause,
+  createFocusLoopController,
   createSlotObserver,
   createStackLayout,
   createViewportController,
 } from 'cincin/dom';
 import { createPresenter, createPresenterHolder } from 'cincin/presenter';
 import type { Toaster } from 'cincin';
-import type { StackSlot } from 'cincin/dom';
+import type { Hotkey, StackSlot } from 'cincin/dom';
 import type { Toast, ToastKey } from 'cincin/presenter';
 
 const GAP = 12;
 const VISIBLE = 3;
 const MAX = 5;
 const COLLAPSE_DELAY = 200;
+const HOTKEY: Hotkey = 'Alt+T';
 /** Published as --cincin-exit-duration; the skin's motion rides it. */
 const EXIT_DURATION = 400;
 
@@ -38,6 +42,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   // itself here, this skin keeps natural heights) and publishes a slot
   // per key; the subscriptions below put the slots onto the cards.
   const layout = createStackLayout({
+    order: 'queue',
     visible: VISIBLE,
     gap: GAP,
     body: (card) => card,
@@ -168,9 +173,12 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   };
 
   const render = () => {
+    // Newest first, in the DOM as on the screen: Tab enters the front
+    // toast and walks back through the older ones.
     const shown = presenter
       .getSnapshot()
-      .filter((toast: Toast) => toast.phase !== 'queued');
+      .filter((toast: Toast) => toast.phase !== 'queued')
+      .toReversed();
 
     for (const [key, card] of mounted) {
       if (!shown.some((toast) => toast.key === key)) {
@@ -184,8 +192,7 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
       viewport.hover(false);
     }
 
-    // DOM keeps the snapshot order (oldest first) for reading order;
-    // the visual stack is the layout's business: the entries mirror
+    // The visual stack is the layout's business: the entries mirror
     // below hands it the composition, and each card's subscription
     // puts the resulting slot onto its element.
     shown.forEach((toast, index) => {
@@ -234,10 +241,19 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   attachViewport(region, viewport, { signal });
   const detachViewportBox = attachViewportBox(region, layout);
 
+  // The keyboard's way in and out: the loop's edge is the landmark
+  // around the list, the hotkey is bound to its jump here.
+  const landmark = region.closest('section') ?? region;
+  const loop = createFocusLoopController(layout);
+  attachFocusLoop(landmark, loop, { signal });
+  attachHotkey(HOTKEY, loop.jump, { signal });
+  landmark.setAttribute('aria-keyshortcuts', HOTKEY);
+
   const unsubscribe = presenter.subscribe(() => {
     render();
   });
   presenter.mount();
+  loop.mount();
 
   const detachVisibilityPause = attachVisibilityPause(holder);
   render();
@@ -245,6 +261,8 @@ function mountToastRegion(toaster: Toaster, region: HTMLElement): () => void {
   return () => {
     detachVisibilityPause();
     unsubscribe();
+    loop.unmount();
+    landmark.removeAttribute('aria-keyshortcuts');
     controller.abort();
     detachViewportBox();
     unsubscribeViewport();
