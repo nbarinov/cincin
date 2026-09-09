@@ -2,7 +2,7 @@ import type { Toaster as ToasterContract } from 'cincin';
 import type { StackLayout, StackSlot, SwipeDirection } from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
 import type { JSX } from 'preact';
-import { useMemo } from 'preact/hooks';
+import { useId, useMemo } from 'preact/hooks';
 import { outwardDirections } from 'cincin-skin';
 import type { ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../shared/use-document-direction';
@@ -140,12 +140,19 @@ function ToastCard({
   });
 
   const { title, description, actions, closeButton = true } = entry.content;
+  const described = description !== undefined;
+  const id = useId();
+  const titleId = `${id}-title`;
+  const descriptionId = `${id}-description`;
 
   return (
     <li
       role={
         entry.type === 'error' || entry.type === 'warning' ? 'alert' : 'status'
       }
+      tabIndex={0}
+      aria-labelledby={titleId}
+      aria-describedby={described ? descriptionId : undefined}
       data-cincin-toast
       data-type={entry.type}
       data-phase={phase}
@@ -169,16 +176,22 @@ function ToastCard({
         {TYPE_ICONS[entry.type]}
 
         <div data-cincin-content>
-          {description === undefined ? (
+          {described ? (
+            <>
+              <div id={titleId} data-cincin-title>
+                {title}
+              </div>
+              <div id={descriptionId} data-cincin-description>
+                {description}
+              </div>
+            </>
+          ) : (
             // A lone title reads better in body type: it takes the
             // description slot, and the bold title style stays reserved
-            // for two-line toasts.
-            <div data-cincin-description>{title}</div>
-          ) : (
-            <>
-              <div data-cincin-title>{title}</div>
-              <div data-cincin-description>{description}</div>
-            </>
+            // for two-line toasts. The id follows the text, not the slot.
+            <div id={titleId} data-cincin-description>
+              {title}
+            </div>
           )}
         </div>
 

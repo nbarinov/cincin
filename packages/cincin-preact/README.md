@@ -126,6 +126,16 @@ toast.message({
 });
 ```
 
+## Keyboard and screen readers
+
+Errors and warnings announce as `alert`, the rest as `status`. Each
+card is a tab stop of its own, named by its title and described by its
+description, so tabbing into the stack reads the toast before its
+controls; the cross and the actions follow in the order they render.
+Landing on a card opens the stack the way hover does, and the
+collapsed backs stay `inert` until then. The region is a landmark
+named by `labels.region`.
+
 ## Position
 
 ```tsx
