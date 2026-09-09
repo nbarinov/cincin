@@ -5,6 +5,9 @@
   --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
   --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
 
+  --peek: 14px;
+  --peek-number: 14;
+
   position: fixed;
   z-index: 999999999;
   width: 22rem;
@@ -38,6 +41,33 @@
 
   --toast-surface: light-dark(canvas, color-mix(in oklab, canvas 82%, white));
   --toast-edge: light-dark(rgb(20 20 15 / 0.09), rgb(255 255 255 / 0.09));
+}
+
+[data-cincin-toaster]::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  height: 1px;
+  transform: scaleY(
+    calc(
+      var(--cincin-stack-front-height, 0) + var(--cincin-stack-backs, 0) *
+        var(--peek-number)
+    )
+  );
+}
+
+[data-cincin-toaster][data-expanded='true']::before {
+  transform: scaleY(var(--cincin-stack-height, 0));
+}
+
+[data-cincin-toaster][data-y='bottom']::before {
+  bottom: 0;
+  transform-origin: bottom;
+}
+
+[data-cincin-toaster][data-y='top']::before {
+  top: 0;
+  transform-origin: top;
 }
 
 [data-cincin-toaster][data-y='bottom'] {
@@ -116,7 +146,7 @@
   display: grid;
   align-content: center;
   transform: translateY(
-      calc(var(--lift) * var(--cincin-toast-index) * 0.875rem)
+      calc(var(--lift) * var(--cincin-toast-index) * var(--peek))
     )
     scale(calc(1 - var(--cincin-toast-index) * 0.05));
   transition:

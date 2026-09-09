@@ -53,3 +53,25 @@ test('hover holds the whole stack, not just the hovered card', async ({
   await page.clock.fastForward(5000);
   await expect(toast).toHaveCount(0);
 });
+
+test('closing a middle card with the mouse keeps the stack open', async ({
+  page,
+}) => {
+  // The dismissed card turns inert at once: without a box on the
+  // viewport the pointer would be over nothing and the stack would fold.
+  for (let i = 0; i < 3; i += 1) {
+    await page.getByTestId('sticky').click();
+  }
+  const toast = page.locator(TOAST);
+  await expect(toast).toHaveCount(3);
+
+  await toast.last().hover();
+  await expect(page.locator(REGION)).toHaveAttribute('data-expanded', 'true');
+  await page.clock.fastForward(600);
+
+  await toast.nth(1).locator('[data-cincin-close]').click();
+  await page.clock.fastForward(900);
+
+  await expect(toast).toHaveCount(2);
+  await expect(page.locator(REGION)).toHaveAttribute('data-expanded', 'true');
+});
