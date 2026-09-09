@@ -1,11 +1,13 @@
 import type { Toaster } from 'cincin';
 
+type ScenarioAction = {
+  label: string;
+  onClick: (event: { preventDefault(): void }) => void;
+};
+
 type ScenarioContent = {
   title: string;
-  actions?: Array<{
-    label: string;
-    onClick: (event: { preventDefault(): void }) => void;
-  }>;
+  actions?: [ScenarioAction] | [ScenarioAction, ScenarioAction];
 };
 
 type ScenarioToaster = Pick<
