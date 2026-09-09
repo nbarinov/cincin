@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StackLayout, SwipeDirection } from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
-import { computed, useTemplateRef } from 'vue';
+import { computed, useId, useTemplateRef } from 'vue';
 import { useSlot } from '../core/use-slot';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastAction, ToastContent } from './content';
@@ -30,6 +30,10 @@ const { handlers: swipeHandlers, style: swipeStyle } = useToastSwipe({
 });
 
 const content = computed(() => props.toast.entry.content);
+const described = computed(() => content.value.description !== undefined);
+const id = useId();
+const titleId = `${id}-title`;
+const descriptionId = `${id}-description`;
 const typeIcon = computed(() => TYPE_ICONS[props.toast.entry.type]);
 
 // `true | undefined`, never `false`: where the inert property is not
@@ -81,6 +85,9 @@ function onAction(action: ToastAction, event: MouseEvent): void {
         ? 'alert'
         : 'status'
     "
+    tabindex="0"
+    :aria-labelledby="titleId"
+    :aria-describedby="described ? descriptionId : undefined"
     data-cincin-toast
     :data-type="toast.entry.type"
     :data-phase="toast.phase"
@@ -99,13 +106,15 @@ function onAction(action: ToastAction, event: MouseEvent): void {
       <component :is="typeIcon" v-if="typeIcon" />
 
       <div data-cincin-content>
-        <div v-if="content.description === undefined" data-cincin-description>
+        <template v-if="described">
+          <div :id="titleId" data-cincin-title>{{ content.title }}</div>
+          <div :id="descriptionId" data-cincin-description>
+            {{ content.description }}
+          </div>
+        </template>
+        <div v-else :id="titleId" data-cincin-description>
           {{ content.title }}
         </div>
-        <template v-else>
-          <div data-cincin-title>{{ content.title }}</div>
-          <div data-cincin-description>{{ content.description }}</div>
-        </template>
       </div>
 
       <button

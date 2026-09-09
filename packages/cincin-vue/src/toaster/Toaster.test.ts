@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from '@testing-library/vue';
+import { cleanup, fireEvent, render, screen } from '@testing-library/vue';
 import { createToaster } from 'cincin';
 import { nextTick } from 'vue';
 import Toaster from './Toaster.vue';
@@ -91,6 +91,29 @@ describe('Toaster a11y', () => {
     );
     const close = getRegion().querySelector('[data-cincin-close]');
     expect(close!.getAttribute('aria-label')).toBe('Close');
+  });
+
+  it('should make the card a tab stop named by its title', async () => {
+    const toaster = setup();
+    toaster.message({ title: 'Saved', description: 'Two copies kept' });
+    await nextTick();
+
+    const card = screen.getByRole('status', {
+      name: 'Saved',
+      description: 'Two copies kept',
+    });
+    expect(card).toBe(getCards()[0]);
+    expect(card.tabIndex).toBe(0);
+  });
+
+  it('should name a lone-title card the same way', async () => {
+    const toaster = setup();
+    toaster.message({ title: 'Saved' });
+    await nextTick();
+
+    const card = screen.getByRole('status', { name: 'Saved' });
+    expect(card).toBe(getCards()[0]);
+    expect(card.hasAttribute('aria-describedby')).toBe(false);
   });
 
   it('should keep collapsed back cards inert and the front card live', async () => {
