@@ -123,8 +123,8 @@ describe('Toaster a11y', () => {
     toaster.message({ title: 'new' });
     await flushEffects();
 
-    // DOM keeps the snapshot order: the oldest card first, the front last.
-    const [back, front] = getCards();
+    // DOM order is stack order: the front card first, the oldest last.
+    const [front, back] = getCards();
     expect(back!.hasAttribute('inert')).toBe(true);
     expect(front!.hasAttribute('inert')).toBe(false);
   });
@@ -136,7 +136,7 @@ describe('Toaster a11y', () => {
     toaster.message({ title: 'new' });
     await flushEffects();
 
-    const [back, front] = getCards();
+    const [front, back] = getCards();
     const close = front!.querySelector<HTMLElement>('[data-cincin-close]')!;
     close.focus();
     await nextTick();
@@ -152,7 +152,7 @@ describe('Toaster a11y', () => {
     toaster.message({ title: 'new' });
     await flushEffects();
 
-    const [back, front] = getCards();
+    const [front, back] = getCards();
     const close = front!.querySelector<HTMLElement>('[data-cincin-close]')!;
     close.focus();
     await nextTick();
@@ -175,7 +175,7 @@ describe('Toaster a11y', () => {
     const id = toaster.message({ title: 'new' });
     await nextTick();
 
-    const [, front] = getCards();
+    const [front] = getCards();
     const close = front!.querySelector<HTMLElement>('[data-cincin-close]')!;
     close.focus();
     await nextTick();

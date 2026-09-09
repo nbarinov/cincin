@@ -128,9 +128,14 @@ Errors and warnings announce as `alert`, the rest as `status`. Each
 card is a tab stop of its own, named by its title and described by its
 description, so tabbing into the stack reads the toast before its
 controls; the cross and the actions follow in the order they render.
-Landing on a card opens the stack the way hover does, and the
-collapsed backs stay `inert` until then. The region is a landmark
-named by `labels.region`.
+The front toast comes first: Tab enters the newest and walks back
+through the older ones. Landing on a card opens the stack the way
+hover does, and the collapsed backs stay `inert` until then.
+
+`Alt+T` moves focus onto the front toast from anywhere on the page
+(the `hotkey` prop changes or drops it), Escape hands it back to where
+it came from, and closing a toast from the keyboard passes the focus
+on to the next one. The region is a landmark named by `labels.region`.
 
 ## Position
 
@@ -166,6 +171,7 @@ explicit `swipe-directions` overrides the pairing.
 | `swipe-directions` | Which way a card can be flicked. Defaults to the position's outward edges.                                                                              |
 | `exit-duration`    | The exit animation's length in ms. One value drives the presenter's exit clock and, published as `--cincin-exit-duration`, the skin's motion durations. |
 | `labels`           | The skin's a11y vocabulary, `{ region, close }`. Defaults `'Notifications'` and `'Dismiss'`.                                                            |
+| `hotkey`           | The shortcut that moves focus onto the front toast, `'Alt+T'` by default; `false` drops it.                                                             |
 
 ## Advanced
 

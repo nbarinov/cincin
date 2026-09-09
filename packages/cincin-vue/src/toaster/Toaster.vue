@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Toaster as ToasterContract } from 'cincin';
-import type { SwipeDirection } from 'cincin/dom';
+import type { Hotkey, SwipeDirection } from 'cincin/dom';
 import { computed } from 'vue';
 import { outwardDirections } from 'cincin-skin';
 import type { ToasterPosition } from 'cincin-skin';
@@ -11,6 +11,8 @@ import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useViewport } from '../core/use-viewport';
+import { useFocusLoop } from '../core/use-focus-loop';
+import { useHotkey } from '../core/use-hotkey';
 import type { ToastContent, ToasterLabels } from './content';
 import { toast as defaultToaster } from './toast';
 import ToastCard from './ToastCard.vue';
@@ -63,12 +65,20 @@ const props = withDefaults(
      * @default 400
      */
     exitDuration?: number;
+    /**
+     * Moves focus onto the front toast from anywhere on the page.
+     * `false` drops the shortcut; Tab and Escape still work.
+     *
+     * @default 'Alt+T'
+     */
+    hotkey?: Hotkey | false;
   }>(),
   {
     toaster: () => defaultToaster,
     visible: 3,
     max: Infinity,
     exitDuration: 400,
+    hotkey: 'Alt+T',
   }
 );
 
@@ -78,15 +88,21 @@ const presenter = usePresenter(props.toaster, () => ({
 }));
 const toasts = useToasts(presenter);
 const live = computed(() =>
-  toasts.value.filter((toast) => toast.phase !== 'queued')
+  toasts.value.filter((toast) => toast.phase !== 'queued').toReversed()
 );
 
 const holder = usePresenterHolder(presenter);
-const { expanded, handlers } = useViewport({ presenter, holder });
 const { layout, ref: viewportRef } = useStack(live, () => ({
   visible: props.visible,
+  order: 'queue',
 }));
+const { expanded, handlers: viewportHandlers } = useViewport({
+  presenter,
+  holder,
+});
+const { loop, handlers: loopHandlers } = useFocusLoop({ layout });
 
+useHotkey(() => ({ hotkey: props.hotkey, onPress: loop.jump }));
 useVisibilityPause(holder);
 
 const direction = useDocumentDirection();
@@ -108,7 +124,12 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
 </script>
 
 <template>
-  <section tabindex="-1" :aria-label="regionLabel">
+  <section
+    tabindex="-1"
+    :aria-label="regionLabel"
+    :aria-keyshortcuts="hotkey === false ? undefined : hotkey"
+    v-on="loopHandlers"
+  >
     <ol
       :ref="viewportRef"
       data-cincin-toaster
@@ -116,7 +137,7 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
       :data-x="anchors.x"
       :data-expanded="expanded"
       :style="{ '--cincin-exit-duration': `${exitDuration}ms` }"
-      v-on="handlers"
+      v-on="viewportHandlers"
     >
       <ToastCard
         v-for="toast of live"
