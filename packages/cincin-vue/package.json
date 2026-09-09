@@ -1,7 +1,7 @@
 {
   "name": "cincin-vue",
   "version": "0.1.1",
-  "description": "🥂 Vue bindings for cincin: headless composables, primitives, ready-to-use skin",
+  "description": "\ud83e\udd42 Vue bindings for cincin: headless composables, primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
   "homepage": "https://cincin.nbarinov.io",
@@ -73,6 +73,7 @@
     "unplugin-vue": "^7.2.0",
     "vitest": "^4.1.10",
     "vue": "^3.5.41",
-    "vue-tsc": "^3.3.11"
+    "vue-tsc": "^3.3.11",
+    "cincin-skin": "workspace:*"
   }
 }

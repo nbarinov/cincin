@@ -5,6 +5,8 @@ import type { StackLayout, StackSlot, SwipeDirection } from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
 import * as React from 'react';
 import type { CSSProperties } from 'react';
+import { outwardDirections } from 'cincin-skin';
+import type { ToasterPosition } from 'cincin-skin';
 import { inertValue } from '../shared/inert';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
@@ -16,8 +18,6 @@ import { useSlot } from '../core/use-slot';
 import { useViewport } from '../core/use-viewport';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent, ToasterLabels } from './content';
-import { outwardDirections } from './position';
-import type { ToasterPosition } from './position';
 import { toast as defaultToaster } from './toast';
 import { CLOSE_ICON, TYPE_ICONS } from './icons';
 

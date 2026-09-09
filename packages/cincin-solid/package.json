@@ -1,7 +1,7 @@
 {
   "name": "cincin-solid",
   "version": "0.1.1",
-  "description": "🥂 Solid bindings for cincin: headless primitives, ready-to-use skin",
+  "description": "\ud83e\udd42 Solid bindings for cincin: headless primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
   "homepage": "https://cincin.nbarinov.io",
@@ -74,6 +74,7 @@
     "jsdom": "^30.0.1",
     "solid-js": "^1.9.15",
     "vite-plugin-solid": "^2.11.14",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "cincin-skin": "workspace:*"
   }
 }

@@ -32,6 +32,13 @@ One rule worth knowing: the core never touches the DOM. That is what
 lets a single store drive every adapter, so keep `document` and
 `window` out of `packages/cincin` unless you are in `dom/`.
 
+The bundled skin's stylesheet and position math live once, in
+`packages/cincin-skin`. It is a private workspace package: every
+adapter lists it as a devDependency and inlines it at build time, so
+it never reaches npm on its own (its name still shows in the published
+`devDependencies`, which is harmless). Edit the skin there, not in an
+adapter.
+
 Keep a pull request to one thing, and write what changed and why in
 your own words; AI in the loop is fine, as long as you understand and
 tested the result. Pull requests are squash merged, so the title is

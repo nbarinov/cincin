@@ -1,7 +1,7 @@
 {
   "name": "cincin-react",
   "version": "0.1.1",
-  "description": "🥂 React bindings for cincin: headless hook, primitives, ready-to-use skin",
+  "description": "\ud83e\udd42 React bindings for cincin: headless hook, primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
   "homepage": "https://cincin.nbarinov.io",
@@ -71,6 +71,7 @@
     "jsdom": "^30.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.8",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "cincin-skin": "workspace:*"
   }
 }

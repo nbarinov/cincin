@@ -11,6 +11,8 @@ import {
 } from 'solid-js';
 import type { JSX } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
+import { outwardDirections } from 'cincin-skin';
+import type { ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
 import { usePresenterHolder } from '../core/use-presenter-holder';
@@ -20,8 +22,6 @@ import { useSlot } from '../core/use-slot';
 import { useViewport } from '../core/use-viewport';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent, ToasterLabels } from './content';
-import { outwardDirections } from './position';
-import type { ToasterPosition } from './position';
 import { createToastProjection } from './projection';
 import { toast as defaultToaster } from './toast';
 import { CloseIcon, TYPE_ICONS } from './icons';

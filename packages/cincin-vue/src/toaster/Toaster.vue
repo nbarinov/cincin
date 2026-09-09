@@ -2,6 +2,8 @@
 import type { Toaster as ToasterContract } from 'cincin';
 import type { SwipeDirection } from 'cincin/dom';
 import { computed } from 'vue';
+import { outwardDirections } from 'cincin-skin';
+import type { ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../core/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
 import { usePresenterHolder } from '../core/use-presenter-holder';
@@ -10,8 +12,6 @@ import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useViewport } from '../core/use-viewport';
 import type { ToastContent, ToasterLabels } from './content';
-import { outwardDirections } from './position';
-import type { ToasterPosition } from './position';
 import { toast as defaultToaster } from './toast';
 import ToastCard from './ToastCard.vue';
 

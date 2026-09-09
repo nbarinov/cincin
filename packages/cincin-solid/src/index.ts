@@ -2,7 +2,7 @@
 // The stylesheet travels through the consumer's bundler via this
 // import, so one entry brings both the component and its skin. The
 // headless building blocks live in 'cincin-solid/core'.
-import './toaster/styles.css';
+import 'cincin-skin/styles.css';
 
 export { Toaster } from './toaster/toaster';
 export { toast } from './toaster/toast';
@@ -11,4 +11,4 @@ export type {
   ToastAction,
   ToasterLabels,
 } from './toaster/content';
-export type { ToasterPosition } from './toaster/position';
+export type { ToasterPosition } from 'cincin-skin';

@@ -1,7 +1,7 @@
 {
   "name": "cincin-preact",
   "version": "0.1.1",
-  "description": "🥂 Preact bindings for cincin: headless hooks, ready-to-use skin",
+  "description": "\ud83e\udd42 Preact bindings for cincin: headless hooks, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
   "homepage": "https://cincin.nbarinov.io",
@@ -69,6 +69,7 @@
     "jsdom": "^30.0.1",
     "preact": "^10.29.8",
     "preact-render-to-string": "^6.7.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "cincin-skin": "workspace:*"
   }
 }
