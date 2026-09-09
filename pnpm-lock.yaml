@@ -100,7 +100,7 @@ importers:
   examples/framer-motion:
     dependencies:
       cincin:
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../../packages/cincin
       motion:
         specifier: ^12.23.0
@@ -134,10 +134,10 @@ importers:
   examples/preact:
     dependencies:
       cincin:
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../../packages/cincin
       cincin-preact:
-        specifier: workspace:*
+        specifier: ^0.1.1
         version: link:../../packages/cincin-preact
       preact:
         specifier: ^10.29.8
@@ -159,7 +159,7 @@ importers:
         specifier: ^1.2.23
         version: 1.2.23(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       cincin:
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../../packages/cincin
       react:
         specifier: ^19.2.0
@@ -190,10 +190,10 @@ importers:
   examples/react:
     dependencies:
       cincin:
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../../packages/cincin
       cincin-react:
-        specifier: workspace:*
+        specifier: ^0.1.1
         version: link:../../packages/cincin-react
       react:
         specifier: ^19.2.0
@@ -224,10 +224,10 @@ importers:
   examples/solid:
     dependencies:
       cincin:
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../../packages/cincin
       cincin-solid:
-        specifier: workspace:*
+        specifier: ^0.1.1
         version: link:../../packages/cincin-solid
       solid-js:
         specifier: ^1.9.15
@@ -249,7 +249,7 @@ importers:
   examples/vanilla:
     dependencies:
       cincin:
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../../packages/cincin
     devDependencies:
       typescript:
@@ -262,10 +262,10 @@ importers:
   examples/vue:
     dependencies:
       cincin:
-        specifier: workspace:*
+        specifier: ^0.1.0
         version: link:../../packages/cincin
       cincin-vue:
-        specifier: workspace:*
+        specifier: ^0.1.1
         version: link:../../packages/cincin-vue
       vue:
         specifier: ^3.5.41

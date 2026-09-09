@@ -16,6 +16,11 @@ reproduce it. A fork of one of the apps in [`examples/`](./examples) is
 the quickest way to show it: the index there opens each one in
 StackBlitz, so a reproduction is a link, not a repository.
 
+An example names the published cincin versions rather than
+`workspace:*`, which is what lets that link work on a bare folder; the
+workspace links the local packages over them, so the source loop is
+unchanged. `pnpm check` fails if a release leaves the two out of step.
+
 ## Working in the repo
 
 `pnpm install`, then hack on the sources: the apps in `examples/` run

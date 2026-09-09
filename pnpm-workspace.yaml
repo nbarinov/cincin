@@ -3,6 +3,9 @@ packages:
   - examples/*
   - e2e
   - site
+
+linkWorkspacePackages: true
+preferWorkspacePackages: true
 allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:

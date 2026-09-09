@@ -8,8 +8,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "cincin": "workspace:*",
-    "cincin-preact": "workspace:*",
+    "cincin": "^0.1.0",
+    "cincin-preact": "^0.1.1",
     "preact": "^10.29.8"
   },
   "devDependencies": {

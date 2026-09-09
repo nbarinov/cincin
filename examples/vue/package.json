@@ -8,8 +8,8 @@
     "typecheck": "vue-tsc -p tsconfig.json"
   },
   "dependencies": {
-    "cincin": "workspace:*",
-    "cincin-vue": "workspace:*",
+    "cincin": "^0.1.0",
+    "cincin-vue": "^0.1.1",
     "vue": "^3.5.41"
   },
   "devDependencies": {
