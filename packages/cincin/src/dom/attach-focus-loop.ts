@@ -28,6 +28,9 @@ function attachFocusLoop(
   element.addEventListener('focusin', on.focusin, { signal });
   element.addEventListener('focusout', on.focusout, { signal });
   element.addEventListener('keydown', on.keydown, { signal });
+  element.addEventListener('pointerdown', on.pointerdown, { signal });
+  element.addEventListener('pointerup', on.pointerup, { signal });
+  element.addEventListener('pointercancel', on.pointercancel, { signal });
 
   return () => listeners.abort();
 }

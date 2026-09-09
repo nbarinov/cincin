@@ -1,4 +1,5 @@
 import type { FocusLoopController } from './focus-loop-controller';
+import { createPointerGesture } from './pointer-gesture';
 
 type FocusInEventLike = Pick<
   FocusEvent,
@@ -18,20 +19,26 @@ type FocusLoopHandlers<
     focusin(event: I): void;
     focusout(event: O): void;
     keydown(event: K): void;
+    pointerdown(): void;
+    pointerup(): void;
+    pointercancel(): void;
   };
 };
 
 /**
  * The event-to-fact translator, shared by the adapters. Decides here
- * whether a focus move crossed the stack's edge and reads the focus
- * modality off the focused node, so the machine never touches an
- * event; which card holds the node is the layout's question.
+ * whether a focus move crossed the stack's edge and whether a pointer
+ * placed the focus (the pointer events bubble up from the list), so
+ * the machine never touches an event; which card holds the node is
+ * the layout's question.
  */
 function createFocusLoopHandlers<
   I extends FocusInEventLike = FocusEvent,
   O extends FocusOutEventLike = FocusEvent,
   K extends KeyEventLike = KeyboardEvent,
 >(controller: FocusLoopController): FocusLoopHandlers<I, O, K> {
+  const pointer = createPointerGesture();
+
   return {
     element: {
       focusin(event) {
@@ -42,7 +49,7 @@ function createFocusLoopHandlers<
           origin:
             from instanceof HTMLElement && isOutside(event, from) ? from : null,
           target,
-          keyboard: target?.matches(':focus-visible') ?? false,
+          keyboard: !pointer.active(),
         });
       },
       focusout(event) {
@@ -57,6 +64,9 @@ function createFocusLoopHandlers<
           controller.escape();
         }
       },
+      pointerdown: pointer.pointerdown,
+      pointerup: pointer.pointerup,
+      pointercancel: pointer.pointercancel,
     },
   };
 }

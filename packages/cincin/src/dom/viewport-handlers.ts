@@ -1,3 +1,4 @@
+import { createPointerGesture } from './pointer-gesture';
 import type { ViewportController } from './viewport-controller';
 
 type ElementEventLike = Pick<Event, 'currentTarget'>;
@@ -27,6 +28,14 @@ type ViewportHandlers<
      * iOS Safari sends no mouseleave for a tap on empty page space.
      */
     pointerdown(event: TargetEventLike): void;
+    /**
+     * A pointerover outside the stack ends the hover too: Chromium
+     * drops the boundary events when the node under the pointer was
+     * removed (an action rewriting its toast takes its button away),
+     * and the mouseleave never comes; the entry into whatever is
+     * outside still does.
+     */
+    pointerover(event: TargetEventLike): void;
   };
 };
 
@@ -35,8 +44,11 @@ type ViewportHandlers<
  * The quirks of event plumbing live here, not in the machine:
  * the mouseleave a swipe's pointer capture delays past pointerup
  * (armed by lostpointercapture, one-shot, disarmed by the next enter or move),
- * the focusout that only moved focus within the stack, and
- * the document pointerdown that was on the stack after all.
+ * the focusout that only moved focus within the stack,
+ * the focusin a pointer placed (attention is keyboard focus: a focus
+ * that came with a click adds nothing to the hover it came with, and
+ * it ends whatever keyboard attention was inside), and
+ * the document pointerdown or pointerover that was on the stack after all.
  * The element is learned from the events themselves
  * (the stack can only open through one of them),
  * so the translator binds to nothing.
@@ -45,6 +57,7 @@ function createViewportHandlers<
   E extends ElementEventLike = Event,
   F extends FocusEventLike = FocusEvent,
 >(controller: ViewportController): ViewportHandlers<E, F> {
+  const pointer = createPointerGesture();
   let element: Node | null = null;
   let swallowLeave = false;
 
@@ -52,6 +65,18 @@ function createViewportHandlers<
     if (event.currentTarget instanceof Node) {
       element = event.currentTarget;
     }
+  };
+
+  const outside = (event: TargetEventLike): void => {
+    if (
+      event.target instanceof Node &&
+      element !== null &&
+      element.contains(event.target)
+    ) {
+      return;
+    }
+
+    controller.hover(false);
   };
 
   return {
@@ -84,19 +109,22 @@ function createViewportHandlers<
       },
       pointerdown(event) {
         bind(event);
+        pointer.pointerdown();
         controller.interact(true);
       },
       pointerup(event) {
         bind(event);
+        pointer.pointerup();
         controller.interact(false);
       },
       pointercancel(event) {
         bind(event);
+        pointer.pointercancel();
         controller.interact(false);
       },
       focusin(event) {
         bind(event);
-        controller.focus(true);
+        controller.focus(!pointer.active());
       },
       focusout(event) {
         bind(event);
@@ -113,17 +141,8 @@ function createViewportHandlers<
       },
     },
     document: {
-      pointerdown(event) {
-        if (
-          event.target instanceof Node &&
-          element !== null &&
-          element.contains(event.target)
-        ) {
-          return;
-        }
-
-        controller.hover(false);
-      },
+      pointerdown: outside,
+      pointerover: outside,
     },
   };
 }

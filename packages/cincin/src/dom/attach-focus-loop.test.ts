@@ -62,6 +62,12 @@ describe('attachFocusLoop', () => {
 
     outside.focus();
     expect(loop.exit).toHaveBeenCalledTimes(1);
+
+    stack.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    card.focus();
+    expect(loop.enter).toHaveBeenLastCalledWith(
+      expect.objectContaining({ keyboard: false })
+    );
   });
 
   it('should detach through the returned function', () => {

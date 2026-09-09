@@ -40,6 +40,7 @@ function attachViewport(
   element.addEventListener('focusin', on.focusin, { signal });
   element.addEventListener('focusout', on.focusout, { signal });
   document.addEventListener('pointerdown', outside.pointerdown, { signal });
+  document.addEventListener('pointerover', outside.pointerover, { signal });
 
   return () => listeners.abort();
 }

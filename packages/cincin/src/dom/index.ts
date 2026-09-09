@@ -59,6 +59,8 @@ export type {
   KeyEventLike,
 } from './focus-loop-handlers';
 export { attachFocusLoop } from './attach-focus-loop';
+export { createPointerGesture } from './pointer-gesture';
+export type { PointerGesture } from './pointer-gesture';
 export type { AttachFocusLoopOptions } from './attach-focus-loop';
 export type {
   SwipeHandlers,

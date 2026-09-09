@@ -86,22 +86,30 @@ describe('createFocusLoopHandlers', () => {
     );
   });
 
-  it('should read the focus modality off the focused node', () => {
+  it('should read a focus the pointer placed as not keyboard-driven', () => {
+    vi.useFakeTimers();
     const loop = spied();
     const { element } = handlersFor(loop);
     const { stack, card, outside } = makeStack();
-    const matches = vi.spyOn(card, 'matches').mockReturnValue(true);
-
-    element.focusin({
+    const enter = {
       currentTarget: stack,
       target: card,
       relatedTarget: outside,
-    });
+    };
 
-    expect(matches).toHaveBeenCalledWith(':focus-visible');
-    expect(loop.enter).toHaveBeenCalledWith(
+    element.pointerdown();
+    element.focusin(enter);
+    element.pointerup();
+    expect(loop.enter).toHaveBeenLastCalledWith(
+      expect.objectContaining({ keyboard: false })
+    );
+
+    vi.runAllTimers();
+    element.focusin(enter);
+    expect(loop.enter).toHaveBeenLastCalledWith(
       expect.objectContaining({ keyboard: true })
     );
+    vi.useRealTimers();
   });
 
   it('should report an exit only for focus that left the stack', () => {

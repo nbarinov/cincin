@@ -50,6 +50,17 @@ describe('attachViewport', () => {
     expect(viewport.getSnapshot()).toBe(false);
   });
 
+  it('should fold on a pointerover outside the element', () => {
+    const element = makeElement();
+    const viewport = createViewportController();
+    attachViewport(element, viewport);
+
+    fire(element, 'mouseenter');
+    fire(document.body, 'pointerover');
+    vi.advanceTimersByTime(DELAY);
+    expect(viewport.getSnapshot()).toBe(false);
+  });
+
   it('should detach through the returned function', () => {
     const element = makeElement();
     const viewport = createViewportController();

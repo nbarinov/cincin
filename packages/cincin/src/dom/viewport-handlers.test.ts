@@ -91,6 +91,30 @@ describe('createViewportHandlers', () => {
     expect(viewport.interact).toHaveBeenLastCalledWith(false);
   });
 
+  it('should read a focus the pointer placed as no attention', () => {
+    vi.useFakeTimers();
+    const viewport = spied();
+    const { element } = handlersFor(viewport);
+    const { stack } = makeStack();
+
+    // A mouse focuses on mousedown, between pointerdown and pointerup.
+    element.pointerdown(at(stack));
+    element.focusin(at(stack));
+    element.pointerup(at(stack));
+    expect(viewport.focus).toHaveBeenLastCalledWith(false);
+
+    // Touch focuses through the compatibility mousedown after pointerup.
+    element.pointerdown(at(stack));
+    element.pointerup(at(stack));
+    element.focusin(at(stack));
+    expect(viewport.focus).toHaveBeenLastCalledWith(false);
+
+    vi.runAllTimers();
+    element.focusin(at(stack));
+    expect(viewport.focus).toHaveBeenLastCalledWith(true);
+    vi.useRealTimers();
+  });
+
   it('should translate focus entering into focus', () => {
     const viewport = spied();
     const { element } = handlersFor(viewport);
@@ -133,6 +157,19 @@ describe('createViewportHandlers', () => {
     element.mouseenter(at(stack));
     outsideHandlers.pointerdown({ target: inside });
     expect(viewport.hover).not.toHaveBeenCalledWith(false);
+  });
+
+  it('should end the hover when the pointer is seen over something outside', () => {
+    const viewport = spied();
+    const { element, document: outside } = handlersFor(viewport);
+    const { stack, inside } = makeStack();
+
+    element.mouseenter(at(stack));
+    outside.pointerover({ target: inside });
+    expect(viewport.hover).not.toHaveBeenCalledWith(false);
+
+    outside.pointerover({ target: document.body });
+    expect(viewport.hover).toHaveBeenLastCalledWith(false);
   });
 
   it('should treat every pointerdown as outside before the element is known', () => {
