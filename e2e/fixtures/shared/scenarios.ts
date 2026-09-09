@@ -1,7 +1,15 @@
 import type { Toaster } from 'cincin';
 
+type ScenarioContent = {
+  title: string;
+  actions?: Array<{
+    label: string;
+    onClick: (event: { preventDefault(): void }) => void;
+  }>;
+};
+
 type ScenarioToaster = Pick<
-  Toaster<{ title: string }>,
+  Toaster<ScenarioContent>,
   'message' | 'info' | 'error' | 'remove'
 >;
 
@@ -47,6 +55,29 @@ function createScenarios(
       },
     },
     {
+      // An action that keeps its toast and rewrites it in place: the
+      // focused button goes away, the card stays.
+      id: 'decide',
+      label: 'Decide',
+      run: () => {
+        const id = toast.info(
+          {
+            title: 'Anna wants to join',
+            actions: [
+              {
+                label: 'Accept',
+                onClick: (event) => {
+                  event.preventDefault();
+                  toast.message({ title: 'Anna joined' }, { id });
+                },
+              },
+            ],
+          },
+          { duration: Infinity }
+        );
+      },
+    },
+    {
       id: 'dismiss-all',
       label: 'Dismiss all',
       run: () => toast.remove(),
@@ -55,4 +86,4 @@ function createScenarios(
 }
 
 export { createScenarios };
-export type { Scenario, ScenarioToaster };
+export type { Scenario, ScenarioContent, ScenarioToaster };

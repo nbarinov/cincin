@@ -65,7 +65,7 @@ test('closing a middle card with the mouse keeps the stack open', async ({
   const toast = page.locator(TOAST);
   await expect(toast).toHaveCount(3);
 
-  await toast.last().hover();
+  await page.locator(`${TOAST}[data-front="true"]`).hover();
   await expect(page.locator(REGION)).toHaveAttribute('data-expanded', 'true');
   await page.clock.fastForward(600);
 
@@ -74,4 +74,28 @@ test('closing a middle card with the mouse keeps the stack open', async ({
 
   await expect(toast).toHaveCount(2);
   await expect(page.locator(REGION)).toHaveAttribute('data-expanded', 'true');
+});
+
+test('a click on an action that keeps its toast leaves nothing to hold the stack', async ({
+  page,
+}) => {
+  // The click focuses the button (Chrome) or the card around it
+  // (WebKit), and the rewrite removes the button. A focus the pointer
+  // placed is not attention: once the pointer leaves, the stack folds
+  // and the rewritten toast's clock runs.
+  await page.getByTestId('decide').click();
+  const toast = page.locator(TOAST);
+  await expect(toast).toHaveCount(1);
+
+  const accept = page.getByRole('button', { name: 'Accept' });
+  await accept.hover();
+  await accept.click();
+  await expect(toast).toContainText('Anna joined');
+
+  await page.mouse.move(10, 10);
+  await page.clock.fastForward(600);
+  await expect(page.locator(REGION)).toHaveAttribute('data-expanded', 'false');
+
+  await page.clock.fastForward(5000);
+  await expect(toast).toHaveCount(0);
 });
