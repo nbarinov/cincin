@@ -1,5 +1,10 @@
 import type { Toaster as ToasterContract } from 'cincin';
-import type { StackLayout, StackSlot, SwipeDirection } from 'cincin/dom';
+import type {
+  Hotkey,
+  StackLayout,
+  StackSlot,
+  SwipeDirection,
+} from 'cincin/dom';
 import type { Toast, Presenter } from 'cincin/presenter';
 import type { JSX } from 'preact';
 import { useId, useMemo } from 'preact/hooks';
@@ -13,6 +18,8 @@ import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
 import { useSlot } from '../core/use-slot';
 import { useViewport } from '../core/use-viewport';
+import { useFocusLoop } from '../core/use-focus-loop';
+import { useHotkey } from '../core/use-hotkey';
 import { useToastSwipe } from '../core/use-toast-swipe';
 import type { ToastContent, ToasterLabels } from './content';
 import { toast as defaultToaster } from './toast';
@@ -51,6 +58,13 @@ type ToasterProps = {
   exitDuration?: number;
   /** The skin's a11y vocabulary, one place for all toasts. */
   labels?: ToasterLabels;
+  /**
+   * Moves focus onto the front toast from anywhere on the page.
+   * `false` drops the shortcut; Tab and Escape still work.
+   *
+   * @default 'Alt+T'
+   */
+  hotkey?: Hotkey | false;
 };
 
 function Toaster({
@@ -61,18 +75,27 @@ function Toaster({
   max = Infinity,
   exitDuration = 400,
   labels = {},
+  hotkey = 'Alt+T',
 }: ToasterProps) {
   const presenter = usePresenter(toaster, { max, exitDuration });
   const holder = usePresenterHolder(presenter);
   const toasts = useToasts(presenter);
   const live = useMemo(
-    () => toasts.filter((toast) => toast.phase !== 'queued'),
+    () => toasts.filter((toast) => toast.phase !== 'queued').toReversed(),
     [toasts]
   );
 
-  const { expanded, handlers } = useViewport({ presenter, holder });
-  const { layout, ref: viewportRef } = useStack(live, { visible });
+  const { layout, ref: viewportRef } = useStack(live, {
+    visible,
+    order: 'queue',
+  });
+  const { expanded, handlers: viewportHandlers } = useViewport({
+    presenter,
+    holder,
+  });
+  const { loop, handlers: loopHandlers } = useFocusLoop({ layout });
 
+  useHotkey({ hotkey, onPress: loop.jump });
   useVisibilityPause(holder);
 
   const direction = useDocumentDirection();
@@ -87,7 +110,12 @@ function Toaster({
   } = labels;
 
   return (
-    <section tabIndex={-1} aria-label={regionLabel}>
+    <section
+      tabIndex={-1}
+      aria-label={regionLabel}
+      aria-keyshortcuts={hotkey === false ? undefined : hotkey}
+      {...loopHandlers}
+    >
       <ol
         ref={viewportRef}
         data-cincin-toaster
@@ -95,7 +123,7 @@ function Toaster({
         data-x={x}
         data-expanded={expanded}
         style={{ '--cincin-exit-duration': `${exitDuration}ms` }}
-        {...handlers}
+        {...viewportHandlers}
       >
         {live.map((toast) => (
           <ToastCard
