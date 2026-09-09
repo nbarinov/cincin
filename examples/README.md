@@ -34,6 +34,7 @@ for a look around or for a bug report you can hand back as a link.
 
 To try a change instead of the release, open a pull request: CI publishes
 a preview build of every package through
-[pkg.pr.new](https://github.com/stackblitz-labs/pkg.pr.new) and comments
-with install urls plus one StackBlitz instance per example, each running
-against that build.
+[pkg.pr.new](https://github.com/stackblitz-labs/pkg.pr.new). Its
+_Continuous Releases_ check carries the result — an install url per
+package, pinned to the commit, and one StackBlitz instance per example
+running against that build.
