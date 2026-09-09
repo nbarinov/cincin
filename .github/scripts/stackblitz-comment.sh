@@ -54,7 +54,11 @@ fi
 
 : "${GH_TOKEN:?}"
 api="https://api.github.com/repos/${REPO}"
-auth=(-H "authorization: Bearer ${GH_TOKEN}" -H 'accept: application/vnd.github+json')
+auth=(
+  -H "authorization: Bearer ${GH_TOKEN}"
+  -H 'accept: application/vnd.github+json'
+  -H 'content-type: application/json'
+)
 
 # One comment per pull request: find the previous one by its marker.
 comment_id=$(
