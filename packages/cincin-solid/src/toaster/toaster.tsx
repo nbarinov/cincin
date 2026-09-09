@@ -88,7 +88,7 @@ function Toaster(props: ToasterProps) {
 
   const holder = usePresenterHolder(presenter);
   const viewport = useViewport({ presenter, holder });
-  const { layout } = useStack(
+  const { layout, ref: viewportRef } = useStack(
     () => live().map((item) => item.toast()),
     () => ({ visible: merged.visible })
   );
@@ -115,6 +115,7 @@ function Toaster(props: ToasterProps) {
       aria-label={merged.labels?.region ?? 'Notifications'}
     >
       <ol
+        ref={viewportRef}
         data-cincin-toaster
         data-y={anchors().y}
         data-x={anchors().x}

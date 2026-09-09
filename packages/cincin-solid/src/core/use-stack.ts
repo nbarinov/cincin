@@ -1,4 +1,4 @@
-import { createStackLayout } from 'cincin/dom';
+import { attachViewportBox, createStackLayout } from 'cincin/dom';
 import type { StackLayout, StackLayoutOptions } from 'cincin/dom';
 import type { Toast } from 'cincin/presenter';
 import { createEffect, onCleanup } from 'solid-js';
@@ -10,7 +10,7 @@ type StackOptions = StackLayoutOptions;
 function useStack(
   entries: MaybeAccessor<ReadonlyArray<Pick<Toast, 'key' | 'phase'>>>,
   options?: MaybeAccessor<StackOptions | undefined>
-): { layout: StackLayout } {
+): { layout: StackLayout; ref: (element: HTMLElement) => void } {
   const layout = createStackLayout(access(options));
 
   createEffect(function syncOptions() {
@@ -30,7 +30,13 @@ function useStack(
     layout.destroy();
   });
 
-  return { layout };
+  // Solid calls a ref once, with the element; the detach rides the
+  // owner's disposal.
+  const ref = (element: HTMLElement): void => {
+    onCleanup(attachViewportBox(element, layout));
+  };
+
+  return { layout, ref };
 }
 
 export { useStack };
