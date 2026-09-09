@@ -443,6 +443,130 @@ describe('createStackLayout', () => {
     expect(events).toEqual([]);
   });
 
+  it('publishes an empty box while nothing is measured', () => {
+    const layout = createStackLayout();
+    expect(layout.getBox()).toEqual({
+      height: 0,
+      frontHeight: undefined,
+      backs: 0,
+    });
+
+    // Registered but unmeasured cards contribute nothing but the gaps.
+    mount(layout, 'a');
+    mount(layout, 'b');
+    layout.setEntries([
+      { key: key('a'), leaving: false },
+      { key: key('b'), leaving: false },
+    ]);
+
+    expect(layout.getBox()).toEqual({
+      height: 12,
+      frontHeight: undefined,
+      backs: 1,
+    });
+  });
+
+  it('boxes the expanded stack as heights plus gaps and counts the backs', () => {
+    const layout = createStackLayout({ gap: 10 });
+    const a = mount(layout, 'a');
+    const b = mount(layout, 'b');
+    const c = mount(layout, 'c');
+    layout.setEntries([
+      { key: key('a'), leaving: false },
+      { key: key('b'), leaving: false },
+      { key: key('c'), leaving: false },
+    ]);
+
+    ObserverStub.instance!.deliver(
+      new Map([
+        [a.body, 40],
+        [b.body, 50],
+        [c.body, 60],
+      ])
+    );
+
+    // c is the front: its height feeds the collapsed base.
+    expect(layout.getBox()).toEqual({
+      height: 40 + 50 + 60 + 2 * 10,
+      frontHeight: 60,
+      backs: 2,
+    });
+  });
+
+  it('bounds the peeking backs by the visible depth', () => {
+    const layout = createStackLayout({ visible: 2 });
+    const cards = ['a', 'b', 'c', 'd', 'e'].map((id) => mount(layout, id));
+    layout.setEntries(
+      ['a', 'b', 'c', 'd', 'e'].map((id) => ({ key: key(id), leaving: false }))
+    );
+    ObserverStub.instance!.deliver(
+      new Map(cards.map(({ body }) => [body, 40] as const))
+    );
+
+    expect(layout.getBox().backs).toBe(1);
+
+    layout.setOptions({ visible: 4 });
+    expect(layout.getBox().backs).toBe(3);
+  });
+
+  it('drops a leaving card from the box in the same pass', () => {
+    const layout = createStackLayout({ gap: 10 });
+    const a = mount(layout, 'a');
+    const b = mount(layout, 'b');
+    layout.setEntries([
+      { key: key('a'), leaving: false },
+      { key: key('b'), leaving: false },
+    ]);
+    ObserverStub.instance!.deliver(
+      new Map([
+        [a.body, 40],
+        [b.body, 60],
+      ])
+    );
+    expect(layout.getBox().height).toBe(110);
+
+    layout.setEntries([
+      { key: key('a'), leaving: false },
+      { key: key('b'), leaving: true },
+    ]);
+
+    // The ghost keeps its frozen slot but no longer takes room; the
+    // survivor is the front now.
+    expect(layout.getBox()).toEqual({
+      height: 40,
+      frontHeight: 40,
+      backs: 0,
+    });
+  });
+
+  it('keeps the box reference stable and changes it only with a slot event', () => {
+    const layout = createStackLayout();
+    const a = mount(layout, 'a');
+    layout.setEntries([{ key: key('a'), leaving: false }]);
+    ObserverStub.instance!.deliver(new Map([[a.body, 46]]));
+    const box = layout.getBox();
+
+    const events: StackSlotEvent[] = [];
+    layout.subscribe((event) => events.push(event));
+
+    // The same reading again: same box, same reference, no event.
+    ObserverStub.instance!.deliver(new Map([[a.body, 46]]));
+    expect(layout.getBox()).toBe(box);
+    expect(events).toEqual([]);
+
+    // A new reading changes the box, and the slot event carries it:
+    // a subscriber reading `getBox` inside the event sees the new one.
+    let seen: unknown;
+    layout.subscribe(() => {
+      seen = layout.getBox();
+    });
+    ObserverStub.instance!.deliver(new Map([[a.body, 80]]));
+    expect(events).toHaveLength(1);
+    expect(layout.getBox()).not.toBe(box);
+    expect(seen).toBe(layout.getBox());
+    expect(layout.getBox().height).toBe(80);
+  });
+
   it('publishes a departure as a slot: undefined event', () => {
     const layout = createStackLayout();
     mount(layout, 'a');

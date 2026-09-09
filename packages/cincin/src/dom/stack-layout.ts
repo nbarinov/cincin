@@ -2,14 +2,15 @@ import { Subscribable } from '../shared/subscribable';
 import { shallowEqual } from '../shared/utils';
 import type { ToastKey } from '../presenter';
 
-/** One rendered card, as the renderer sees it. The layout deliberately
+/**
+ * One rendered card, as the renderer sees it. The layout deliberately
  * speaks its own minimal vocabulary instead of the presenter's phases:
  * `entries` mirrors what is actually in the DOM, and the only lifecycle
- * fact geometry cares about is "this card is exiting". */
+ * fact geometry cares about is "this card is exiting".
+ */
 type StackLayoutEntry = {
   key: ToastKey;
-  /** The card is exiting: its slot freezes, and it vacates its place
-   * for the survivors. */
+  /** The card is exiting: its slot freezes, and it vacates its place for the survivors. */
   leaving: boolean;
 };
 
@@ -22,11 +23,13 @@ type StackLayoutOptions = {
   visible?: number;
   /** Vertical gap between expanded cards, px. @default 12 */
   gap?: number;
-  /** Finds the measured node inside a card. The card itself renders at
+  /**
+   * Finds the measured node inside a card. The card itself renders at
    * an explicit height, so sizes are observed on a body node that
    * always keeps its natural height. Read once, like the layout in
    * `useSlot`: `setOptions` leaves it alone. @default the card's first
-   * element child */
+   * element child
+   */
   body?: (card: HTMLElement) => HTMLElement | null;
 };
 
@@ -51,14 +54,43 @@ type StackSlot = {
   hidden: boolean;
   /** The single live front card. Never `true` on a leaving one. */
   front: boolean;
-  /** The slot is frozen: an exiting card must not resize or move
-   * mid-flight while the survivors reflow around it. */
+  /**
+   * The slot is frozen: an exiting card must not resize or move
+   * mid-flight while the survivors reflow around it.
+   */
   leaving: boolean;
-  /** The card's measured natural height, px; `undefined` until the
-   * first delivery (consumers keep fallbacks for that gap). */
+  /**
+   * The card's measured natural height, px; `undefined` until
+   * the first delivery (consumers keep fallbacks for that gap).
+   */
   height: number | undefined;
   /** The front card's natural height, for the collapsed clamp. */
   frontHeight: number | undefined;
+};
+
+/**
+ * The stack's footprint, as computed data: what the viewport element
+ * sizes itself to so the pointer stays inside the stack across gaps,
+ * inert ghosts and the peeking backs. Published next to the slots and
+ * reference-stable across passes that change nothing; a change always
+ * comes with a slot event, so a subscriber reads `getBox` fresh.
+ */
+type StackBox = {
+  /**
+   * The expanded footprint: the live cards' measured heights and
+   * the gaps between them, px. `0` while nothing is measured.
+   */
+  height: number;
+  /**
+   * The front card's natural height, the collapsed footprint's base;
+   * undefined` until the first delivery.
+   */
+  frontHeight: number | undefined;
+  /**
+   * Live cards peeking behind the front in the collapsed stack,
+   * bounded by `visible`: the skin multiplies by its peek.
+   */
+  backs: number;
 };
 
 type StackSlotEvent = {
@@ -97,6 +129,7 @@ class StackLayout extends Subscribable<StackSlotListener> {
   readonly #bodies = new Map<ToastKey, HTMLElement>();
   /** Natural heights, written by the observer alone. */
   readonly #naturals = new Map<ToastKey, number>();
+  #box: StackBox = { height: 0, frontHeight: undefined, backs: 0 };
   #slots = new Map<ToastKey, StackSlot>();
   #observer: ResizeObserver | null = null;
 
@@ -113,12 +146,17 @@ class StackLayout extends Subscribable<StackSlotListener> {
     this.setEntries = this.setEntries.bind(this);
     this.setOptions = this.setOptions.bind(this);
     this.setCard = this.setCard.bind(this);
+    this.getBox = this.getBox.bind(this);
     this.getSlot = this.getSlot.bind(this);
     this.destroy = this.destroy.bind(this);
   }
 
   getSlot(key: ToastKey): StackSlot | undefined {
     return this.#slots.get(key);
+  }
+
+  getBox(): StackBox {
+    return this.#box;
   }
 
   /** Mirrors the rendered list. Call it after the current composition's
@@ -255,9 +293,11 @@ class StackLayout extends Subscribable<StackSlotListener> {
     this.#apply();
   };
 
-  /** A linear scan beats a reverse index here: deliveries are rare and
+  /**
+   * A linear scan beats a reverse index here: deliveries are rare and
    * the stack is a handful of cards, while an element-to-key map would
-   * be a second source of truth to keep in sync. */
+   * be a second source of truth to keep in sync.
+   */
   #keyOf(target: Element): ToastKey | undefined {
     for (const [key, body] of this.#bodies) {
       if (body === target) {
@@ -347,6 +387,17 @@ class StackLayout extends Subscribable<StackSlotListener> {
 
     this.#slots = next;
 
+    // The live cards were walked front to back: `offset` holds their
+    // heights plus one gap each, `depth` counts them.
+    const box: StackBox = {
+      height: depth === 0 ? 0 : Math.max(0, offset - gap),
+      frontHeight,
+      backs: Math.max(0, Math.min(depth, visible) - 1),
+    };
+    if (!shallowEqual(this.#box, box)) {
+      this.#box = box;
+    }
+
     // The commit protocol: the state above is already in place, the
     // collected diff goes out through the shared notify (a listener
     // reading `getSlot` during any event sees the finished pass).
@@ -378,6 +429,7 @@ export type {
   StackLayoutEntry,
   StackLayoutOrder,
   StackLayoutOptions,
+  StackBox,
   StackSlot,
   StackSlotEvent,
 };

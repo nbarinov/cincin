@@ -14,6 +14,7 @@ export type {
 export type { StackLayout } from './stack-layout';
 export type { SwipeDirection } from './gesture';
 export type {
+  StackBox,
   StackLayoutEntry,
   StackLayoutOrder,
   StackLayoutOptions,
@@ -43,6 +44,7 @@ export type {
   TargetEventLike,
 } from './viewport-handlers';
 export { attachViewport } from './attach-viewport';
+export { attachViewportBox } from './attach-viewport-box';
 export type { AttachViewportOptions } from './attach-viewport';
 export type {
   SwipeHandlers,
