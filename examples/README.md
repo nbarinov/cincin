@@ -7,13 +7,12 @@ published versions, so the folder runs anywhere you drop it. Inside this
 workspace pnpm links the local copies over those ranges instead
 (`linkWorkspacePackages`), and the vite config notices the sources next
 to them and switches on the `source` condition — so a change in
-`packages/` still shows up here with no build. `DIST=1 pnpm dev:<app>`
-opts out of that and runs the built packages.
+`packages/` still shows up here with no build. `DIST=1` opts out of
+that and runs the built packages.
 
 ```bash
 pnpm install
-pnpm dev:radix        # or dev:react, dev:vue, dev:solid, dev:preact,
-                      # dev:vanilla, dev:motion, dev:site
+pnpm --dir examples/radix dev
 ```
 
 ## In the browser
