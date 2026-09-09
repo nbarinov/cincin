@@ -1,8 +1,24 @@
 {
-  "extends": "../../tsconfig.base.json",
+  // Self-contained on purpose: this folder is also a standalone app — a
+  // StackBlitz template, a copy on disk — where a config extending the
+  // repository root has nothing to extend. The "source" condition is the
+  // one repository-flavoured line: inside the workspace it aims the
+  // typecheck at the packages' TypeScript. Vite reads this file for the
+  // target and the jsx settings and resolves modules on its own, so the
+  // condition costs a standalone copy nothing.
   "include": ["src", "vite.config.ts"],
   "compilerOptions": {
+    "target": "es2022",
     "lib": ["es2023", "dom", "dom.iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "customConditions": ["source"],
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "noEmit": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "types": ["vite/client", "node"]
