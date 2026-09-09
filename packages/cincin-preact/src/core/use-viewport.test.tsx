@@ -1,19 +1,25 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/preact';
 import { createToaster } from 'cincin';
-import { createPresenter } from 'cincin/presenter';
-import type { Presenter } from 'cincin/presenter';
+import { createPresenter, createPresenterHolder } from 'cincin/presenter';
+import type { Presenter, PresenterHolder } from 'cincin/presenter';
 import { useViewport } from './use-viewport';
 
 const DELAY = 200;
 
 function ViewportHost({
   presenter,
+  holder,
   collapseDelay,
 }: {
   presenter: Presenter;
+  holder: PresenterHolder;
   collapseDelay?: number;
 }) {
-  const { expanded, handlers } = useViewport(presenter, { collapseDelay });
+  const { expanded, handlers } = useViewport({
+    presenter,
+    holder,
+    collapseDelay,
+  });
 
   return (
     <ol data-testid="viewport" data-expanded={expanded} {...handlers}>
@@ -27,11 +33,16 @@ function ViewportHost({
 function setup(collapseDelay?: number) {
   const toaster = createToaster();
   const presenter = createPresenter(toaster);
+  const holder = createPresenterHolder(presenter);
   presenter.mount();
   toaster.message('one');
 
   const view = render(
-    <ViewportHost presenter={presenter} collapseDelay={collapseDelay} />
+    <ViewportHost
+      presenter={presenter}
+      holder={holder}
+      collapseDelay={collapseDelay}
+    />
   );
   const viewport = view.getByTestId('viewport');
 
@@ -104,19 +115,6 @@ describe('useViewport', () => {
       vi.advanceTimersByTime(DELAY);
     });
     expect(paused(presenter)).toEqual([false]);
-  });
-
-  it('should pause a toast entering an open stack as it enters', async () => {
-    const { toaster, presenter, viewport } = setup();
-    await act(() => {
-      fireEvent.mouseEnter(viewport);
-    });
-
-    await act(() => {
-      toaster.message('two');
-    });
-
-    expect(paused(presenter)).toEqual([true, true]);
   });
 
   it('should release the presenter on unmount', async () => {

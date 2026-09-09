@@ -5,6 +5,7 @@ import type { JSX } from 'preact';
 import { useMemo } from 'preact/hooks';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
+import { usePresenterHolder } from '../core/use-presenter-holder';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
@@ -38,9 +39,15 @@ type ToasterProps = {
   visible?: number;
   /** Active presentations at once; the rest queue. @default Infinity */
   max?: number;
-  /** The exit animation's length, ms. One value drives both sides: the
-   * presenter's exit clock and, published as `--cincin-exit-duration`,
-   * the skin's motion durations. @default 400 */
+  /**
+   * The exit animation's length, ms.
+   * One value drives both sides:
+   * the presenter's exit clock and,
+   * published as `--cincin-exit-duration`,
+   * the skin's motion durations.
+   *
+   * @default 400
+   */
   exitDuration?: number;
   /** The skin's a11y vocabulary, one place for all toasts. */
   labels?: ToasterLabels;
@@ -56,16 +63,17 @@ function Toaster({
   labels = {},
 }: ToasterProps) {
   const presenter = usePresenter(toaster, { max, exitDuration });
+  const holder = usePresenterHolder(presenter);
   const toasts = useToasts(presenter);
   const live = useMemo(
     () => toasts.filter((toast) => toast.phase !== 'queued'),
     [toasts]
   );
 
-  const { expanded, handlers } = useViewport(presenter);
+  const { expanded, handlers } = useViewport({ presenter, holder });
   const stack = useStack(live, { visible });
 
-  useVisibilityPause(presenter);
+  useVisibilityPause(holder);
 
   const direction = useDocumentDirection();
   const position =

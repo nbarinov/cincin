@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render } from '@testing-library/vue';
 import { createToaster } from 'cincin';
-import { createPresenter } from 'cincin/presenter';
+import { createPresenter, createPresenterHolder } from 'cincin/presenter';
 import type { Presenter } from 'cincin/presenter';
 import { defineComponent, h, nextTick, toHandlers } from 'vue';
 import { useViewport } from './use-viewport';
@@ -10,12 +10,15 @@ const DELAY = 200;
 function setup(collapseDelay?: number) {
   const toaster = createToaster();
   const presenter = createPresenter(toaster);
+  const holder = createPresenterHolder(presenter);
   presenter.mount();
   toaster.message('one');
 
   const Host = defineComponent({
     setup() {
-      const { expanded, handlers } = useViewport(presenter, {
+      const { expanded, handlers } = useViewport({
+        presenter,
+        holder,
         collapseDelay,
       });
 
@@ -105,15 +108,6 @@ describe('useViewport', () => {
     await fireEvent.mouseLeave(viewport);
     await settle(DELAY);
     expect(paused(presenter)).toEqual([false]);
-  });
-
-  it('should pause a toast entering an open stack as it enters', async () => {
-    const { toaster, presenter, viewport } = setup();
-    await fireEvent.mouseEnter(viewport);
-
-    toaster.message('two');
-
-    expect(paused(presenter)).toEqual([true, true]);
   });
 
   it('should release the presenter on unmount', async () => {

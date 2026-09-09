@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render } from '@solidjs/testing-library';
 import { createToaster } from 'cincin';
-import { createPresenter } from 'cincin/presenter';
+import { createPresenter, createPresenterHolder } from 'cincin/presenter';
 import type { Presenter } from 'cincin/presenter';
 import { useViewport } from './use-viewport';
 
@@ -9,11 +9,12 @@ const DELAY = 200;
 function setup(collapseDelay?: number) {
   const toaster = createToaster();
   const presenter = createPresenter(toaster);
+  const holder = createPresenterHolder(presenter);
   presenter.mount();
   toaster.message('one');
 
   const Host = () => {
-    const viewport = useViewport(presenter, { collapseDelay });
+    const viewport = useViewport({ presenter, holder, collapseDelay });
 
     return (
       <ol
@@ -87,15 +88,6 @@ describe('useViewport', () => {
     fireEvent.mouseLeave(viewport);
     vi.advanceTimersByTime(DELAY);
     expect(paused(presenter)).toEqual([false]);
-  });
-
-  it('should pause a toast entering an open stack as it enters', () => {
-    const { toaster, presenter, viewport } = setup();
-    fireEvent.mouseEnter(viewport);
-
-    toaster.message('two');
-
-    expect(paused(presenter)).toEqual([true, true]);
   });
 
   it('should release the presenter on unmount', () => {

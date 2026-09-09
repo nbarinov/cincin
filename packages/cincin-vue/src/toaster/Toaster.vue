@@ -4,6 +4,7 @@ import type { SwipeDirection } from 'cincin/dom';
 import { computed } from 'vue';
 import { useDocumentDirection } from '../core/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
+import { usePresenterHolder } from '../core/use-presenter-holder';
 import { useToasts } from '../core/use-toasts';
 import { useVisibilityPause } from '../core/use-visibility-pause';
 import { useStack } from '../core/use-stack';
@@ -53,8 +54,10 @@ const props = withDefaults(
      */
     max?: number;
     /**
-     * The exit animation's length, ms. One value drives both sides: the
-     * presenter's exit clock and, published as `--cincin-exit-duration`,
+     * The exit animation's length, ms.
+     * One value drives both sides:
+     * the presenter's exit clock and,
+     * published as `--cincin-exit-duration`,
      * the skin's motion durations.
      *
      * @default 400
@@ -78,10 +81,11 @@ const live = computed(() =>
   toasts.value.filter((toast) => toast.phase !== 'queued')
 );
 
-const { expanded, handlers } = useViewport(presenter);
+const holder = usePresenterHolder(presenter);
+const { expanded, handlers } = useViewport({ presenter, holder });
 const { layout } = useStack(live, () => ({ visible: props.visible }));
 
-useVisibilityPause(presenter);
+useVisibilityPause(holder);
 
 const direction = useDocumentDirection();
 const resolvedPosition = computed(

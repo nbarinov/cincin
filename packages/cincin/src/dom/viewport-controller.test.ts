@@ -184,6 +184,20 @@ describe('createViewportController', () => {
     expect(viewport.getSnapshot()).toBe(false);
   });
 
+  it('should keep the delay when setOptions leaves it undefined', () => {
+    // A hook forwards its option as it is, `{ collapseDelay: undefined }`
+    // when the skin gave none: that must not turn the fold immediate.
+    const viewport = createViewportController();
+    viewport.setOptions({ collapseDelay: undefined });
+    viewport.hover(true);
+    viewport.hover(false);
+
+    vi.advanceTimersByTime(DELAY - 1);
+    expect(viewport.getSnapshot()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(viewport.getSnapshot()).toBe(false);
+  });
+
   it('should drop the pending fold and the listeners on destroy', () => {
     const viewport = createViewportController();
     const listener = vi.fn();

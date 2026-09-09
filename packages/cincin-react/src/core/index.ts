@@ -1,6 +1,7 @@
 export { useToasts } from './use-toasts';
 export { useToastEntries } from './use-toast-entries';
 export { usePresenter } from './use-presenter';
+export { usePresenterHolder } from './use-presenter-holder';
 export { useToastSwipe } from './use-toast-swipe';
 export { useStack } from './use-stack';
 export { useSlot } from './use-slot';
@@ -13,13 +14,18 @@ export type {
 } from './use-toast-swipe';
 export type { StackOptions } from './use-stack';
 export type { SlotOptions } from './use-slot';
-export type { Viewport, ViewportHandlers } from './use-viewport';
+export type {
+  Viewport,
+  ViewportOptions,
+  ViewportHandlers,
+} from './use-viewport';
 
 export { createToasterContext } from './context';
 
 export type { Toaster, ToastEntry, ToastEntryEvent } from 'cincin';
 export type {
   Presenter,
+  PresenterHolder,
   PresenterOptions,
   Toast,
   ToastKey,

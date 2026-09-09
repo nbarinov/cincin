@@ -86,6 +86,12 @@ interface Presenter<Content extends {} = string> {
   unmount(): void;
 }
 
+interface PresenterHolder {
+  hold(name: string | symbol): () => void;
+  release(name: string | symbol): void;
+  held(): boolean;
+}
+
 export type {
   Toast,
   ToastKey,
@@ -97,4 +103,5 @@ export type {
   ToastEvent,
   PresenterOptions,
   Presenter,
+  PresenterHolder,
 };
