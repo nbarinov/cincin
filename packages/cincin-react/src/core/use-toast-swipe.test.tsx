@@ -36,14 +36,6 @@ function getToastElement(): HTMLElement {
   return element;
 }
 
-/** jsdom lacks the pointer capture and animation surface. */
-function stubGestureSurface(element: HTMLElement): void {
-  element.setPointerCapture = () => {};
-  element.releasePointerCapture = () => {};
-  element.animate = () =>
-    ({ finished: Promise.resolve(), cancel() {} }) as unknown as Animation;
-}
-
 function firePointer(
   element: HTMLElement,
   type: 'pointerdown' | 'pointermove' | 'pointerup',
@@ -67,16 +59,6 @@ function swipeOut(element: HTMLElement): void {
   firePointer(element, 'pointermove', 60);
   firePointer(element, 'pointerup', 60);
 }
-
-beforeEach(() => {
-  window.matchMedia = ((query: string) =>
-    ({
-      matches: false,
-      media: query,
-      addEventListener() {},
-      removeEventListener() {},
-    }) as unknown as MediaQueryList) as typeof window.matchMedia;
-});
 
 afterEach(() => {
   cleanup();
@@ -152,7 +134,6 @@ describe('useToastSwipe', () => {
 
     render(<SwipeHost toastKey={key} presenter={presenter} />);
     const element = getToastElement();
-    stubGestureSurface(element);
 
     swipeOut(element);
 
@@ -179,7 +160,6 @@ describe('useToastSwipe', () => {
       />
     );
     const element = getToastElement();
-    stubGestureSurface(element);
 
     // No controller at all: no touch-action claim, and a passing gesture
     // changes nothing.
@@ -203,7 +183,6 @@ describe('useToastSwipe', () => {
       />
     );
     const element = getToastElement();
-    stubGestureSurface(element);
     expect(element.style.touchAction).toBe('');
 
     view.rerender(

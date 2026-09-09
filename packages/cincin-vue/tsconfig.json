@@ -4,5 +4,5 @@
     "lib": ["es2023", "dom", "dom.iterable"],
     "types": ["vitest/globals", "node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "vitest.setup.ts"]
 }

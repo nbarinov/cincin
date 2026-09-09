@@ -5,13 +5,6 @@ import type { ToastKey } from 'cincin/presenter';
 import { defineComponent, h, nextTick, toHandlers } from 'vue';
 import { useFocusLoop } from './use-focus-loop';
 
-/** jsdom lacks ResizeObserver; the loop never reads sizes. */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 const KEY = 'a' as ToastKey;
 
 /** The page control focus comes from, outside the rendered tree so it
@@ -67,11 +60,6 @@ function setup() {
     outside,
   };
 }
-
-beforeEach(() => {
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
-});
 
 afterEach(() => {
   cleanup();

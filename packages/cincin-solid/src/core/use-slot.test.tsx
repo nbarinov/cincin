@@ -5,13 +5,6 @@ import { createSignal } from 'solid-js';
 import type { Accessor } from 'solid-js';
 import { useSlot } from './use-slot';
 
-/** jsdom lacks ResizeObserver; the layout tolerates silent stubs. */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 function mountSlotHost(layout: StackLayout, key: string) {
   let slot!: Accessor<StackSlot | undefined>;
 
@@ -25,11 +18,6 @@ function mountSlotHost(layout: StackLayout, key: string) {
 
   return { view, slot: () => slot() };
 }
-
-beforeEach(() => {
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
-});
 
 afterEach(() => {
   cleanup();

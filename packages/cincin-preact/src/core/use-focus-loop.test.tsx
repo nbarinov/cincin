@@ -4,13 +4,6 @@ import type { FocusLoopController, StackLayout } from 'cincin/dom';
 import type { ToastKey } from 'cincin/presenter';
 import { useFocusLoop } from './use-focus-loop';
 
-/** jsdom lacks ResizeObserver; the loop never reads sizes. */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 const KEY = 'a' as ToastKey;
 
 function Host({
@@ -69,11 +62,6 @@ function setup() {
     outside,
   };
 }
-
-beforeEach(() => {
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
-});
 
 afterEach(() => {
   cleanup();

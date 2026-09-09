@@ -32,7 +32,6 @@ afterEach(() => {
   while (detachers.length > 0) {
     detachers.pop()!();
   }
-  vi.restoreAllMocks();
 });
 
 describe('parseHotkey', () => {

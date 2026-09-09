@@ -4,13 +4,6 @@ import { render } from 'preact';
 import { useSlot } from './use-slot';
 import { useStack } from './use-stack';
 
-/** jsdom lacks ResizeObserver; the layout tolerates silent stubs. */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 let lastLayout!: StackLayout;
 
 function Stack({ keys }: { keys: string[] }) {
@@ -42,8 +35,6 @@ let container!: HTMLDivElement;
 
 beforeEach(() => {
   vi.useFakeTimers();
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
   container = document.createElement('div');
   document.body.append(container);
 });

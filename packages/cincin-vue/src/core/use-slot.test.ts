@@ -5,13 +5,6 @@ import { defineComponent, h, shallowRef } from 'vue';
 import type { Ref } from 'vue';
 import { useSlot } from './use-slot';
 
-/** jsdom lacks ResizeObserver; the layout tolerates silent stubs. */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 function mountSlotHost(layout: StackLayout, key: string) {
   let slot!: Readonly<Ref<StackSlot | undefined>>;
   const element = shallowRef<HTMLElement | null>(null);
@@ -27,11 +20,6 @@ function mountSlotHost(layout: StackLayout, key: string) {
 
   return { view, slot: () => slot.value };
 }
-
-beforeEach(() => {
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
-});
 
 afterEach(() => {
   cleanup();

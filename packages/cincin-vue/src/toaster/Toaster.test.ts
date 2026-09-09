@@ -4,14 +4,6 @@ import { nextTick } from 'vue';
 import Toaster from './Toaster.vue';
 import type { ToastAction, ToastContent, ToasterLabels } from './content';
 
-/** jsdom lacks ResizeObserver; the layout tolerates silent stubs (height
- * variables stay unwritten, skins keep their fallbacks). */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
 function setup(labels?: ToasterLabels) {
   const toaster = createToaster<ToastContent>();
   render(Toaster, { props: { toaster, labels } });
@@ -47,15 +39,6 @@ beforeEach(() => {
   vi.useFakeTimers({
     toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'],
   });
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
-  window.matchMedia = ((query: string) =>
-    ({
-      matches: false,
-      media: query,
-      addEventListener() {},
-      removeEventListener() {},
-    }) as unknown as MediaQueryList) as typeof window.matchMedia;
 });
 
 afterEach(() => {

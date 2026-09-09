@@ -30,7 +30,6 @@ const at = (currentTarget: EventTarget): ElementEventLike => ({
 });
 
 afterEach(() => {
-  vi.restoreAllMocks();
   document.body.innerHTML = '';
 });
 

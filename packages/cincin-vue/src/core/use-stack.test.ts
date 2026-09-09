@@ -2,18 +2,6 @@ import { cleanup, render } from '@testing-library/vue';
 import { defineComponent, h } from 'vue';
 import { useStack } from './use-stack';
 
-/** jsdom lacks ResizeObserver; the layout tolerates silent stubs. */
-class ResizeObserverStub {
-  observe(): void {}
-  unobserve(): void {}
-  disconnect(): void {}
-}
-
-beforeEach(() => {
-  window.ResizeObserver =
-    ResizeObserverStub as unknown as typeof ResizeObserver;
-});
-
 afterEach(() => {
   cleanup();
 });

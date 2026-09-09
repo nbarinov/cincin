@@ -41,7 +41,6 @@ afterEach(() => {
   while (detachers.length > 0) {
     detachers.pop()!();
   }
-  vi.restoreAllMocks();
   document.body.innerHTML = '';
 });
 

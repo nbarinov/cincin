@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src"],
+  "include": ["src", "vitest.setup.ts"],
   "compilerOptions": {
     "types": ["vitest/globals", "node"],
     "lib": ["es2023", "dom", "dom.iterable"]
