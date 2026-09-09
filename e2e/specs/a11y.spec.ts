@@ -86,3 +86,64 @@ test('tab reaches the card before its cross and hears the title', async ({
     page.getByRole('button', { name: 'Dismiss', exact: true })
   ).toBeFocused();
 });
+
+test('the front toast comes first: Tab from the page enters the newest', async ({
+  page,
+}) => {
+  await page.goto('/?duration=60000');
+  await page.getByTestId('message').click();
+  await page.getByTestId('message').click();
+  await expect(page.locator(TOAST)).toHaveCount(2);
+
+  // The region follows the page's controls in the DOM.
+  await page.getByTestId('dismiss-all').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('status', { name: 'Toast #2' })).toBeFocused();
+});
+
+test('the hotkey lands on the front toast and Escape hands focus back', async ({
+  page,
+}) => {
+  await page.goto('/?duration=60000');
+  await page.getByTestId('sticky').click();
+  await expect(page.locator(TOAST)).toHaveCount(1);
+
+  const origin = page.getByTestId('sticky');
+  await origin.focus();
+  await page.keyboard.press('Alt+t');
+  await expect(
+    page.getByRole('status', { name: 'Sticky toast' })
+  ).toBeFocused();
+  await expect(page.locator('[data-cincin-toaster]')).toHaveAttribute(
+    'data-expanded',
+    'true'
+  );
+
+  await page.keyboard.press('Escape');
+  await expect(origin).toBeFocused();
+  await expect(page.locator('[data-cincin-toaster]')).toHaveAttribute(
+    'data-expanded',
+    'false'
+  );
+});
+
+test('closing a toast from the keyboard passes the focus to the next one', async ({
+  page,
+}) => {
+  await page.goto('/?duration=60000');
+  await page.getByTestId('message').click();
+  await page.getByTestId('message').click();
+  await expect(page.locator(TOAST)).toHaveCount(2);
+
+  await page.keyboard.press('Alt+t');
+  await expect(page.getByRole('status', { name: 'Toast #2' })).toBeFocused();
+
+  // Tab onto the cross, Enter closes the toast under focus.
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('status', { name: 'Toast #1' })).toBeFocused();
+  await expect(page.locator('[data-cincin-toaster]')).toHaveAttribute(
+    'data-expanded',
+    'true'
+  );
+});
