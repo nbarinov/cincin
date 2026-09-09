@@ -49,7 +49,8 @@ controllers, [`cincin-react`](./packages/cincin-react),
 layers included. Runnable apps for every framework, including vanilla DOM,
 a [Motion](https://motion.dev)-driven renderer and one drawn by
 [Radix](https://www.radix-ui.com/primitives/docs/components/toast) Toast
-primitives, are in [`examples/`](./examples).
+primitives, are in [`examples/`](./examples), and every one of them opens
+in the browser from the [index there](./examples/README.md) — no clone.
 
 cincin ships untranspiled modern JS as ESM only; `cincin-react` works with
 React 18 and newer.
