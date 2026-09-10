@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/nbarinov/cincin/v0.1.1/.github/assets/hero-preact.png" alt="cincin-preact 🥂">
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/v0.2.0/.github/assets/hero-preact.png" alt="cincin-preact 🥂">
 
 Preact bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<Toaster />` for a quick start, and

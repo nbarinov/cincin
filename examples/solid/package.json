@@ -8,8 +8,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "cincin": "^0.1.0",
-    "cincin-solid": "^0.1.1",
+    "cincin": "^0.2.0",
+    "cincin-solid": "^0.2.0",
     "solid-js": "^1.9.15"
   },
   "devDependencies": {
