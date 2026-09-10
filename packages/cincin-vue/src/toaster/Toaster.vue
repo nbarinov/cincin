@@ -2,7 +2,7 @@
 import type { Toaster as ToasterContract } from 'cincin';
 import type { Hotkey, SwipeDirection } from 'cincin/dom';
 import { computed } from 'vue';
-import { outwardDirections } from 'cincin-skin';
+import { anchorsOf, outwardDirections } from 'cincin-skin';
 import type { ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../core/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
@@ -111,10 +111,7 @@ const resolvedPosition = computed(
     props.position ??
     (direction.value === 'rtl' ? 'bottom-left' : 'bottom-right')
 );
-const anchors = computed(() => {
-  const [y, x] = resolvedPosition.value.split('-');
-  return { y, x };
-});
+const anchors = computed(() => anchorsOf(resolvedPosition.value));
 const directions = computed(
   () => props.swipeDirections ?? outwardDirections(resolvedPosition.value)
 );

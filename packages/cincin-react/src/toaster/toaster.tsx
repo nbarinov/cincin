@@ -10,7 +10,7 @@ import type {
 import type { Toast, Presenter } from 'cincin/presenter';
 import * as React from 'react';
 import type { CSSProperties } from 'react';
-import { outwardDirections } from 'cincin-skin';
+import { anchorsOf, outwardDirections } from 'cincin-skin';
 import type { ToasterPosition } from 'cincin-skin';
 import { inertValue } from '../shared/inert';
 import { useDocumentDirection } from '../shared/use-document-direction';
@@ -104,7 +104,7 @@ function Toaster({
   const direction = useDocumentDirection();
   const position =
     inputPosition ?? (direction === 'rtl' ? 'bottom-left' : 'bottom-right');
-  const [y, x] = position.split('-');
+  const { x, y } = anchorsOf(position);
   const directions = swipeDirections ?? outwardDirections(position);
 
   const {

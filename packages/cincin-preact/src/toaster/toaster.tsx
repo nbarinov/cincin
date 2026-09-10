@@ -8,7 +8,7 @@ import type {
 import type { Toast, Presenter } from 'cincin/presenter';
 import type { JSX } from 'preact';
 import { useId, useMemo } from 'preact/hooks';
-import { outwardDirections } from 'cincin-skin';
+import { anchorsOf, outwardDirections } from 'cincin-skin';
 import type { ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
@@ -101,7 +101,7 @@ function Toaster({
   const direction = useDocumentDirection();
   const position =
     inputPosition ?? (direction === 'rtl' ? 'bottom-left' : 'bottom-right');
-  const [y, x] = position.split('-');
+  const { x, y } = anchorsOf(position);
   const directions = swipeDirections ?? outwardDirections(position);
 
   const {

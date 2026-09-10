@@ -1,4 +1,11 @@
-import { outwardDirections } from './position';
+import { anchorsOf, outwardDirections } from './position';
+
+describe('anchorsOf', () => {
+  it('should split a position into the list anchors', () => {
+    expect(anchorsOf('bottom-right')).toEqual({ y: 'bottom', x: 'right' });
+    expect(anchorsOf('top-center')).toEqual({ y: 'top', x: 'center' });
+  });
+});
 
 describe('outwardDirections', () => {
   it('should offer a corner its two edges', () => {

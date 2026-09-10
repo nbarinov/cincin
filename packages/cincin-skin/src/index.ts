@@ -1,2 +1,2 @@
-export { outwardDirections } from './position';
-export type { ToasterPosition } from './position';
+export { anchorsOf, outwardDirections } from './position';
+export type { ToasterAnchors, ToasterPosition } from './position';

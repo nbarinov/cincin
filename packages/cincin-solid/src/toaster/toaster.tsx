@@ -17,7 +17,7 @@ import {
 } from 'solid-js';
 import type { JSX } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
-import { outwardDirections } from 'cincin-skin';
+import { anchorsOf, outwardDirections } from 'cincin-skin';
 import type { ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
@@ -122,10 +122,7 @@ function Toaster(props: ToasterProps) {
       merged.position ??
       (direction() === 'rtl' ? 'bottom-left' : 'bottom-right')
   );
-  const anchors = createMemo(() => {
-    const [y, x] = position().split('-');
-    return { y, x };
-  });
+  const anchors = createMemo(() => anchorsOf(position()));
   const directions = createMemo(
     () => merged.swipeDirections ?? outwardDirections(position())
   );
