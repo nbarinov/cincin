@@ -61,5 +61,22 @@
     "path": "packages/cincin-preact/dist/core/index.mjs",
     "limit": "1.75 kB",
     "ignore": ["cincin", "preact"]
+  },
+  {
+    "name": "cincin-angular (toaster)",
+    "path": "packages/cincin-angular/dist/fesm2022/cincin-angular.mjs",
+    "limit": "5.25 kB",
+    "ignore": [
+      "cincin",
+      "cincin-angular/core",
+      "@angular/core",
+      "@angular/common"
+    ]
+  },
+  {
+    "name": "cincin-angular/core",
+    "path": "packages/cincin-angular/dist/fesm2022/cincin-angular-core.mjs",
+    "limit": "3 kB",
+    "ignore": ["cincin", "@angular/core", "@angular/common"]
   }
 ]
