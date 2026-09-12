@@ -4,6 +4,7 @@
     "playwright.config.ts",
     "specs",
     "fixtures/shared",
+    "fixtures/angular/vite.config.ts",
     "fixtures/react/vite.config.ts",
     "fixtures/solid/vite.config.ts",
     "fixtures/vue/vite.config.ts"

@@ -2,6 +2,7 @@ import process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const APPS = {
+  angular: 'http://localhost:4277',
   react: 'http://localhost:4273',
   preact: 'http://localhost:4274',
   solid: 'http://localhost:4275',
@@ -18,6 +19,11 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: [
+    {
+      command: 'pnpm dev:angular',
+      url: APPS.angular,
+      reuseExistingServer: !process.env.CI,
+    },
     {
       command: 'pnpm dev:preact',
       url: APPS.preact,
@@ -40,6 +46,14 @@ export default defineConfig({
     },
   ],
   projects: [
+    {
+      name: 'angular-chromium',
+      use: { ...devices['Desktop Chrome'], baseURL: APPS.angular },
+    },
+    {
+      name: 'angular-webkit',
+      use: { ...devices['Desktop Safari'], baseURL: APPS.angular },
+    },
     {
       name: 'preact-chromium',
       use: { ...devices['Desktop Chrome'], baseURL: APPS.preact },

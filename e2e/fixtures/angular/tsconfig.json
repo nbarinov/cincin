@@ -1,0 +1,27 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "types": ["vite/client", "node"],
+    // The workspace sources by path, not through the symlinks: a
+    // file reached via node_modules counts as an external library to
+    // TypeScript, which then emits nothing for it, and the Angular
+    // compiler inside Vite would serve an empty module. A missing target
+    // (a copy of this folder over the published package) falls back to
+    // the regular resolution.
+    "paths": {
+      "cincin": ["../../../packages/cincin/src/core/index.ts"],
+      "cincin/dom": ["../../../packages/cincin/src/dom/index.ts"],
+      "cincin/presenter": ["../../../packages/cincin/src/presenter/index.ts"],
+      "cincin-skin": ["../../../packages/cincin-skin/src/index.ts"],
+      "cincin-angular": ["../../../packages/cincin-angular/src/index.ts"],
+      "cincin-angular/core": [
+        "../../../packages/cincin-angular/src/core/index.ts"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true
+  }
+}

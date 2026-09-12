@@ -4,16 +4,22 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev:angular": "vite fixtures/angular",
     "dev:preact": "vite fixtures/preact",
     "dev:react": "vite fixtures/react",
     "dev:solid": "vite fixtures/solid",
     "dev:vue": "vite fixtures/vue",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "typecheck": "tsc -p tsconfig.json && tsc -p fixtures/preact/tsconfig.json && tsc -p fixtures/react/tsconfig.json && tsc -p fixtures/solid/tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json && tsc -p fixtures/preact/tsconfig.json && tsc -p fixtures/react/tsconfig.json && tsc -p fixtures/solid/tsconfig.json && ngc -p fixtures/angular/tsconfig.json"
   },
   "dependencies": {
+    "@angular/common": "^22.1.6",
+    "@angular/compiler": "^22.1.6",
+    "@angular/core": "^22.1.6",
+    "@angular/platform-browser": "^22.1.6",
     "cincin": "workspace:*",
+    "cincin-angular": "workspace:*",
     "cincin-preact": "workspace:*",
     "cincin-react": "workspace:*",
     "cincin-solid": "workspace:*",
@@ -25,14 +31,17 @@
     "vue": "^3.5.41"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.7.2",
+    "@angular/build": "^22.1.8",
+    "@angular/compiler-cli": "^22.1.6",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitejs/plugin-vue": "^6.0.1",
-    "vite-plugin-solid": "^2.11.14",
-    "typescript": "^7.0.2",
-    "vite": "^7.2.4"
+    "typescript": "~6.0.3",
+    "vite": "^7.2.4",
+    "vite-plugin-solid": "^2.11.14"
   }
 }
