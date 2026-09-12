@@ -1,0 +1,9 @@
+{
+  // The Angular compiler runs inside Vite (through the Analog plugin,
+  // which picks this file up by name) and has to emit: tsconfig.json
+  // is the typecheck-only one.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false
+  }
+}

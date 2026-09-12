@@ -27,6 +27,7 @@ for a look around or for a bug report you can hand back as a link.
 | [`vue`](./vue)                     | The same tour through `cincin-vue`                         | [Open ↗](https://stackblitz.com/github/nbarinov/cincin/tree/main/examples/vue)           |
 | [`solid`](./solid)                 | The same tour through `cincin-solid`                       | [Open ↗](https://stackblitz.com/github/nbarinov/cincin/tree/main/examples/solid)         |
 | [`preact`](./preact)               | The same tour through `cincin-preact`                      | [Open ↗](https://stackblitz.com/github/nbarinov/cincin/tree/main/examples/preact)        |
+| [`angular`](./angular)             | The same tour through `cincin-angular`                     | [Open ↗](https://stackblitz.com/github/nbarinov/cincin/tree/main/examples/angular)       |
 | [`vanilla`](./vanilla)             | The DOM controllers with no framework at all               | [Open ↗](https://stackblitz.com/github/nbarinov/cincin/tree/main/examples/vanilla)       |
 | [`framer-motion`](./framer-motion) | A renderer over the bare store, exits by `AnimatePresence` | [Open ↗](https://stackblitz.com/github/nbarinov/cincin/tree/main/examples/framer-motion) |
 | [`radix`](./radix)                 | The store behind Radix Toast primitives, no presenter      | [Open ↗](https://stackblitz.com/github/nbarinov/cincin/tree/main/examples/radix)         |
