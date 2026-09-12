@@ -7,7 +7,10 @@ packages:
 linkWorkspacePackages: true
 preferWorkspacePackages: true
 allowBuilds:
+  '@parcel/watcher': false
   esbuild: true
+  lmdb: false
+  msgpackr-extract: false
 minimumReleaseAgeExclude:
   - '@oxfmt/binding-android-arm-eabi@0.66.0'
   - '@oxfmt/binding-android-arm64@0.66.0'
@@ -49,3 +52,14 @@ minimumReleaseAgeExclude:
   - '@oxlint/binding-win32-x64-msvc@1.81.0'
   - oxfmt@0.66.0
   - oxlint@1.81.0
+  - '@angular-devkit/architect@0.2201.8'
+  - '@angular-devkit/core@22.1.8'
+  - '@angular/build@22.1.8'
+# The Angular plugin walks the TypeScript API at runtime but declares no
+# dependency on it, so it would find the workspace root's TypeScript 7
+# (the native port, a different JS API). The peer routes it to the
+# consumer's own copy: cincin-angular pins the 6.x Angular supports.
+packageExtensions:
+  '@analogjs/vite-plugin-angular':
+    peerDependencies:
+      typescript: '*'

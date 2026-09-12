@@ -1,0 +1,9 @@
+{
+  // The Angular compiler runs inside vitest (through the Analog plugin,
+  // which picks this file up by name) and has to emit: the family's
+  // tsconfig is a typecheck-only one.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false
+  }
+}
