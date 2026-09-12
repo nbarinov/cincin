@@ -5,7 +5,7 @@
 
 [cincin](https://cincin.nbarinov.io) is a framework-agnostic toast library:
 one tiny core owns the store and the queue, thin adapters bind it to React, Preact,
-Vue, and Solid, and a headless layer is there for when the bundled skin stops
+Vue, Solid, and Angular, and a headless layer is there for when the bundled skin stops
 fitting.
 
 ## Usage
@@ -13,7 +13,7 @@ fitting.
 Two steps. Install the adapter for your framework:
 
 ```bash
-npm install cincin-react   # or cincin-vue, cincin-solid, cincin-preact
+npm install cincin-react   # or cincin-preact, cincin-vue, cincin-solid, cincin-angular
 ```
 
 Then mount `<Toaster />` once, anywhere in the tree. The stylesheet rides

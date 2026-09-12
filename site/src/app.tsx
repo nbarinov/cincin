@@ -5,13 +5,14 @@ import { ThemeToggle } from './theme-toggle';
 
 const REPO_URL = 'https://github.com/nbarinov/cincin';
 
-const TARGETS = [
+// The `soon` branch stays for the next binding in line.
+const TARGETS: Array<{ name: string; href?: string; soon?: boolean }> = [
   { name: 'React', href: `${REPO_URL}/tree/main/packages/cincin-react` },
   { name: 'Vue', href: `${REPO_URL}/tree/main/packages/cincin-vue` },
   { name: 'Solid', href: `${REPO_URL}/tree/main/packages/cincin-solid` },
   { name: 'Preact', href: `${REPO_URL}/tree/main/packages/cincin-preact` },
+  { name: 'Angular', href: `${REPO_URL}/tree/main/packages/cincin-angular` },
   { name: 'vanilla', href: `${REPO_URL}/tree/main/examples/vanilla` },
-  { name: 'Angular', soon: true },
 ];
 
 function App() {
