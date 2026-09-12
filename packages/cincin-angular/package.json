@@ -1,8 +1,7 @@
 {
   "name": "cincin-angular",
   "version": "0.2.0",
-  "private": true,
-  "description": "🥂 Angular bindings for cincin: headless directives, primitives, ready-to-use skin",
+  "description": "\ud83e\udd42 Angular bindings for cincin: headless directives, primitives, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
   "homepage": "https://cincin.nbarinov.io",
@@ -30,15 +29,18 @@
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./dist/types/cincin-angular.d.ts",
-      "default": "./dist/fesm2022/cincin-angular.mjs"
+      "import": {
+        "types": "./dist/types/cincin-angular.d.ts",
+        "default": "./dist/fesm2022/cincin-angular.mjs"
+      }
     },
     "./core": {
       "source": "./src/core/index.ts",
-      "types": "./dist/types/cincin-angular-core.d.ts",
-      "default": "./dist/fesm2022/cincin-angular-core.mjs"
-    },
-    "./package.json": "./package.json"
+      "import": {
+        "types": "./dist/types/cincin-angular-core.d.ts",
+        "default": "./dist/fesm2022/cincin-angular-core.mjs"
+      }
+    }
   },
   "publishConfig": {
     "exports": {

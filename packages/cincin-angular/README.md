@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/nbarinov/cincin/v0.2.0/.github/assets/hero-angular.png" alt="cincin-angular 🥂">
+<img src="https://raw.githubusercontent.com/nbarinov/cincin/main/.github/assets/hero-angular.png" alt="cincin-angular 🥂">
 
 Angular bindings for the [cincin](https://www.npmjs.com/package/cincin)
 toast library: a ready-to-use `<cincin-toaster />` for a quick start,
