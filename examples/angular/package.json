@@ -13,7 +13,7 @@
     "@angular/core": "^22.1.6",
     "@angular/platform-browser": "^22.1.6",
     "cincin": "^0.2.0",
-    "cincin-angular": "^0.2.0"
+    "cincin-angular": "^0.2.1"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.7.2",
