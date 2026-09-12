@@ -10,4 +10,4 @@ export type {
   ToastAction,
   ToasterLabels,
 } from './toaster/content';
-export type { ToasterPosition } from 'cincin-skin';
+export type { ToasterPosition } from './toaster/position';

@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/angular';
 import { createToaster } from 'cincin';
 import type { Toaster as ToasterContract } from 'cincin';
 import type { SwipeDirection } from 'cincin/dom';
-import type { ToasterPosition } from 'cincin-skin';
+import type { ToasterPosition } from './position';
 import { provideToaster } from './context';
 import { Toaster } from './toaster';
 import type { ToastAction, ToastContent, ToasterLabels } from './content';

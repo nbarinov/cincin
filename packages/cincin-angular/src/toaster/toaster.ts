@@ -6,8 +6,8 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { anchorsOf, outwardDirections } from 'cincin-skin';
-import type { ToasterPosition } from 'cincin-skin';
+import { anchorsOf, outwardDirections } from './position';
+import type { ToasterPosition } from './position';
 import {
   CincinFocusLoop,
   CincinStack,
