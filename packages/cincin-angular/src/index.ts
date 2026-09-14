@@ -11,3 +11,4 @@ export type {
   ToasterLabels,
 } from './toaster/content';
 export type { ToasterPosition } from './toaster/position';
+export type { ToasterOffset } from './toaster/offset';

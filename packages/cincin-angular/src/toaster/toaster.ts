@@ -6,6 +6,8 @@ import {
   input,
   viewChild,
 } from '@angular/core';
+import { offsetVars } from './offset';
+import type { ToasterOffset } from './offset';
 import { anchorsOf, outwardDirections } from './position';
 import type { ToasterPosition } from './position';
 import {
@@ -59,6 +61,7 @@ const DEFAULT_HOTKEY: Hotkey = 'Alt+T';
         [attr.data-y]="anchors().y"
         [attr.data-x]="anchors().x"
         [attr.data-expanded]="viewport.expanded()"
+        [style]="offsetStyle()"
         [style.--cincin-exit-duration]="exitDuration() + 'ms'"
       >
         @for (toast of live(); track toast.key) {
@@ -87,6 +90,17 @@ class Toaster {
    * @default 'bottom-right', 'bottom-left' under RTL
    */
   readonly position = input<ToasterPosition>();
+  /**
+   * How far the region steps inward from the edges it hangs on, for a
+   * corner the page already uses. A number is px, a string a CSS
+   * length, a bare value the vertical axis; `{ x, y }` names both.
+   * The horizontal half needs a column with a width of its own, so a
+   * narrow screen spends the vertical one alone. Left out, the
+   * channel stays with the stylesheet (`--cincin-offset-*`).
+   *
+   * @default 0
+   */
+  readonly offset = input<ToasterOffset>();
   /**
    * Directions a swipe may dismiss along.
    *
@@ -138,6 +152,7 @@ class Toaster {
       (this.direction() === 'rtl' ? 'bottom-left' : 'bottom-right')
   );
   readonly anchors = computed(() => anchorsOf(this.resolvedPosition()));
+  readonly offsetStyle = computed(() => offsetVars(this.offset()));
   readonly directions = computed(
     () => this.swipeDirections() ?? outwardDirections(this.resolvedPosition())
   );

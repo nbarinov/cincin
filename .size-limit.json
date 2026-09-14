@@ -65,7 +65,7 @@
   {
     "name": "cincin-angular (toaster)",
     "path": "packages/cincin-angular/dist/fesm2022/cincin-angular.mjs",
-    "limit": "5.25 kB",
+    "limit": "5.5 kB",
     "ignore": [
       "cincin",
       "cincin-angular/core",

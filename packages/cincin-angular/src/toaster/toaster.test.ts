@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/angular';
 import { createToaster } from 'cincin';
 import type { Toaster as ToasterContract } from 'cincin';
 import type { SwipeDirection } from 'cincin/dom';
+import type { ToasterOffset } from './offset';
 import type { ToasterPosition } from './position';
 import { provideToaster } from './context';
 import { Toaster } from './toaster';
@@ -10,6 +11,7 @@ import type { ToastAction, ToastContent, ToasterLabels } from './content';
 
 type Inputs = {
   labels?: ToasterLabels;
+  offset?: ToasterOffset;
   position?: ToasterPosition;
   swipeDirections?: readonly SwipeDirection[];
 };
@@ -453,5 +455,23 @@ describe('Toaster position', () => {
     settle();
 
     expect(getCard().style.touchAction).toBe('pan-y');
+  });
+});
+
+describe('Toaster offset', () => {
+  it('should publish the input on the skin channel', async () => {
+    // The mapping only: what the two lengths then mean is the skin's
+    // own unit territory.
+    await setup({ offset: 56 });
+
+    expect(getRegion().style.getPropertyValue('--cincin-offset-y')).toBe(
+      '56px'
+    );
+  });
+
+  it('should leave the channel alone without the input', async () => {
+    await setup();
+
+    expect(getRegion().style.getPropertyValue('--cincin-offset-y')).toBe('');
   });
 });
