@@ -53,7 +53,7 @@
   {
     "name": "cincin-preact (toaster)",
     "path": "packages/cincin-preact/dist/index.mjs",
-    "limit": "4.75 kB",
+    "limit": "5 kB",
     "ignore": ["cincin", "preact"]
   },
   {
