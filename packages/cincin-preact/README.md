@@ -171,7 +171,7 @@ explicit `swipeDirections` overrides the pairing.
 ```
 
 Somewhere in the corner already lives a chat bubble, a cart bar, a
-player. `offset` says how far the region steps inward from the edges
+player. `offset` says how far the list steps inward from the edges
 it hangs on, so the toasts stand clear of it. The value is a distance,
 not a coordinate: the direction comes from the position's anchors, so
 one number lifts a `bottom-*` list up and drops a `top-*` list down. A
@@ -179,7 +179,7 @@ number is px, a string is any CSS length, and `{ x, y }` names both
 axes.
 
 The horizontal half needs a column with a width of its own. A centered
-list has no near side, and on a narrow screen the region spans both
+list has no near side, and on a narrow screen the list spans both
 edges, so there is nothing to cede sideways and only the vertical half
 is spent. Name both axes and one offset covers both widths: the toasts
 stand beside the widget on a wide screen and above it on a phone,
@@ -190,7 +190,7 @@ without recomputing anything.
 ```
 
 For a column that should be shorter on a phone, reach for the side
-inset instead. Insets own the region's bounds; the offset owns its
+inset instead. Insets own the list's bounds; the offset owns its
 step inward.
 
 The distance adds to the skin's own inset, which is where
@@ -208,7 +208,7 @@ const [clearance, setClearance] = useState(0);
 The prop is sugar over two custom properties, `--cincin-offset-x` and
 `--cincin-offset-y`, and it writes them inline. Leave it out and the
 channel stays with your stylesheet, media queries included; pass it and
-the inline value outranks them. The region slides on `translate`, so a
+the inline value outranks them. The list slides on `translate`, so a
 value that changes animates without reflowing the page.
 
 ## Toaster props
@@ -218,8 +218,8 @@ value that changes animates without reflowing the page.
 | `toaster`         | Your own store instead of the singleton. Read once, remount to switch.                                                                                  |
 | `max`             | How many toasts are active at once, the rest queue. Live.                                                                                               |
 | `visible`         | How many peek out of the collapsed stack.                                                                                                               |
-| `position`        | The region's corner or edge center. Defaults to the bottom inline-end corner, live against the document's `dir`.                                        |
-| `offset`          | How far the region steps inward from its edges, for a corner your page already uses. A bare value is the vertical axis; `{ x, y }` names both.          |
+| `position`        | The list's corner or edge center. Defaults to the bottom inline-end corner, live against the document's `dir`.                                          |
+| `offset`          | How far the list steps inward from its edges, for a corner your page already uses. A bare value is the vertical axis; `{ x, y }` names both.            |
 | `swipeDirections` | Which way a card can be flicked. Defaults to the position's outward edges.                                                                              |
 | `exitDuration`    | The exit animation's length in ms. One value drives the presenter's exit clock and, published as `--cincin-exit-duration`, the skin's motion durations. |
 | `labels`          | The skin's a11y vocabulary, `{ region, close }`. Defaults `'Notifications'` and `'Dismiss'`.                                                            |
@@ -235,7 +235,7 @@ fitting, drop down a level instead of fighting it.
 ```tsx
 import { usePresenter, useToasts, useToastSwipe } from 'cincin-preact/core';
 
-function Region({ toaster }) {
+function Toasts({ toaster }) {
   // The exit clock finishes leaving toasts on time: declare your exit
   // animation's length, no transitionend listeners needed.
   const presenter = usePresenter(toaster, { max: 5, exitDuration: 400 });

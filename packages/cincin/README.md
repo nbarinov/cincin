@@ -90,7 +90,7 @@ const detach = attachSwipe(element, {
 
 The controller writes `translate` and `--cincin-swipe-x/y` on the
 element and marks `data-swiping` / `data-swipe-direction`; skins style
-off those and declare `user-select: none` on the region. Reduced motion
+off those and declare `user-select: none` on the list. Reduced motion
 is respected.
 
 ### Stack layout
