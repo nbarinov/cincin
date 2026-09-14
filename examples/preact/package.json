@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "cincin": "^0.2.0",
-    "cincin-preact": "^0.2.0",
+    "cincin-preact": "^0.3.0",
     "preact": "^10.29.8"
   },
   "devDependencies": {

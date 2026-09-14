@@ -141,7 +141,7 @@ importers:
         specifier: ^0.2.0
         version: link:../../packages/cincin
       cincin-angular:
-        specifier: ^0.2.1
+        specifier: ^0.3.0
         version: link:../../packages/cincin-angular
     devDependencies:
       '@analogjs/vite-plugin-angular':
@@ -203,7 +203,7 @@ importers:
         specifier: ^0.2.0
         version: link:../../packages/cincin
       cincin-preact:
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../../packages/cincin-preact
       preact:
         specifier: ^10.29.8
@@ -259,7 +259,7 @@ importers:
         specifier: ^0.2.0
         version: link:../../packages/cincin
       cincin-react:
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../../packages/cincin-react
       react:
         specifier: ^19.2.0
@@ -293,7 +293,7 @@ importers:
         specifier: ^0.2.0
         version: link:../../packages/cincin
       cincin-solid:
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../../packages/cincin-solid
       solid-js:
         specifier: ^1.9.15
@@ -331,7 +331,7 @@ importers:
         specifier: ^0.2.0
         version: link:../../packages/cincin
       cincin-vue:
-        specifier: ^0.2.0
+        specifier: ^0.3.0
         version: link:../../packages/cincin-vue
       vue:
         specifier: ^3.5.41

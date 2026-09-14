@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "cincin": "^0.2.0",
-    "cincin-vue": "^0.2.0",
+    "cincin-vue": "^0.3.0",
     "vue": "^3.5.41"
   },
   "devDependencies": {
