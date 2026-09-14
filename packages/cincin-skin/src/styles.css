@@ -1,15 +1,23 @@
 [data-cincin-toaster] {
-  --region-inset: 1rem;
-  --inset-top: calc(var(--region-inset) + env(safe-area-inset-top, 0px));
-  --inset-right: calc(var(--region-inset) + env(safe-area-inset-right, 0px));
-  --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
-  --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
+  --viewport-inset: 1rem;
+  --inset-top: calc(var(--viewport-inset) + env(safe-area-inset-top, 0px));
+  --inset-right: calc(var(--viewport-inset) + env(safe-area-inset-right, 0px));
+  --inset-bottom: calc(
+    var(--viewport-inset) + env(safe-area-inset-bottom, 0px)
+  );
+  --inset-left: calc(var(--viewport-inset) + env(safe-area-inset-left, 0px));
 
   --peek: 14px;
   --peek-number: 14;
 
+  --cincin-offset-x: 0px;
+  --cincin-offset-y: 0px;
+
   position: fixed;
   z-index: 999999999;
+  translate: calc(var(--cincin-offset-x) * var(--lift-x))
+    calc(var(--cincin-offset-y) * var(--lift));
+  transition: translate 200ms ease;
   width: 22rem;
   margin: 0;
   padding: 0;
@@ -72,14 +80,14 @@
 
 [data-cincin-toaster][data-y='bottom'] {
   --lift: -1;
-  --offscreen: calc(100% + var(--inset-bottom));
+  --offscreen: calc(100% + var(--inset-bottom) + var(--cincin-offset-y));
 
   bottom: var(--inset-bottom);
 }
 
 [data-cincin-toaster][data-y='top'] {
   --lift: 1;
-  --offscreen: calc(-100% - var(--inset-top));
+  --offscreen: calc(-100% - var(--inset-top) - var(--cincin-offset-y));
   --shadow-rest:
     0 0 0 1px var(--toast-edge), 0 1px 2px var(--shadow-soft),
     0 2px 4px var(--shadow-soft), 0 4px 12px -2px var(--shadow-deep);
@@ -91,14 +99,20 @@
 }
 
 [data-cincin-toaster][data-x='right'] {
+  --lift-x: -1;
+
   right: var(--inset-right);
 }
 
 [data-cincin-toaster][data-x='left'] {
+  --lift-x: 1;
+
   left: var(--inset-left);
 }
 
 [data-cincin-toaster][data-x='center'] {
+  --lift-x: 0;
+
   left: 50%;
   transform: translateX(-50%);
 }
@@ -129,6 +143,19 @@
     right: var(--inset-right);
     width: auto;
     transform: none;
+  }
+
+  /* The region spans both edges here, so it has nothing to cede
+   * sideways. Stepping would push the cards off the opposite edge;
+   * ceding the room as width is worse than either extreme, measured:
+   * a widget's full width leaves a column too narrow to read, and
+   * anything less narrows the column for nothing, because the widget
+   * stays covered anyway. The vertical half still applies, so one
+   * offset naming both axes works on either width. The anchor carries
+   * the selector's weight, because the rules that set the sign weigh
+   * the same and a media query adds none. */
+  [data-cincin-toaster][data-x] {
+    --lift-x: 0;
   }
 }
 
@@ -410,6 +437,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-cincin-toaster] {
+    transition: none;
+  }
+
   [data-cincin-toast] {
     transition:
       opacity var(--cincin-exit-duration, 400ms),
