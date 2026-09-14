@@ -29,7 +29,7 @@
   {
     "name": "cincin-vue (toaster)",
     "path": "packages/cincin-vue/dist/index.mjs",
-    "limit": "5 kB",
+    "limit": "5.25 kB",
     "ignore": ["cincin", "vue"]
   },
   {

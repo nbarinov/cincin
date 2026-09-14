@@ -2,8 +2,8 @@
 import type { Toaster as ToasterContract } from 'cincin';
 import type { Hotkey, SwipeDirection } from 'cincin/dom';
 import { computed } from 'vue';
-import { anchorsOf, outwardDirections } from 'cincin-skin';
-import type { ToasterPosition } from 'cincin-skin';
+import { anchorsOf, offsetVars, outwardDirections } from 'cincin-skin';
+import type { ToasterOffset, ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../core/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
 import { usePresenterHolder } from '../core/use-presenter-holder';
@@ -37,6 +37,17 @@ const props = withDefaults(
      * @default 'bottom-right', 'bottom-left' under RTL
      */
     position?: ToasterPosition;
+    /**
+     * How far the region steps inward from the edges it hangs on, for a
+     * corner the page already uses. A number is px, a string a CSS
+     * length, a bare value the vertical axis; `{ x, y }` names both.
+     * The horizontal half needs a column with a width of its own, so a
+     * narrow screen spends the vertical one alone. Left out, the
+     * channel stays with the stylesheet (`--cincin-offset-*`).
+     *
+     * @default 0
+     */
+    offset?: ToasterOffset;
     /**
      * Directions a swipe may dismiss along.
      *
@@ -116,6 +127,8 @@ const directions = computed(
   () => props.swipeDirections ?? outwardDirections(resolvedPosition.value)
 );
 
+const offset = computed(() => offsetVars(props.offset));
+
 const regionLabel = computed(() => props.labels?.region ?? 'Notifications');
 const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
 </script>
@@ -133,7 +146,7 @@ const closeLabel = computed(() => props.labels?.close ?? 'Dismiss');
       :data-y="anchors.y"
       :data-x="anchors.x"
       :data-expanded="expanded"
-      :style="{ '--cincin-exit-duration': `${exitDuration}ms` }"
+      :style="{ ...offset, '--cincin-exit-duration': `${exitDuration}ms` }"
       v-on="viewportHandlers"
     >
       <ToastCard
