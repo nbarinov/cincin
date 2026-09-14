@@ -1,6 +1,8 @@
-import { createEffect, createSignal, onCleanup } from 'solid-js';
+import { Show, createEffect, createSignal, onCleanup } from 'solid-js';
 import { Toaster, toast } from 'cincin-solid';
-import type { ToasterPosition } from 'cincin-solid';
+import type { ToasterOffset, ToasterPosition } from 'cincin-solid';
+import { ChatWidget } from './ChatWidget';
+import type { Clearance } from './ChatWidget';
 
 const POSITIONS: ToasterPosition[] = [
   'top-left',
@@ -10,6 +12,10 @@ const POSITIONS: ToasterPosition[] = [
   'bottom-center',
   'bottom-right',
 ];
+
+type OffsetAxes = 'none' | 'vertical' | 'horizontal' | 'both';
+
+const OFFSET_AXES: OffsetAxes[] = ['none', 'vertical', 'horizontal', 'both'];
 
 let counter = 0;
 
@@ -161,6 +167,14 @@ function App() {
   // root on the way back.
   const [rtl, setRtl] = createSignal(false);
   const [position, setPosition] = createSignal<ToasterPosition | undefined>();
+  const [widget, setWidget] = createSignal(false);
+  const [axes, setAxes] = createSignal<OffsetAxes>('vertical');
+  const [clearance, setClearance] = createSignal<Clearance>({ x: 0, y: 0 });
+
+  // The corner the toasts actually land in. The page has to repeat the
+  // component's own rule to put anything else there, because the
+  // default is resolved inside the Toaster, from the document's dir.
+  const corner = () => position() ?? (rtl() ? 'bottom-left' : 'bottom-right');
 
   createEffect(() => {
     if (rtl()) {
@@ -192,6 +206,25 @@ function App() {
           <button type="button" onClick={() => setRtl((current) => !current)}>
             {rtl() ? 'LTR' : 'RTL'}
           </button>
+          <button
+            type="button"
+            aria-pressed={widget()}
+            onClick={() => setWidget((current) => !current)}
+          >
+            Widget
+          </button>
+          <select
+            aria-label="Offset axes"
+            value={axes()}
+            disabled={!widget()}
+            onChange={(event) =>
+              setAxes(toOffsetAxes(event.currentTarget.value))
+            }
+          >
+            {OFFSET_AXES.map((value) => (
+              <option value={value}>offset: {value}</option>
+            ))}
+          </select>
         </div>
       </header>
       <p>
@@ -207,7 +240,14 @@ function App() {
         ))}
       </section>
 
-      <Toaster position={position()} />
+      <Show when={widget()}>
+        <ChatWidget position={corner()} onClearance={setClearance} />
+      </Show>
+
+      {/* The whole integration: the page knows what hangs in the
+          corner, so it says how far to step inward. Left out, the
+          toasts ride over the widget. */}
+      <Toaster position={position()} offset={offsetFor(axes(), clearance())} />
     </main>
   );
 }
@@ -215,6 +255,37 @@ function App() {
 export { App };
 
 // utils
+
+/**
+ * The clearance, spent on the axes the page picked. The three shapes
+ * the prop takes, in one place: a bare value is the vertical axis,
+ * `{ x }` keeps the toasts beside the widget rather than above it,
+ * and the pair does both.
+ */
+function offsetFor(
+  axes: OffsetAxes,
+  clearance: Clearance
+): ToasterOffset | undefined {
+  if (axes === 'none') {
+    return undefined;
+  }
+
+  if (axes === 'vertical') {
+    return clearance.y;
+  }
+
+  if (axes === 'horizontal') {
+    return { x: clearance.x };
+  }
+
+  return clearance;
+}
+
+function toOffsetAxes(value: string): OffsetAxes {
+  const axes = OFFSET_AXES.find((candidate) => candidate === value);
+
+  return axes ?? 'none';
+}
 
 function fakeRequest(): Promise<number> {
   const duration = 800 + Math.random() * 1200;

@@ -20,6 +20,13 @@ body {
   body {
     --page-pad: 1.25rem;
   }
+
+  /* Four controls and a title do not share a line on a phone: the
+     title keeps the first one, the controls take the next and wrap
+     among themselves. */
+  header div {
+    flex-basis: 100%;
+  }
 }
 
 main {
@@ -29,6 +36,7 @@ main {
 
 header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -36,6 +44,7 @@ header {
 
 header div {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
@@ -74,4 +83,88 @@ section button:active,
 header button:active,
 header select:active {
   background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+header button[aria-pressed='true'] {
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+
+header button:disabled,
+header select:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* The floating widget: a stand-in for whatever already owns the corner
+ * in a real app. It sits one stacking level under the toaster, so with
+ * the clearance off the toasts ride right over it. */
+[data-widget] {
+  --widget-inset: 1rem;
+
+  position: fixed;
+  z-index: 999999998;
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+  border-radius: 1.75rem;
+  background: color-mix(in srgb, canvas 80%, currentColor 20%);
+  transition:
+    width 200ms,
+    height 200ms;
+}
+
+[data-widget][data-open='true'] {
+  width: 15rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  justify-items: stretch;
+}
+
+[data-widget] button {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+[data-widget][data-open='true'] button {
+  width: auto;
+  height: auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  text-align: end;
+}
+
+[data-widget] p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+[data-widget][data-y='bottom'] {
+  bottom: calc(var(--widget-inset) + env(safe-area-inset-bottom, 0px));
+}
+
+[data-widget][data-y='top'] {
+  top: calc(var(--widget-inset) + env(safe-area-inset-top, 0px));
+}
+
+[data-widget][data-x='right'] {
+  right: calc(var(--widget-inset) + env(safe-area-inset-right, 0px));
+}
+
+[data-widget][data-x='left'] {
+  left: calc(var(--widget-inset) + env(safe-area-inset-left, 0px));
+}
+
+[data-widget][data-x='center'] {
+  left: 50%;
+  translate: -50%;
 }

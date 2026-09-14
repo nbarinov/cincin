@@ -1,6 +1,8 @@
-import { Component, effect, signal } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import { Toaster, toast } from 'cincin-angular';
-import type { ToasterPosition } from 'cincin-angular';
+import type { ToasterOffset, ToasterPosition } from 'cincin-angular';
+import { ChatWidget } from './chat-widget';
+import type { Clearance } from './chat-widget';
 
 const POSITIONS: ToasterPosition[] = [
   'top-left',
@@ -10,6 +12,10 @@ const POSITIONS: ToasterPosition[] = [
   'bottom-center',
   'bottom-right',
 ];
+
+type OffsetAxes = 'none' | 'vertical' | 'horizontal' | 'both';
+
+const OFFSET_AXES: OffsetAxes[] = ['none', 'vertical', 'horizontal', 'both'];
 
 let counter = 0;
 
@@ -156,7 +162,7 @@ const SCENARIOS: Array<[label: string, run: () => void]> = [
 
 @Component({
   selector: 'app-root',
-  imports: [Toaster],
+  imports: [ChatWidget, Toaster],
   template: `
     <main>
       <header>
@@ -175,6 +181,25 @@ const SCENARIOS: Array<[label: string, run: () => void]> = [
           <button type="button" (click)="rtl.set(!rtl())">
             {{ rtl() ? 'LTR' : 'RTL' }}
           </button>
+          <button
+            type="button"
+            [attr.aria-pressed]="widget()"
+            (click)="widget.set(!widget())"
+          >
+            Widget
+          </button>
+          <select
+            aria-label="Offset axes"
+            [value]="axes()"
+            [disabled]="!widget()"
+            (change)="onAxes($event)"
+          >
+            @for (value of offsetAxes; track value) {
+              <option [value]="value" [selected]="value === axes()">
+                offset: {{ value }}
+              </option>
+            }
+          </select>
         </div>
       </header>
       <p>
@@ -190,15 +215,37 @@ const SCENARIOS: Array<[label: string, run: () => void]> = [
         }
       </section>
 
-      <cincin-toaster [position]="position()" />
+      @if (widget()) {
+        <app-chat-widget
+          [position]="corner()"
+          (clearance)="clearance.set($event)"
+        />
+      }
+
+      <!-- The whole integration: the page knows what hangs in the
+           corner, so it says how far to step inward. Left out, the
+           toasts ride over the widget. -->
+      <cincin-toaster [position]="position()" [offset]="offset()" />
     </main>
   `,
 })
 class App {
   readonly positions = POSITIONS;
+  readonly offsetAxes = OFFSET_AXES;
   readonly scenarios = SCENARIOS;
   readonly position = signal<ToasterPosition | undefined>(undefined);
   readonly rtl = signal(false);
+  readonly widget = signal(false);
+  readonly axes = signal<OffsetAxes>('vertical');
+  readonly clearance = signal<Clearance>({ x: 0, y: 0 });
+
+  // The corner the toasts actually land in. The page has to repeat the
+  // component's own rule to put anything else there, because the
+  // default is resolved inside the Toaster, from the document's dir.
+  readonly corner = computed(
+    () => this.position() ?? (this.rtl() ? 'bottom-left' : 'bottom-right')
+  );
+  readonly offset = computed(() => offsetFor(this.axes(), this.clearance()));
 
   constructor() {
     // Direction is page state, not a Toaster input: the skin mirrors
@@ -219,9 +266,41 @@ class App {
 
     this.position.set(position);
   }
+
+  onAxes(event: Event): void {
+    const { value } = event.target as HTMLSelectElement;
+    const axes = OFFSET_AXES.find((candidate) => candidate === value);
+
+    this.axes.set(axes ?? 'none');
+  }
 }
 
 export { App };
+
+/**
+ * The clearance, spent on the axes the page picked. The three shapes
+ * the input takes, in one place: a bare value is the vertical axis,
+ * `{ x }` keeps the toasts beside the widget rather than above it,
+ * and the pair does both.
+ */
+function offsetFor(
+  axes: OffsetAxes,
+  clearance: Clearance
+): ToasterOffset | undefined {
+  if (axes === 'none') {
+    return undefined;
+  }
+
+  if (axes === 'vertical') {
+    return clearance.y;
+  }
+
+  if (axes === 'horizontal') {
+    return { x: clearance.x };
+  }
+
+  return clearance;
+}
 
 function fakeRequest(): Promise<number> {
   const duration = 800 + Math.random() * 1200;

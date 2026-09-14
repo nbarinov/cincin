@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { Toaster, toast } from 'cincin-vue';
-import type { ToasterPosition } from 'cincin-vue';
+import type { ToasterOffset, ToasterPosition } from 'cincin-vue';
+import ChatWidget from './ChatWidget.vue';
+import type { Clearance } from './ChatWidget.vue';
 
 const POSITIONS: ToasterPosition[] = [
   'top-left',
@@ -11,6 +13,10 @@ const POSITIONS: ToasterPosition[] = [
   'bottom-center',
   'bottom-right',
 ];
+
+type OffsetAxes = 'none' | 'vertical' | 'horizontal' | 'both';
+
+const OFFSET_AXES: OffsetAxes[] = ['none', 'vertical', 'horizontal', 'both'];
 
 let counter = 0;
 
@@ -161,6 +167,17 @@ const scenarios: Array<[label: string, run: () => void]> = [
 // root on the way back.
 const rtl = ref(false);
 const position = ref<ToasterPosition | undefined>();
+const widget = ref(false);
+const axes = ref<OffsetAxes>('vertical');
+const clearance = ref<Clearance>({ x: 0, y: 0 });
+
+// The corner the toasts actually land in. The page has to repeat the
+// component's own rule to put anything else there, because the
+// default is resolved inside the Toaster, from the document's dir.
+const corner = computed(
+  () => position.value ?? (rtl.value ? 'bottom-left' : 'bottom-right')
+);
+const offset = computed(() => offsetFor(axes.value, clearance.value));
 
 watchEffect((onCleanup) => {
   if (rtl.value) {
@@ -168,6 +185,31 @@ watchEffect((onCleanup) => {
     onCleanup(() => document.documentElement.removeAttribute('dir'));
   }
 });
+
+/**
+ * The clearance, spent on the axes the page picked. The three shapes
+ * the prop takes, in one place: a bare value is the vertical axis,
+ * `{ x }` keeps the toasts beside the widget rather than above it,
+ * and the pair does both.
+ */
+function offsetFor(
+  picked: OffsetAxes,
+  measured: Clearance
+): ToasterOffset | undefined {
+  if (picked === 'none') {
+    return undefined;
+  }
+
+  if (picked === 'vertical') {
+    return measured.y;
+  }
+
+  if (picked === 'horizontal') {
+    return { x: measured.x };
+  }
+
+  return measured;
+}
 
 function fakeRequest(): Promise<number> {
   const duration = 800 + Math.random() * 1200;
@@ -198,6 +240,14 @@ function fakeRequest(): Promise<number> {
         <button type="button" @click="rtl = !rtl">
           {{ rtl ? 'LTR' : 'RTL' }}
         </button>
+        <button type="button" :aria-pressed="widget" @click="widget = !widget">
+          Widget
+        </button>
+        <select v-model="axes" aria-label="Offset axes" :disabled="!widget">
+          <option v-for="value of OFFSET_AXES" :key="value" :value="value">
+            offset: {{ value }}
+          </option>
+        </select>
       </div>
     </header>
     <p>
@@ -216,6 +266,15 @@ function fakeRequest(): Promise<number> {
       </button>
     </section>
 
-    <Toaster :position="position" />
+    <ChatWidget
+      v-if="widget"
+      :position="corner"
+      @clearance="clearance = $event"
+    />
+
+    <!-- The whole integration: the page knows what hangs in the
+         corner, so it says how far to step inward. Left out, the
+         toasts ride over the widget. -->
+    <Toaster :position="position" :offset="offset" />
   </main>
 </template>
