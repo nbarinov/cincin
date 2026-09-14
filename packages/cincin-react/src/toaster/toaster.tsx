@@ -10,8 +10,8 @@ import type {
 import type { Toast, Presenter } from 'cincin/presenter';
 import * as React from 'react';
 import type { CSSProperties } from 'react';
-import { anchorsOf, outwardDirections } from 'cincin-skin';
-import type { ToasterPosition } from 'cincin-skin';
+import { anchorsOf, offsetVars, outwardDirections } from 'cincin-skin';
+import type { ToasterOffset, ToasterPosition } from 'cincin-skin';
 import { inertValue } from '../shared/inert';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
@@ -39,6 +39,17 @@ type ToasterProps = {
    * @default 'bottom-right', 'bottom-left' under RTL
    */
   position?: ToasterPosition;
+  /**
+   * How far the region steps inward from the edges it hangs on, for a
+   * corner the page already uses. A number is px, a string a CSS
+   * length, a bare value the vertical axis; `{ x, y }` names both.
+   * The horizontal half needs a column with a width of its own, so a
+   * narrow screen spends the vertical one alone. Left out, the
+   * channel stays with the stylesheet (`--cincin-offset-*`).
+   *
+   * @default 0
+   */
+  offset?: ToasterOffset;
   /**
    * Directions a swipe may dismiss along.
    *
@@ -73,6 +84,7 @@ type ToasterProps = {
 function Toaster({
   toaster = defaultToaster,
   position: inputPosition,
+  offset,
   swipeDirections,
   visible = 3,
   max = Infinity,
@@ -126,7 +138,10 @@ function Toaster({
         data-x={x}
         data-expanded={expanded}
         style={
-          { '--cincin-exit-duration': `${exitDuration}ms` } as CSSProperties
+          {
+            ...offsetVars(offset),
+            '--cincin-exit-duration': `${exitDuration}ms`,
+          } as CSSProperties
         }
         {...viewportHandlers}
       >

@@ -432,3 +432,21 @@ describe('Toaster position', () => {
     expect(getCards()[0]!.style.touchAction).toBe('pan-y');
   });
 });
+
+describe('Toaster offset', () => {
+  it('should publish the prop on the skin channel', () => {
+    // The mapping only: what the two lengths then mean is the skin's
+    // own unit territory.
+    render(<Toaster toaster={createToaster<ToastContent>()} offset={56} />);
+
+    expect(getRegion().style.getPropertyValue('--cincin-offset-y')).toBe(
+      '56px'
+    );
+  });
+
+  it('should leave the channel alone without the prop', () => {
+    render(<Toaster toaster={createToaster<ToastContent>()} />);
+
+    expect(getRegion().style.getPropertyValue('--cincin-offset-y')).toBe('');
+  });
+});
