@@ -41,7 +41,7 @@
   {
     "name": "cincin-solid (toaster)",
     "path": "packages/cincin-solid/dist/index.mjs",
-    "limit": "5 kB",
+    "limit": "5.25 kB",
     "ignore": ["cincin", "solid-js"]
   },
   {

@@ -17,8 +17,8 @@ import {
 } from 'solid-js';
 import type { JSX } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
-import { anchorsOf, outwardDirections } from 'cincin-skin';
-import type { ToasterPosition } from 'cincin-skin';
+import { anchorsOf, offsetVars, outwardDirections } from 'cincin-skin';
+import type { ToasterOffset, ToasterPosition } from 'cincin-skin';
 import { useDocumentDirection } from '../shared/use-document-direction';
 import { usePresenter } from '../core/use-presenter';
 import { usePresenterHolder } from '../core/use-presenter-holder';
@@ -49,6 +49,17 @@ type ToasterProps = {
    * @default 'bottom-right', 'bottom-left' under RTL
    */
   position?: ToasterPosition;
+  /**
+   * How far the region steps inward from the edges it hangs on, for a
+   * corner the page already uses. A number is px, a string a CSS
+   * length, a bare value the vertical axis; `{ x, y }` names both.
+   * The horizontal half needs a column with a width of its own, so a
+   * narrow screen spends the vertical one alone. Left out, the
+   * channel stays with the stylesheet (`--cincin-offset-*`).
+   *
+   * @default 0
+   */
+  offset?: ToasterOffset;
   /**
    * Directions a swipe may dismiss along.
    *
@@ -140,7 +151,10 @@ function Toaster(props: ToasterProps) {
         data-y={anchors().y}
         data-x={anchors().x}
         data-expanded={String(viewport.expanded())}
-        style={{ '--cincin-exit-duration': `${merged.exitDuration}ms` }}
+        style={{
+          ...offsetVars(merged.offset),
+          '--cincin-exit-duration': `${merged.exitDuration}ms`,
+        }}
         {...viewport.handlers}
       >
         <For each={live()}>
