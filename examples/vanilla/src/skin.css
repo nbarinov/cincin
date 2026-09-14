@@ -96,10 +96,12 @@ main header {
    * the device safe area (home indicator, rotated notch; needs
    * viewport-fit=cover in the meta). Every rule that moves a toast
    * fully off screen adds --inset-bottom on top of 100%. */
-  --region-inset: 1rem;
-  --inset-right: calc(var(--region-inset) + env(safe-area-inset-right, 0px));
-  --inset-bottom: calc(var(--region-inset) + env(safe-area-inset-bottom, 0px));
-  --inset-left: calc(var(--region-inset) + env(safe-area-inset-left, 0px));
+  --viewport-inset: 1rem;
+  --inset-right: calc(var(--viewport-inset) + env(safe-area-inset-right, 0px));
+  --inset-bottom: calc(
+    var(--viewport-inset) + env(safe-area-inset-bottom, 0px)
+  );
+  --inset-left: calc(var(--viewport-inset) + env(safe-area-inset-left, 0px));
   right: var(--inset-right);
   bottom: var(--inset-bottom);
   z-index: 10;
