@@ -9,9 +9,13 @@ const POSITIONS = [
 
 type FixturePosition = (typeof POSITIONS)[number];
 
+/** The toaster's offset, in the shapes the prop takes. */
+type FixtureOffset = number | { x?: number; y?: number };
+
 type FixtureParams = {
   position: FixturePosition | undefined;
   duration: number | undefined;
+  offset: FixtureOffset | undefined;
 };
 
 function initFixture(): FixtureParams {
@@ -29,11 +33,12 @@ function initFixture(): FixtureParams {
   return {
     position: parsePosition(params.get('position')),
     duration: parseDuration(params.get('duration')),
+    offset: parseOffset(params.get('offset'), params.get('offsetX')),
   };
 }
 
 export { initFixture };
-export type { FixtureParams, FixturePosition };
+export type { FixtureOffset, FixtureParams, FixturePosition };
 
 // utils
 
@@ -61,4 +66,23 @@ function parseDuration(value: string | null): number | undefined {
   }
 
   return duration;
+}
+
+/**
+ * `offset` alone is the bare (vertical) shape, `offsetX` alone the
+ * `{ x }` one, both together the pair: the three shapes the prop
+ * takes, reachable from the url.
+ */
+function parseOffset(
+  y: string | null,
+  x: string | null
+): FixtureOffset | undefined {
+  const offsetY = parseDuration(y);
+  const offsetX = parseDuration(x);
+
+  if (offsetX === undefined) {
+    return offsetY;
+  }
+
+  return offsetY === undefined ? { x: offsetX } : { x: offsetX, y: offsetY };
 }

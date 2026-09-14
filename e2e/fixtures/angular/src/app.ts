@@ -20,13 +20,14 @@ import { createScenarios } from '../../shared/scenarios';
         </button>
       }
 
-      <cincin-toaster [position]="position" />
+      <cincin-toaster [position]="position" [offset]="offset" />
     </main>
   `,
 })
 class App {
   readonly params = initFixture();
   readonly position = this.params.position;
+  readonly offset = this.params.offset;
   readonly scenarios = createScenarios(toast, {
     duration: this.params.duration,
   });

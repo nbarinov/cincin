@@ -2,7 +2,7 @@ import { Toaster, toast } from 'cincin-preact';
 import { initFixture } from '../../shared/params';
 import { createScenarios } from '../../shared/scenarios';
 
-const { position, duration } = initFixture();
+const { position, duration, offset } = initFixture();
 const scenarios = createScenarios(toast, { duration });
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
         </button>
       ))}
 
-      <Toaster position={position} />
+      <Toaster position={position} offset={offset} />
     </main>
   );
 }

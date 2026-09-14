@@ -3,7 +3,7 @@ import { Toaster, toast } from 'cincin-vue';
 import { initFixture } from '../../shared/params';
 import { createScenarios } from '../../shared/scenarios';
 
-const { position, duration } = initFixture();
+const { position, duration, offset } = initFixture();
 const scenarios = createScenarios(toast, { duration });
 </script>
 
@@ -21,6 +21,6 @@ const scenarios = createScenarios(toast, { duration });
       {{ scenario.label }}
     </button>
 
-    <Toaster :position="position" />
+    <Toaster :position="position" :offset="offset" />
   </main>
 </template>
