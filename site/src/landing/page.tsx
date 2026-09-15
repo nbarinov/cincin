@@ -1,3 +1,5 @@
+import './page.css';
+
 import * as React from 'react';
 import { Toaster } from 'cincin-react';
 import { SCENARIOS } from './scenarios';
@@ -15,7 +17,7 @@ const TARGETS: Array<{ name: string; href?: string; soon?: boolean }> = [
   { name: 'vanilla', href: `${REPO_URL}/tree/main/examples/vanilla` },
 ];
 
-function App() {
+function LandingPage() {
   const [snippet, setSnippet] = React.useState(
     `// from the quick start
 toast.success({ title: 'Saved' })`
@@ -107,4 +109,4 @@ toast.success({ title: 'Saved' })`
   );
 }
 
-export { App };
+export { LandingPage };

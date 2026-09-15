@@ -1,7 +1,7 @@
+import '../styles/base.css';
+
 import type { ReactNode } from 'react';
 import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
-
-import pageCss from '../page.css?url';
 
 const title = 'cincin · framework-agnostic toast library';
 const description =
@@ -36,12 +36,18 @@ export const Route = createRootRoute({
         rel: 'stylesheet',
         href: 'https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap',
       },
-      { rel: 'stylesheet', href: pageCss },
     ],
     scripts: [
       {
-        children:
-          "{ const theme = localStorage.getItem('cincin:theme'); if (theme) { document.documentElement.style.colorScheme = theme; document.documentElement.dataset.theme = theme; } }",
+        children: `
+          {
+            const theme = localStorage.getItem('cincin:theme');
+            if (theme) {
+              document.documentElement.style.colorScheme = theme;
+              document.documentElement.dataset.theme = theme;
+            }
+          }
+        `,
       },
     ],
   }),
