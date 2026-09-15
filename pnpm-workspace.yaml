@@ -55,6 +55,7 @@ minimumReleaseAgeExclude:
   - '@angular-devkit/architect@0.2201.8'
   - '@angular-devkit/core@22.1.8'
   - '@angular/build@22.1.8'
+  - '@tanstack/start-plugin-core@1.171.44'
 # The Angular plugin walks the TypeScript API at runtime but declares no
 # dependency on it, so it would find the workspace root's TypeScript 7
 # (the native port, a different JS API). The peer routes it to the

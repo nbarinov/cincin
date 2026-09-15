@@ -4,6 +4,7 @@
   "compilerOptions": {
     "lib": ["es2023", "dom", "dom.iterable"],
     "jsx": "react-jsx",
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node"],
+    "verbatimModuleSyntax": false
   }
 }

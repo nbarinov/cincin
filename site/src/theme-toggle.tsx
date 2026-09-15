@@ -1,25 +1,16 @@
 import * as React from 'react';
 
-/**
- * Mirrors the vanilla example's toggle (same storage key): an override
- * pins `color-scheme` on the root, no override follows the OS. The
- * pre-paint script in index.html applies a stored override before the
- * first frame, so this component only has to keep it in sync.
- */
 function ThemeToggle() {
-  const [override, setOverride] = React.useState<'light' | 'dark' | null>(() =>
-    readOverride()
+  const override = React.useSyncExternalStore(
+    subscribeOverride,
+    readOverride,
+    readServerOverride
   );
-  const [systemDark, setSystemDark] = React.useState(() => matchDark().matches);
-
-  React.useEffect(function sync() {
-    const media = matchDark();
-    const onChange = () => setSystemDark(media.matches);
-
-    media.addEventListener('change', onChange);
-
-    return () => media.removeEventListener('change', onChange);
-  }, []);
+  const systemDark = React.useSyncExternalStore(
+    subscribeSystem,
+    readSystemDark,
+    readServerSystemDark
+  );
 
   const dark = (override ?? (systemDark ? 'dark' : 'light')) === 'dark';
 
@@ -31,15 +22,14 @@ function ThemeToggle() {
       onClick={() => {
         const next = dark ? 'light' : 'dark';
 
-        // Back on the system's own scheme: drop the override entirely.
         const nextOverride =
           next === (systemDark ? 'dark' : 'light') ? null : next;
 
         applyOverride(nextOverride);
-        setOverride(nextOverride);
       }}
     >
-      {dark ? 'Light' : 'Dark'}
+      <span data-label="dark">Dark</span>
+      <span data-label="light">Light</span>
     </button>
   );
 }
@@ -50,20 +40,27 @@ export { ThemeToggle };
 
 const THEME_KEY = 'cincin:theme';
 
-/**
- * The single writer for the override, mirroring the pre-paint script
- * in index.html: both must agree on the storage key and the root
- * `color-scheme`. No override clears the inline style, so the CSS
- * `light dark` takes over and follows the OS.
- */
+const listeners = new Set<() => void>();
+
 function applyOverride(next: 'light' | 'dark' | null) {
   if (next !== null) {
     localStorage.setItem(THEME_KEY, next);
+    document.documentElement.dataset.theme = next;
   } else {
     localStorage.removeItem(THEME_KEY);
+    delete document.documentElement.dataset.theme;
   }
 
   document.documentElement.style.colorScheme = next ?? '';
+  listeners.forEach((notify) => notify());
+}
+
+function subscribeOverride(onChange: () => void) {
+  listeners.add(onChange);
+
+  return () => {
+    listeners.delete(onChange);
+  };
 }
 
 function readOverride(): 'light' | 'dark' | null {
@@ -74,6 +71,26 @@ function readOverride(): 'light' | 'dark' | null {
   }
 
   return null;
+}
+
+function readServerOverride(): 'light' | 'dark' | null {
+  return null;
+}
+
+function subscribeSystem(onChange: () => void) {
+  const media = matchDark();
+
+  media.addEventListener('change', onChange);
+
+  return () => media.removeEventListener('change', onChange);
+}
+
+function readSystemDark(): boolean {
+  return matchDark().matches;
+}
+
+function readServerSystemDark(): boolean {
+  return false;
 }
 
 function matchDark(): MediaQueryList {

@@ -16,8 +16,6 @@ const TARGETS: Array<{ name: string; href?: string; soon?: boolean }> = [
 ];
 
 function App() {
-  // The panel shows the call behind the last button pressed: the demo
-  // and its documentation are the same click.
   const [snippet, setSnippet] = React.useState(
     `// from the quick start
 toast.success({ title: 'Saved' })`

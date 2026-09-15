@@ -9,6 +9,9 @@ node_modules
 # TypeScript cache
 *.tsbuildinfo
 
+# TanStack Start scratch
+.tanstack
+
 # testing
 coverage
 test-results

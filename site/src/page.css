@@ -1,10 +1,3 @@
-/*
- * The landing's own skin. It never styles a bare `button` or `a`: the
- * Toaster renders its close and action buttons into this document, and
- * a page-wide selector would repaint them (the react example's
- * page.css carries the same warning).
- */
-
 :root {
   color-scheme: light dark;
 
@@ -83,6 +76,36 @@ body {
     border-color: var(--line-strong);
     color: var(--page-fg);
   }
+}
+
+.theme-toggle [data-label='light'] {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-toggle [data-label='dark'] {
+    display: none;
+  }
+
+  .theme-toggle [data-label='light'] {
+    display: inline;
+  }
+}
+
+html[data-theme='light'] .theme-toggle [data-label='dark'] {
+  display: inline;
+}
+
+html[data-theme='light'] .theme-toggle [data-label='light'] {
+  display: none;
+}
+
+html[data-theme='dark'] .theme-toggle [data-label='dark'] {
+  display: none;
+}
+
+html[data-theme='dark'] .theme-toggle [data-label='light'] {
+  display: inline;
 }
 
 /* --- hero ----------------------------------------------------------- */
