@@ -3,7 +3,8 @@ import './page.css';
 import * as React from 'react';
 import { Toaster } from 'cincin-react';
 import { SCENARIOS } from './scenarios';
-import { ThemeToggle } from './theme-toggle';
+import { Pill } from '@/ui/pill';
+import { ThemeToggle } from '@/ui/theme-toggle';
 
 const REPO_URL = 'https://github.com/nbarinov/cincin';
 
@@ -32,9 +33,9 @@ toast.success({ title: 'Saved' })`
           </a>
         </div>
         <nav className="top-actions">
-          <a href={REPO_URL} target="_blank" rel="noreferrer">
+          <Pill render={<a href={REPO_URL} target="_blank" rel="noreferrer" />}>
             GitHub ↗
-          </a>
+          </Pill>
           <ThemeToggle />
         </nav>
       </header>

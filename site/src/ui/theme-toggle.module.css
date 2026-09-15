@@ -1,0 +1,23 @@
+.toggle [data-label='light'] {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .toggle [data-label='dark'] {
+    display: none;
+  }
+
+  .toggle [data-label='light'] {
+    display: inline;
+  }
+}
+
+:global(html[data-theme='dark']) .toggle [data-label='light'],
+:global(html[data-theme='light']) .toggle [data-label='dark'] {
+  display: inline;
+}
+
+:global(html[data-theme='light']) .toggle [data-label='light'],
+:global(html[data-theme='dark']) .toggle [data-label='dark'] {
+  display: none;
+}

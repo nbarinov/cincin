@@ -26,61 +26,6 @@
   gap: 0.5rem;
 }
 
-.top-actions a,
-.theme-toggle {
-  padding: 0.4375rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 0.5625rem;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    border-color 150ms,
-    color 150ms;
-}
-
-@media (hover: hover) {
-  .top-actions a:hover,
-  .theme-toggle:hover {
-    border-color: var(--line-strong);
-    color: var(--page-fg);
-  }
-}
-
-.theme-toggle [data-label='light'] {
-  display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .theme-toggle [data-label='dark'] {
-    display: none;
-  }
-
-  .theme-toggle [data-label='light'] {
-    display: inline;
-  }
-}
-
-html[data-theme='light'] .theme-toggle [data-label='dark'] {
-  display: inline;
-}
-
-html[data-theme='light'] .theme-toggle [data-label='light'] {
-  display: none;
-}
-
-html[data-theme='dark'] .theme-toggle [data-label='dark'] {
-  display: none;
-}
-
-html[data-theme='dark'] .theme-toggle [data-label='light'] {
-  display: inline;
-}
-
 /* --- hero ----------------------------------------------------------- */
 
 main {

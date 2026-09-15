@@ -12,6 +12,12 @@ export default defineConfig({
     }),
     react(),
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
+  build: {
+    cssTarget: ['chrome123', 'edge123', 'firefox120', 'safari17.5'],
+  },
   server: {
     port: 5185,
     strictPort: true,

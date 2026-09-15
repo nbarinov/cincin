@@ -1,7 +1,8 @@
-import '../styles/base.css';
+import '@/styles/base.css';
 
 import type { ReactNode } from 'react';
 import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
+import { THEME_KEY } from '@/shared/theme';
 
 const title = 'cincin · framework-agnostic toast library';
 const description =
@@ -41,7 +42,7 @@ export const Route = createRootRoute({
       {
         children: `
           {
-            const theme = localStorage.getItem('cincin:theme');
+            const theme = localStorage.getItem('${THEME_KEY}');
             if (theme) {
               document.documentElement.style.colorScheme = theme;
               document.documentElement.dataset.theme = theme;
