@@ -1,12 +1,14 @@
 import '@/styles/base.css';
 
 import type { ReactNode } from 'react';
-import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
+import {
+  createRootRoute,
+  HeadContent,
+  Scripts,
+  useParams,
+} from '@tanstack/react-router';
 import { THEME_KEY } from '@/shared/theme';
-
-const title = 'cincin · framework-agnostic toast library';
-const description =
-  'Framework-agnostic toast library: an entry store, a presenter that shows it, thin adapters, polished UX.';
+import { DEFAULT_LOCALE } from '@/shared/i18n/config';
 
 export const Route = createRootRoute({
   head: () => ({
@@ -16,14 +18,6 @@ export const Route = createRootRoute({
         name: 'viewport',
         content: 'width=device-width, viewport-fit=cover',
       },
-      { title },
-      { name: 'description', content: description },
-      { property: 'og:type', content: 'website' },
-      { property: 'og:site_name', content: 'cincin' },
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      { property: 'og:url', content: 'https://cincin.nbarinov.io/' },
-      { name: 'twitter:card', content: 'summary' },
     ],
     links: [
       { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
@@ -56,8 +50,13 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+  const locale = useParams({
+    strict: false,
+    select: (params) => params.locale ?? DEFAULT_LOCALE,
+  });
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <HeadContent />
         <meta

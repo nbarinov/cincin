@@ -2,9 +2,11 @@ import './page.css';
 
 import * as React from 'react';
 import { Toaster } from 'cincin-react';
+import { useTranslations } from 'use-intl';
 import { SCENARIOS } from './scenarios';
 import { Pill } from '@/ui/pill';
 import { ThemeToggle } from '@/ui/theme-toggle';
+import { LocaleSwitcher } from '@/ui/locale-switcher';
 
 const REPO_URL = 'https://github.com/nbarinov/cincin';
 
@@ -19,6 +21,7 @@ const TARGETS: Array<{ name: string; href?: string; soon?: boolean }> = [
 ];
 
 function LandingPage() {
+  const t = useTranslations('landing');
   const [snippet, setSnippet] = React.useState(
     `// from the quick start
 toast.success({ title: 'Saved' })`
@@ -41,6 +44,7 @@ toast.success({ title: 'Saved' })`
             }
           />
           <ThemeToggle />
+          <LocaleSwitcher />
         </nav>
       </header>
 
@@ -49,17 +53,14 @@ toast.success({ title: 'Saved' })`
           🥂
         </p>
         <h1>cincin</h1>
-        <p className="lede">
-          Framework-agnostic toast library: an entry store, a presenter that
-          shows it, thin adapters, polished UX.
-        </p>
+        <p className="lede">{t('hero.lede')}</p>
 
-        <ul className="targets" aria-label="Supported UI libraries">
+        <ul className="targets" aria-label={t('targets.label')}>
           {TARGETS.map((target) =>
             target.soon ? (
               <li key={target.name} className="target is-soon">
                 {target.name}
-                <span className="target-soon">soon</span>
+                <span className="target-soon">{t('targets.soon')}</span>
               </li>
             ) : (
               <li key={target.name} className="target">
@@ -71,8 +72,8 @@ toast.success({ title: 'Saved' })`
           )}
         </ul>
 
-        <h2>Try it</h2>
-        <section className="controls" aria-label="Toast scenarios">
+        <h2>{t('try.title')}</h2>
+        <section className="controls" aria-label={t('try.label')}>
           {SCENARIOS.map((scenario) => (
             <button
               key={scenario.label}
@@ -95,18 +96,11 @@ toast.success({ title: 'Saved' })`
           <code>{snippet}</code>
         </pre>
 
-        <p className="footnote">
-          Swipe a toast to the right to dismiss it. Hover the stack to expand it
-          — the timers pause while it is open, and while the tab is hidden.
-        </p>
+        <p className="footnote">{t('try.footnote')}</p>
       </main>
 
       <footer className="credits">
-        UX inspired by Emil Kowalski&apos;s{' '}
-        <a href="https://sonner.emilkowal.ski" target="_blank" rel="noreferrer">
-          sonner
-        </a>
-        .
+        {t.rich('credits', { a: sonnerLink })}
       </footer>
 
       <Toaster />
@@ -115,3 +109,13 @@ toast.success({ title: 'Saved' })`
 }
 
 export { LandingPage };
+
+// utils
+
+function sonnerLink(chunks: React.ReactNode) {
+  return (
+    <a href="https://sonner.emilkowal.ski" target="_blank" rel="noreferrer">
+      {chunks}
+    </a>
+  );
+}

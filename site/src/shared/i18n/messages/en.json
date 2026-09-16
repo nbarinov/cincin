@@ -1,1 +1,32 @@
-{}
+{
+  "ui": {
+    "localeSwitcher": {
+      "label": "Switch language"
+    },
+    "themeToggle": {
+      "dark": "Dark",
+      "light": "Light",
+      "toDark": "Switch to dark theme",
+      "toLight": "Switch to light theme"
+    }
+  },
+  "landing": {
+    "meta": {
+      "title": "cincin — toast library",
+      "description": "Framework-agnostic toast library: an entry store, a presenter that shows it, thin adapters, polished UX."
+    },
+    "hero": {
+      "lede": "Framework-agnostic toast library: an entry store, a presenter that shows it, thin adapters, polished UX."
+    },
+    "targets": {
+      "label": "Supported UI libraries",
+      "soon": "soon"
+    },
+    "try": {
+      "title": "Try it",
+      "label": "Toast scenarios",
+      "footnote": "Swipe a toast to the right to dismiss it. Hover the stack to expand it — the timers pause while it is open, and while the tab is hidden."
+    },
+    "credits": "UX inspired by Emil Kowalski's <a>sonner</a>."
+  }
+}

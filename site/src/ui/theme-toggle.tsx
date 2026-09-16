@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslations } from 'use-intl';
 import {
   applyOverride,
   readOverride,
@@ -12,6 +13,8 @@ import { Pill } from './pill';
 import styles from './theme-toggle.module.css';
 
 function ThemeToggle() {
+  const t = useTranslations('ui.themeToggle');
+
   const override = React.useSyncExternalStore(
     subscribeOverride,
     readOverride,
@@ -29,7 +32,7 @@ function ThemeToggle() {
     <Pill
       type="button"
       className={styles.toggle}
-      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={t(dark ? 'toLight' : 'toDark')}
       onClick={() => {
         const next = dark ? 'light' : 'dark';
 
@@ -39,8 +42,8 @@ function ThemeToggle() {
         applyOverride(nextOverride);
       }}
     >
-      <span data-label="dark">Dark</span>
-      <span data-label="light">Light</span>
+      <span data-label="dark">{t('dark')}</span>
+      <span data-label="light">{t('light')}</span>
     </Pill>
   );
 }
