@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "types": ["vite/client", "node"],
     "verbatimModuleSyntax": false,
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"]
     }
