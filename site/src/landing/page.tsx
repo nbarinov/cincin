@@ -33,9 +33,13 @@ toast.success({ title: 'Saved' })`
           </a>
         </div>
         <nav className="top-actions">
-          <Pill render={<a href={REPO_URL} target="_blank" rel="noreferrer" />}>
-            GitHub ↗
-          </Pill>
+          <Pill
+            render={
+              <a href={REPO_URL} target="_blank" rel="noreferrer">
+                GitHub ↗
+              </a>
+            }
+          />
           <ThemeToggle />
         </nav>
       </header>

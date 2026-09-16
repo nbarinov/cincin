@@ -1,7 +1,6 @@
 {
-  "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["../../.oxlintrc.json"],
-  "ignorePatterns": ["src/routeTree.gen.ts"],
+  "$schema": "../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../.oxlintrc.json"],
   "plugins": [
     "unicorn",
     "typescript",
@@ -13,13 +12,5 @@
   "rules": {
     "react/react-in-jsx-scope": "off"
   },
-  "overrides": [
-    {
-      "files": ["**/*.test.tsx"],
-      "rules": {
-        "react/globals": "off",
-        "react/refs": "off"
-      }
-    }
-  ]
+  "ignorePatterns": ["src/routeTree.gen.ts"]
 }
