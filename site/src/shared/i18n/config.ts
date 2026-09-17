@@ -2,6 +2,7 @@ import { en } from './messages/en';
 
 const LOCALES = ['en', 'ru'] as const;
 const DEFAULT_LOCALE: Locale = 'en';
+const DEFAULT_MESSAGES: Messages = en;
 
 type Locale = (typeof LOCALES)[number];
 type Messages = typeof en;
@@ -17,7 +18,7 @@ function isLocale(value: string): value is Locale {
 async function loadMessages(locale: Locale): Promise<Messages> {
   switch (locale) {
     case 'en':
-      return en;
+      return DEFAULT_MESSAGES;
 
     case 'ru':
       return withFallback((await import('./messages/ru')).ru);
@@ -29,13 +30,13 @@ async function loadMessages(locale: Locale): Promise<Messages> {
   }
 }
 
-export { LOCALES, DEFAULT_LOCALE, isLocale, loadMessages };
+export { LOCALES, DEFAULT_LOCALE, DEFAULT_MESSAGES, isLocale, loadMessages };
 export type { Locale, Messages, Translation };
 
 // utils
 
 function withFallback(translation: PartialTree): Messages {
-  const messages = structuredClone(en);
+  const messages = structuredClone(DEFAULT_MESSAGES);
 
   apply(messages, translation);
 
