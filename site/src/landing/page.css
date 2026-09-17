@@ -1,31 +1,3 @@
-/* --- top bar -------------------------------------------------------- */
-
-.top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.125rem 1.5rem;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-}
-
-.brand a {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: inherit;
-  text-decoration: none;
-}
-
-.top-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 /* --- hero ----------------------------------------------------------- */
 
 main {
@@ -132,51 +104,6 @@ h2 {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
-}
-
-.controls button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  border: 1px solid var(--line);
-  border-radius: 0.5625rem;
-  background: var(--card);
-  box-shadow: var(--card-shadow);
-  color: inherit;
-  font: inherit;
-  font-size: 0.84375rem;
-  font-weight: 500;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    border-color 150ms,
-    transform 100ms;
-}
-
-.controls button:active {
-  transform: translateY(1px);
-}
-
-@media (hover: hover) {
-  .controls button:hover {
-    border-color: var(--line-strong);
-  }
-}
-
-/* Dismiss all is the odd one out: an escape hatch, not a scenario. */
-.controls button.quiet {
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  color: var(--faint);
-}
-
-@media (hover: hover) {
-  .controls button.quiet:hover {
-    border-color: var(--line);
-    color: var(--page-fg);
-  }
 }
 
 /* Page chrome, deliberately NOT the skin: the toasts themselves carry

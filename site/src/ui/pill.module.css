@@ -1,22 +1,59 @@
 .pill {
-  padding: 0.4375rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   border: 1px solid var(--line);
   border-radius: 0.5625rem;
-  background: transparent;
-  color: var(--muted);
+  color: inherit;
   font: inherit;
-  font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     border-color 150ms,
-    color 150ms;
+    color 150ms,
+    transform 100ms;
+}
+
+.outline {
+  padding: 0.4375rem 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.card {
+  padding: 0.5rem 0.875rem;
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+  font-size: 0.84375rem;
+}
+
+.card:active {
+  transform: translateY(1px);
+}
+
+.quiet {
+  padding: 0.5rem 0.875rem;
+  border-color: transparent;
+  background: transparent;
+  color: var(--faint);
+  font-size: 0.84375rem;
 }
 
 @media (hover: hover) {
-  .pill:hover {
+  .outline:hover,
+  .card:hover {
     border-color: var(--line-strong);
+  }
+
+  .outline:hover,
+  .quiet:hover {
     color: var(--page-fg);
+  }
+
+  .quiet:hover {
+    border-color: var(--line);
   }
 }

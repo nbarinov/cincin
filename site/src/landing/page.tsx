@@ -3,12 +3,9 @@ import './page.css';
 import * as React from 'react';
 import { Toaster } from 'cincin-react';
 import { useTranslations } from 'use-intl';
+import { REPO_URL } from '@/shared/site';
 import { Pill } from '@/ui/pill';
-import { ThemeToggle } from '@/ui/theme-toggle';
-import { LocaleSwitcher } from '@/ui/locale-switcher';
 import { createScenarios } from './scenarios';
-
-const REPO_URL = 'https://github.com/nbarinov/cincin';
 
 // The `soon` branch stays for the next binding in line.
 const TARGETS: Array<{ name: string; href?: string; soon?: boolean }> = [
@@ -28,25 +25,6 @@ function LandingPage() {
 
   return (
     <>
-      <header className="top">
-        <div className="brand">
-          <a href={REPO_URL} target="_blank" rel="noreferrer" lang="en">
-            🥂 cincin
-          </a>
-        </div>
-        <nav className="top-actions">
-          <Pill
-            render={
-              <a href={REPO_URL} target="_blank" rel="noreferrer">
-                GitHub ↗
-              </a>
-            }
-          />
-          <ThemeToggle />
-          <LocaleSwitcher />
-        </nav>
-      </header>
-
       <main>
         <p className="glyph" aria-hidden>
           🥂
@@ -74,10 +52,10 @@ function LandingPage() {
         <h2>{t('try.title')}</h2>
         <section className="controls" aria-label={t('try.label')}>
           {scenarios.map((scenario) => (
-            <button
+            <Pill
               key={scenario.id}
               type="button"
-              className={scenario.id === 'dismiss' ? 'quiet' : undefined}
+              variant={scenario.id === 'dismiss' ? 'quiet' : 'card'}
               onClick={() => {
                 setSnippet(scenario.code);
                 scenario.run();
@@ -87,7 +65,7 @@ function LandingPage() {
                 <span className="dot" data-type={scenario.dot} aria-hidden />
               )}
               {scenario.label}
-            </button>
+            </Pill>
           ))}
         </section>
 
