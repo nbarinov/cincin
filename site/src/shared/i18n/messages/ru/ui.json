@@ -1,0 +1,8 @@
+{
+  "localeSwitcher": {
+    "label": "Переключить на {language}"
+  },
+  "themeToggle": {
+    "label": "{next, select, light {Включить светлую тему} dark {Включить тёмную тему} other {Следовать теме системы}}"
+  }
+}

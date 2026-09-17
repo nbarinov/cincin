@@ -1,4 +1,4 @@
-import en from './messages/en.json';
+import { en } from './messages/en';
 
 const LOCALES = ['en', 'ru'] as const;
 const DEFAULT_LOCALE: Locale = 'en';
@@ -8,6 +8,7 @@ type Messages = typeof en;
 
 type Tree = { [key: string]: Tree | string };
 type PartialTree = { [key: string]: PartialTree | string | undefined };
+type Translation = Record<keyof Messages, PartialTree>;
 
 function isLocale(value: string): value is Locale {
   return LOCALES.some((locale) => locale === value);
@@ -19,7 +20,7 @@ async function loadMessages(locale: Locale): Promise<Messages> {
       return en;
 
     case 'ru':
-      return withFallback((await import('./messages/ru.json')).default);
+      return withFallback((await import('./messages/ru')).ru);
 
     default: {
       const exhaustive: never = locale;
@@ -29,7 +30,7 @@ async function loadMessages(locale: Locale): Promise<Messages> {
 }
 
 export { LOCALES, DEFAULT_LOCALE, isLocale, loadMessages };
-export type { Locale, Messages };
+export type { Locale, Messages, Translation };
 
 // utils
 
