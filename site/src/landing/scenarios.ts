@@ -1,173 +1,172 @@
 import { toast } from 'cincin-react';
+import type { useTranslations } from 'use-intl';
 
-/**
- * One scenario = a button, the call it makes, and the snippet shown in
- * the code panel. The snippet is the source of the call verbatim: a
- * visitor should be able to copy it into their app and get what they
- * just saw.
- */
 type Scenario = {
+  id: string;
   label: string;
-  /** The type whose accent the button dot borrows; omitted = no dot. */
   dot?: 'message' | 'info' | 'success' | 'warning' | 'error' | 'loading';
   code: string;
   run: () => void;
 };
 
-const SCENARIOS: Scenario[] = [
-  {
-    label: 'Message',
-    dot: 'message',
-    code: `toast.message({ title: 'Copied to clipboard' })`,
-    run: () => void toast.message({ title: 'Copied to clipboard' }),
-  },
-  {
-    label: 'Success',
-    dot: 'success',
-    code: `toast.success({
-  title: 'Saved',
-  description: 'Changes synced to the server.',
+type Translate = ReturnType<typeof useTranslations<'landing.scenarios'>>;
+
+function createScenarios(t: Translate): Scenario[] {
+  const retry = (): void => {
+    void toast.success({
+      title: t('error.recoveredTitle'),
+      description: t('error.recoveredDescription'),
+    });
+  };
+
+  return [
+    {
+      id: 'message',
+      label: t('message.label'),
+      dot: 'message',
+      code: `toast.message({ title: ${str(t('message.title'))} })`,
+      run: () => void toast.message({ title: t('message.title') }),
+    },
+    {
+      id: 'success',
+      label: t('success.label'),
+      dot: 'success',
+      code: `toast.success({
+  title: ${str(t('success.title'))},
+  description: ${str(t('success.description'))},
 })`,
-    run: () =>
-      void toast.success({
-        title: 'Saved',
-        description: 'Changes synced to the server.',
-      }),
-  },
-  {
-    label: 'Info',
-    dot: 'info',
-    code: `toast.info({
-  title: 'Connected',
-  description: 'Live updates are on.',
-})`,
-    run: () =>
-      void toast.info({
-        title: 'Connected',
-        description: 'Live updates are on.',
-      }),
-  },
-  {
-    label: 'Warning',
-    dot: 'warning',
-    code: `toast.warning({
-  title: 'Storage almost full',
-  description: '92% of the quota is used.',
-})`,
-    run: () =>
-      void toast.warning({
-        title: 'Storage almost full',
-        description: '92% of the quota is used.',
-      }),
-  },
-  {
-    label: 'Error',
-    dot: 'error',
-    code: `toast.error({
-  title: 'Something broke',
-  description: 'The request did not survive the round trip.',
-  actions: [{ label: 'Retry', onClick: retry }],
-})`,
-    run: () =>
-      void toast.error({
-        title: 'Something broke',
-        description: 'The request did not survive the round trip.',
-        actions: [{ label: 'Retry', onClick: retry }],
-      }),
-  },
-  {
-    label: 'Promise',
-    dot: 'loading',
-    code: `toast.promise(upload(), {
-  loading: { title: 'Uploading…' },
-  success: (ms) => ({ title: \`Uploaded in \${ms}ms\` }),
-  error: () => ({ title: 'Upload failed' }),
-})`,
-    run: () =>
-      void toast
-        .promise(upload(), {
-          loading: { title: 'Uploading…' },
-          success: (ms: number) => ({
-            title: `Uploaded in ${Math.round(ms)}ms`,
-          }),
-          error: () => ({ title: 'Upload failed' }),
-        })
-        .catch(() => {
-          // The rejection is already on screen as the error phase.
+      run: () =>
+        void toast.success({
+          title: t('success.title'),
+          description: t('success.description'),
         }),
-  },
-  {
-    label: 'Undo',
-    // No cross: the button reads as the way out, and without it the
-    // skin keeps the whole toast on one line. The toast stays
-    // dismissible though, so a flick still closes it. The click would
-    // dismiss the toast; preventing it lets the confirmation morph the
-    // same card in place instead (the type change to success also
-    // rewinds the clock).
-    code: `const toastId = toast.message({
-  title: 'Message archived',
+    },
+    {
+      id: 'info',
+      label: t('info.label'),
+      dot: 'info',
+      code: `toast.info({
+  title: ${str(t('info.title'))},
+  description: ${str(t('info.description'))},
+})`,
+      run: () =>
+        void toast.info({
+          title: t('info.title'),
+          description: t('info.description'),
+        }),
+    },
+    {
+      id: 'warning',
+      label: t('warning.label'),
+      dot: 'warning',
+      code: `toast.warning({
+  title: ${str(t('warning.title'))},
+  description: ${str(t('warning.description'))},
+})`,
+      run: () =>
+        void toast.warning({
+          title: t('warning.title'),
+          description: t('warning.description'),
+        }),
+    },
+    {
+      id: 'error',
+      label: t('error.label'),
+      dot: 'error',
+      code: `toast.error({
+  title: ${str(t('error.title'))},
+  description: ${str(t('error.description'))},
+  actions: [{ label: ${str(t('error.retry'))}, onClick: retry }],
+})`,
+      run: () =>
+        void toast.error({
+          title: t('error.title'),
+          description: t('error.description'),
+          actions: [{ label: t('error.retry'), onClick: retry }],
+        }),
+    },
+    {
+      id: 'promise',
+      label: t('promise.label'),
+      dot: 'loading',
+      code: `toast.promise(upload(), {
+  loading: { title: ${str(t('promise.loading'))} },
+  success: (ms) => ({ title: \`${t('promise.success', { ms: '${ms}' })}\` }),
+  error: () => ({ title: ${str(t('promise.error'))} }),
+})`,
+      run: () =>
+        void toast
+          .promise(upload(), {
+            loading: { title: t('promise.loading') },
+            success: (ms: number) => ({
+              title: t('promise.success', { ms: Math.round(ms) }),
+            }),
+            error: () => ({ title: t('promise.error') }),
+          })
+          .catch(() => {
+            // ignore
+          }),
+    },
+    {
+      id: 'undo',
+      label: t('undo.label'),
+      code: `const toastId = toast.message({
+  title: ${str(t('undo.title'))},
   closeButton: false,
   actions: [
     {
-      label: 'Undo',
+      label: ${str(t('undo.action'))},
       onClick: (e) => {
         e.preventDefault();
         toast.success(
-          { title: 'Archive restored' },
+          { title: ${str(t('undo.restored'))} },
           { id: toastId }
         );
       },
     },
   ],
 })`,
-    run: () => {
-      const toastId = toast.message({
-        title: 'Message archived',
-        closeButton: false,
-        actions: [
-          {
-            label: 'Undo',
-            onClick: (e) => {
-              e.preventDefault();
-              toast.success({ title: 'Archive restored' }, { id: toastId });
+      run: () => {
+        const toastId = toast.message({
+          title: t('undo.title'),
+          closeButton: false,
+          actions: [
+            {
+              label: t('undo.action'),
+              onClick: (e) => {
+                e.preventDefault();
+                toast.success({ title: t('undo.restored') }, { id: toastId });
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
+      },
     },
-  },
+    {
+      id: 'decide',
+      label: t('decide.label'),
+      code: `const toastId = toast.info(
   {
-    label: 'Decide',
-    // A pair asks a question, so the card must wait for the answer:
-    // no expiry and no swipe, because silence is not a reply. Both
-    // answers prevent the dismiss and re-create the same id, so the
-    // card that asked is the card that reports back. The ask is an
-    // info and the answers are not: an upsert only re-derives the
-    // duration and the dismissibility when the type changes, so
-    // answering in the asking type would inherit the open-ended clock
-    // and strand the confirmation on screen.
-    code: `const toastId = toast.info(
-  {
-    title: 'Anna wants to join',
-    description: 'She asked for access to the workspace.',
+    title: ${str(t('decide.title'))},
+    description: ${str(t('decide.description'))},
     actions: [
       {
-        label: 'Decline',
+        label: ${str(t('decide.decline'))},
         variant: 'secondary',
         onClick: (e) => {
           e.preventDefault();
           toast.message(
-            { title: 'Invitation declined' },
+            { title: ${str(t('decide.declined'))} },
             { id: toastId }
           );
         },
       },
       {
-        label: 'Accept',
+        label: ${str(t('decide.accept'))},
         onClick: (e) => {
           e.preventDefault();
           toast.success(
-            { title: 'Anna joined the workspace' },
+            { title: ${str(t('decide.joined'))} },
             { id: toastId }
           );
         },
@@ -176,76 +175,73 @@ const SCENARIOS: Scenario[] = [
   },
   { duration: Infinity, dismissible: false }
 )`,
-    run: () => {
-      const toastId = toast.info(
-        {
-          title: 'Anna wants to join',
-          description: 'She asked for access to the workspace.',
-          actions: [
-            {
-              label: 'Decline',
-              variant: 'secondary',
-              onClick: (e) => {
-                e.preventDefault();
-                toast.message(
-                  { title: 'Invitation declined' },
-                  { id: toastId }
-                );
+      run: () => {
+        const toastId = toast.info(
+          {
+            title: t('decide.title'),
+            description: t('decide.description'),
+            actions: [
+              {
+                label: t('decide.decline'),
+                variant: 'secondary',
+                onClick: (e) => {
+                  e.preventDefault();
+                  toast.message(
+                    { title: t('decide.declined') },
+                    { id: toastId }
+                  );
+                },
               },
-            },
-            {
-              label: 'Accept',
-              onClick: (e) => {
-                e.preventDefault();
-                toast.success(
-                  { title: 'Anna joined the workspace' },
-                  { id: toastId }
-                );
+              {
+                label: t('decide.accept'),
+                onClick: (e) => {
+                  e.preventDefault();
+                  toast.success({ title: t('decide.joined') }, { id: toastId });
+                },
               },
-            },
-          ],
-        },
-        { duration: Infinity, dismissible: false }
-      );
+            ],
+          },
+          { duration: Infinity, dismissible: false }
+        );
+      },
     },
-  },
-  {
-    label: 'Update',
-    code: `const id = toast.loading({ title: 'Preparing export…' });
+    {
+      id: 'update',
+      label: t('update.label'),
+      code: `const id = toast.loading({ title: ${str(t('update.preparing'))} });
 
 // later, same toast, no exit in between:
 toast.update(id, {
   type: 'success',
-  content: { title: 'Export ready' },
+  content: { title: ${str(t('update.ready'))} },
 })`,
-    run: () => {
-      const id = toast.loading({ title: 'Preparing export…' });
+      run: () => {
+        const id = toast.loading({ title: t('update.preparing') });
 
-      setTimeout(() => {
-        toast.update(id, {
-          type: 'success',
-          content: { title: 'Export ready' },
-        });
-      }, 1400);
+        setTimeout(() => {
+          toast.update(id, {
+            type: 'success',
+            content: { title: t('update.ready') },
+          });
+        }, 1400);
+      },
     },
-  },
-  {
-    label: 'Dismiss all',
-    code: `toast.remove()`,
-    run: () => toast.remove(),
-  },
-];
+    {
+      id: 'dismiss',
+      label: t('dismiss.label'),
+      code: `toast.remove()`,
+      run: () => toast.remove(),
+    },
+  ];
+}
 
-export { SCENARIOS };
+export { createScenarios };
 export type { Scenario };
 
 // utils
 
-function retry(): void {
-  void toast.success({
-    title: 'Recovered',
-    description: 'The second try went through.',
-  });
+function str(value: string): string {
+  return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 }
 
 function upload(): Promise<number> {

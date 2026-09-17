@@ -9,7 +9,7 @@
   },
   "landing": {
     "meta": {
-      "title": "cincin — toast library",
+      "title": "cincin – toast library",
       "description": "Framework-agnostic toast library: an entry store, a presenter that shows it, thin adapters, polished UX."
     },
     "hero": {
@@ -22,8 +22,66 @@
     "try": {
       "title": "Try it",
       "label": "Toast scenarios",
-      "footnote": "Swipe a toast to the right to dismiss it. Hover the stack to expand it — the timers pause while it is open, and while the tab is hidden."
+      "footnote": "Swipe a toast to the right to dismiss it. Hover the stack to expand it."
     },
-    "credits": "UX inspired by Emil Kowalski's <a>sonner</a>."
+    "credits": "UX inspired by Emil Kowalski's <a>sonner</a>.",
+    "scenarios": {
+      "message": {
+        "label": "Message",
+        "title": "Copied to clipboard"
+      },
+      "success": {
+        "label": "Success",
+        "title": "Saved",
+        "description": "Changes synced to the server."
+      },
+      "info": {
+        "label": "Info",
+        "title": "Connected",
+        "description": "Live updates are on."
+      },
+      "warning": {
+        "label": "Warning",
+        "title": "Storage almost full",
+        "description": "92% of the quota is used."
+      },
+      "error": {
+        "label": "Error",
+        "title": "Something broke",
+        "description": "The request did not survive the round trip.",
+        "retry": "Retry",
+        "recoveredTitle": "Recovered",
+        "recoveredDescription": "The second try went through."
+      },
+      "promise": {
+        "label": "Promise",
+        "loading": "Uploading…",
+        "success": "Uploaded in {ms}ms",
+        "error": "Upload failed"
+      },
+      "undo": {
+        "label": "Undo",
+        "title": "Message archived",
+        "action": "Undo",
+        "restored": "Archive restored"
+      },
+      "decide": {
+        "label": "Decide",
+        "title": "Anna wants to join",
+        "description": "She asked for access to the workspace.",
+        "decline": "Decline",
+        "accept": "Accept",
+        "declined": "Invitation declined",
+        "joined": "Anna joined the workspace"
+      },
+      "update": {
+        "label": "Update",
+        "preparing": "Preparing export…",
+        "ready": "Export ready"
+      },
+      "dismiss": {
+        "label": "Dismiss all"
+      }
+    }
   }
 }

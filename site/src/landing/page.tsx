@@ -3,10 +3,10 @@ import './page.css';
 import * as React from 'react';
 import { Toaster } from 'cincin-react';
 import { useTranslations } from 'use-intl';
-import { SCENARIOS } from './scenarios';
 import { Pill } from '@/ui/pill';
 import { ThemeToggle } from '@/ui/theme-toggle';
 import { LocaleSwitcher } from '@/ui/locale-switcher';
+import { createScenarios } from './scenarios';
 
 const REPO_URL = 'https://github.com/nbarinov/cincin';
 
@@ -22,10 +22,9 @@ const TARGETS: Array<{ name: string; href?: string; soon?: boolean }> = [
 
 function LandingPage() {
   const t = useTranslations('landing');
-  const [snippet, setSnippet] = React.useState(
-    `// from the quick start
-toast.success({ title: 'Saved' })`
-  );
+  const ts = useTranslations('landing.scenarios');
+  const scenarios = React.useMemo(() => createScenarios(ts), [ts]);
+  const [snippet, setSnippet] = React.useState(scenarios.at(0)?.code);
 
   return (
     <>
@@ -74,11 +73,11 @@ toast.success({ title: 'Saved' })`
 
         <h2>{t('try.title')}</h2>
         <section className="controls" aria-label={t('try.label')}>
-          {SCENARIOS.map((scenario) => (
+          {scenarios.map((scenario) => (
             <button
-              key={scenario.label}
+              key={scenario.id}
               type="button"
-              className={scenario.label === 'Dismiss all' ? 'quiet' : undefined}
+              className={scenario.id === 'dismiss' ? 'quiet' : undefined}
               onClick={() => {
                 setSnippet(scenario.code);
                 scenario.run();
