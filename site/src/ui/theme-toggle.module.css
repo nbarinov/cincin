@@ -1,23 +1,11 @@
-.toggle [data-label='light'] {
-  display: none;
+.toggle {
+  display: inline-grid;
+  place-items: center;
+  padding-inline: 0.5rem;
+  line-height: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .toggle [data-label='dark'] {
-    display: none;
-  }
-
-  .toggle [data-label='light'] {
-    display: inline;
-  }
-}
-
-:global(html[data-theme='dark']) .toggle [data-label='light'],
-:global(html[data-theme='light']) .toggle [data-label='dark'] {
-  display: inline;
-}
-
-:global(html[data-theme='light']) .toggle [data-label='light'],
-:global(html[data-theme='dark']) .toggle [data-label='dark'] {
-  display: none;
+.icon {
+  width: 1rem;
+  height: 1rem;
 }

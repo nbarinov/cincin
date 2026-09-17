@@ -1,5 +1,6 @@
 import '@/styles/base.css';
 
+import * as React from 'react';
 import type { ReactNode } from 'react';
 import {
   createRootRoute,
@@ -7,7 +8,7 @@ import {
   Scripts,
   useParams,
 } from '@tanstack/react-router';
-import { THEME_KEY } from '@/shared/theme';
+import { THEME_KEY, theme } from '@/shared/theme';
 import { DEFAULT_LOCALE } from '@/shared/i18n/config';
 
 export const Route = createRootRoute({
@@ -38,8 +39,7 @@ export const Route = createRootRoute({
           {
             const theme = localStorage.getItem('${THEME_KEY}');
             if (theme) {
-              document.documentElement.style.colorScheme = theme;
-              document.documentElement.dataset.theme = theme;
+              document.documentElement.dataset.colorScheme = theme;
             }
           }
         `,
@@ -54,9 +54,14 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     strict: false,
     select: (params) => params.locale ?? DEFAULT_LOCALE,
   });
+  const scheme = React.useSyncExternalStore(
+    theme.subscribe,
+    theme.getSnapshot,
+    theme.getPrepaintedSnapshot
+  );
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-color-scheme={scheme ?? undefined}>
       <head>
         <HeadContent />
         <meta
