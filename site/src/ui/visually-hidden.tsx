@@ -8,7 +8,11 @@ function VisuallyHidden({ className, ...rest }: VisuallyHiddenProps) {
 
   return (
     <span
-      className={revealed ? className : `${styles.hidden} ${className}`}
+      className={
+        revealed
+          ? className
+          : [styles.hidden, className].filter(Boolean).join(' ')
+      }
       {...rest}
     />
   );

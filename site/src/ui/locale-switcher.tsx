@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useLocale, useTranslations } from 'use-intl';
 import { Pill } from './pill';
+import { VisuallyHidden } from './visually-hidden';
 
 const NAMES = { en: 'English', ru: 'Русский' };
 
@@ -18,9 +19,13 @@ function LocaleSwitcher() {
             ...prev,
             locale: other === 'en' ? undefined : other,
           })}
-          aria-label={t('label')}
         >
-          {NAMES[other]}
+          <VisuallyHidden>
+            {t('label', { language: NAMES[other] })}
+          </VisuallyHidden>
+          <span lang={other} aria-hidden>
+            {NAMES[other]}
+          </span>
         </Link>
       }
     />
