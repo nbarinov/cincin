@@ -1,3 +1,7 @@
+@import '@fontsource-variable/instrument-sans';
+@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 @import url(./tokens.css);
 
 body {
@@ -11,4 +15,13 @@ body {
   transition:
     background-color 300ms,
     color 300ms;
+}
+
+/* A fragment in the other language takes that language's face. */
+body [lang='en'] {
+  font-family: var(--font-sans-latin);
+}
+
+body [lang='ru'] {
+  font-family: var(--font-sans-cyrillic);
 }

@@ -20,19 +20,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, viewport-fit=cover',
       },
     ],
-    links: [
-      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
-      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.gstatic.com',
-        crossOrigin: 'anonymous',
-      },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap',
-      },
-    ],
+    links: [{ rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],
     scripts: [
       {
         children: `

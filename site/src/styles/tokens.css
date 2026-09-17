@@ -10,7 +10,11 @@
   --card: light-dark(#fff, #1d1d21);
   --card-shadow: 0 1px 2px light-dark(rgb(60 60 50 / 0.06), rgb(0 0 0 / 0.3));
 
-  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans-latin:
+    'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans-cyrillic:
+    'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans-latin);
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
@@ -20,4 +24,8 @@
 
 :root[data-color-scheme='dark'] {
   color-scheme: dark;
+}
+
+:root:lang(ru) {
+  --font-sans: var(--font-sans-cyrillic);
 }

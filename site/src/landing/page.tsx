@@ -31,7 +31,7 @@ toast.success({ title: 'Saved' })`
     <>
       <header className="top">
         <div className="brand">
-          <a href={REPO_URL} target="_blank" rel="noreferrer">
+          <a href={REPO_URL} target="_blank" rel="noreferrer" lang="en">
             🥂 cincin
           </a>
         </div>
@@ -52,7 +52,7 @@ toast.success({ title: 'Saved' })`
         <p className="glyph" aria-hidden>
           🥂
         </p>
-        <h1>cincin</h1>
+        <h1 lang="en">cincin</h1>
         <p className="lede">{t('hero.lede')}</p>
 
         <ul className="targets" aria-label={t('targets.label')}>
