@@ -1,11 +1,10 @@
-import './page.css';
-
 import * as React from 'react';
 import { Toaster } from 'cincin-react';
 import { useTranslations } from 'use-intl';
 import { REPO_URL } from '@/shared/site';
 import { Pill } from '@/ui/pill';
 import { createScenarios } from './scenarios';
+import styles from './page.module.css';
 
 // The `soon` branch stays for the next binding in line.
 const TARGETS: Array<{ name: string; href?: string; soon?: boolean }> = [
@@ -25,22 +24,27 @@ function LandingPage() {
 
   return (
     <>
-      <main>
-        <p className="glyph" aria-hidden>
+      <main className={styles.main}>
+        <p className={styles.glyph} aria-hidden>
           🥂
         </p>
-        <h1 lang="en">cincin</h1>
-        <p className="lede">{t('hero.lede')}</p>
+        <h1 className={styles.title} lang="en">
+          cincin
+        </h1>
+        <p className={styles.lede}>{t('hero.lede')}</p>
 
-        <ul className="targets" aria-label={t('targets.label')}>
+        <ul className={styles.targets} aria-label={t('targets.label')}>
           {TARGETS.map((target) =>
             target.soon ? (
-              <li key={target.name} className="target is-soon">
+              <li
+                key={target.name}
+                className={`${styles.target} ${styles.soon}`}
+              >
                 {target.name}
-                <span className="target-soon">{t('targets.soon')}</span>
+                <span className={styles.soonTag}>{t('targets.soon')}</span>
               </li>
             ) : (
-              <li key={target.name} className="target">
+              <li key={target.name} className={styles.target}>
                 <a href={target.href} target="_blank" rel="noreferrer">
                   {target.name}
                 </a>
@@ -49,8 +53,8 @@ function LandingPage() {
           )}
         </ul>
 
-        <h2>{t('try.title')}</h2>
-        <section className="controls" aria-label={t('try.label')}>
+        <h2 className={styles.heading}>{t('try.title')}</h2>
+        <section className={styles.controls} aria-label={t('try.label')}>
           {scenarios.map((scenario) => (
             <Pill
               key={scenario.id}
@@ -62,21 +66,25 @@ function LandingPage() {
               }}
             >
               {scenario.dot !== undefined && (
-                <span className="dot" data-type={scenario.dot} aria-hidden />
+                <span
+                  className={styles.dot}
+                  data-type={scenario.dot}
+                  aria-hidden
+                />
               )}
               {scenario.label}
             </Pill>
           ))}
         </section>
 
-        <pre className="snippet" aria-live="polite">
+        <pre className={styles.snippet} aria-live="polite">
           <code>{snippet}</code>
         </pre>
 
-        <p className="footnote">{t('try.footnote')}</p>
+        <p className={styles.footnote}>{t('try.footnote')}</p>
       </main>
 
-      <footer className="credits">
+      <footer className={styles.credits}>
         {t.rich('credits', { a: sonnerLink })}
       </footer>
 

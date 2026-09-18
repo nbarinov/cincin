@@ -1,6 +1,6 @@
 /* --- hero ----------------------------------------------------------- */
 
-main {
+.main {
   box-sizing: border-box;
   max-width: 38.75rem;
   margin: 0 auto;
@@ -17,7 +17,7 @@ main {
   line-height: 1;
 }
 
-h1 {
+.title {
   margin: 0.875rem 0 0;
   font-size: 3.25rem;
   font-weight: 600;
@@ -54,7 +54,7 @@ h1 {
 }
 
 .target a,
-.target.is-soon {
+.soon {
   display: flex;
   align-items: baseline;
   gap: 0.4375rem;
@@ -74,19 +74,19 @@ h1 {
 }
 
 /* Not shipped yet: dashed, dimmed, and inert. */
-.target.is-soon {
+.soon {
   border: 1px dashed light-dark(#dededa, #313137);
   color: light-dark(#b0b0a8, #66665f);
 }
 
-.target-soon {
+.soonTag {
   font-size: 0.59375rem;
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
-h2 {
+.heading {
   margin: 3.25rem 0 0;
   color: var(--faint);
   font-size: 0.75rem;
