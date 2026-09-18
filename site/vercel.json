@@ -1,4 +1,5 @@
 {
+  "framework": "tanstack-start",
   "trailingSlash": false,
   "redirects": [
     {

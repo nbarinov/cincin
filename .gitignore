@@ -12,6 +12,10 @@ node_modules
 # TanStack Start scratch
 .tanstack
 
+# Nitro and Vercel build output
+.output
+.vercel
+
 # testing
 coverage
 test-results
