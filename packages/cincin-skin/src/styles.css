@@ -176,6 +176,7 @@
       calc(var(--lift) * var(--cincin-toast-index) * var(--peek))
     )
     scale(calc(1 - var(--cincin-toast-index) * 0.05));
+  will-change: transform;
   transition:
     transform var(--cincin-exit-duration, 400ms),
     opacity var(--cincin-exit-duration, 400ms),
@@ -388,7 +389,7 @@
 }
 
 [data-cincin-toaster][data-expanded='true'] [data-cincin-toast] {
-  transform: translateY(calc(var(--lift) * var(--cincin-toast-offset)));
+  transform: translateY(calc(var(--lift) * var(--cincin-toast-offset))) scale(1);
 }
 
 [data-cincin-toaster][data-expanded='true']

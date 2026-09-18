@@ -166,6 +166,7 @@ main header {
   transform-origin: center bottom;
   transform: translateY(calc(var(--cincin-toast-index) * -0.875rem))
     scale(calc(1 - var(--cincin-toast-index) * 0.05));
+  will-change: transform;
   transition:
     transform var(--cincin-exit-duration, 400ms),
     opacity var(--cincin-exit-duration, 400ms),
@@ -179,7 +180,7 @@ main header {
 }
 
 #toasts[data-expanded='true'] .toast {
-  transform: translateY(calc(-1 * var(--cincin-toast-offset)));
+  transform: translateY(calc(-1 * var(--cincin-toast-offset))) scale(1);
 }
 
 #toasts[data-expanded='true'] .toast[data-hidden='true'] {
