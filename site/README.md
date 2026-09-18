@@ -8,8 +8,9 @@ so a broken exports map fails here first.
 
 ```bash
 pnpm --filter cincin-site dev         # localhost:5185
-pnpm --filter cincin-site... build    # the packages first, then → site/dist/client
+pnpm --filter cincin-site... build    # the packages first, then the site
 ```
 
-Vercel serves `site/dist/client` with that build command and `site` as
-the root directory.
+Vercel runs that build command with `site` as the root directory. Nitro
+shapes the output for it: the prerendered pages as static files, a
+function for everything else, so a miss gets the 404 page in its locale.
