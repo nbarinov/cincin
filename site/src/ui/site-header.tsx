@@ -1,7 +1,6 @@
-import { Link } from '@tanstack/react-router';
-import { isLocale } from '@/shared/i18n/config';
 import { REPO_URL } from '@/shared/site';
 import { Pill } from './pill';
+import { Brand } from './brand';
 import { LocaleSwitcher } from './locale-switcher';
 import { ThemeToggle } from './theme-toggle';
 import styles from './site-header.module.css';
@@ -9,20 +8,7 @@ import styles from './site-header.module.css';
 function SiteHeader() {
   return (
     <header className={styles.header}>
-      <Link
-        to="/{-$locale}"
-        params={(prev) => ({
-          locale:
-            prev.locale !== undefined && isLocale(prev.locale)
-              ? prev.locale
-              : undefined,
-        })}
-        activeOptions={{ exact: true }}
-        className={styles.brand}
-        lang="en"
-      >
-        🥂 cincin
-      </Link>
+      <Brand />
       <nav className={styles.actions}>
         <Pill
           render={
