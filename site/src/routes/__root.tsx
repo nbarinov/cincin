@@ -3,6 +3,7 @@ import '@/styles/base.css';
 import * as React from 'react';
 import type { ReactNode } from 'react';
 import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
+import { IntlProvider } from 'use-intl';
 import { THEME_KEY, theme } from '@/shared/theme';
 import {
   DEFAULT_LOCALE,
@@ -11,8 +12,6 @@ import {
   loadMessages,
 } from '@/shared/i18n/config';
 import { NotFoundPage } from '@/not-found/page';
-import { SiteHeader } from '@/ui/site-header';
-import { IntlProvider } from 'use-intl';
 
 export const Route = createRootRoute({
   async beforeLoad({ params }) {
@@ -90,7 +89,6 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       </head>
       <body>
         <IntlProvider locale={locale} messages={messages} timeZone="UTC">
-          <SiteHeader />
           {children}
         </IntlProvider>
         <Scripts />

@@ -3,6 +3,7 @@ import { Toaster } from 'cincin-react';
 import { useTranslations } from 'use-intl';
 import { REPO_URL } from '@/shared/site';
 import { Pill } from '@/ui/pill';
+import { SiteHeader } from '@/ui/site-header';
 import { createScenarios } from './scenarios';
 import styles from './page.module.css';
 
@@ -24,6 +25,7 @@ function LandingPage() {
 
   return (
     <>
+      <SiteHeader />
       <main className={styles.main}>
         <p className={styles.glyph} aria-hidden>
           🥂
