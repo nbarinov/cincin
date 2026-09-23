@@ -1,41 +1,24 @@
-import { createFileRoute, Link, notFound } from '@tanstack/react-router';
-import { FRAMEWORK_NAMES } from '@/content/frameworks';
-import { isPage, PAGES } from '@/content/pages';
+import { createFileRoute } from '@tanstack/react-router';
+import { docs } from '@/content/docs';
+import { loadPage } from '@/content/server';
+import { Article } from '@/docs/article';
+import { pageMeta } from '@/docs/page-meta';
 
 export const Route = createFileRoute('/{-$locale}/docs/$framework/$')({
-  beforeLoad({ params }) {
-    const page = params._splat ?? '';
+  async loader({ params, context }) {
+    const slugs = (params._splat ?? '').split('/');
+    const data = await loadPage({ data: { slugs, locale: context.locale } });
 
-    if (!isPage(page)) {
-      throw notFound();
-    }
+    await docs.getPage(data.path)?.preload();
 
-    return { page };
+    return data;
   },
+  head: ({ loaderData }) => pageMeta(loaderData),
   component: DocsPage,
 });
 
 function DocsPage() {
-  const { framework } = Route.useParams();
-  const { page } = Route.useRouteContext();
+  const data = Route.useLoaderData();
 
-  return (
-    <main>
-      <h1>
-        {FRAMEWORK_NAMES[framework]} / {page}
-      </h1>
-      <ul>
-        {PAGES.map((item) => (
-          <li key={item}>
-            <Link
-              to="/{-$locale}/docs/$framework/$"
-              params={(prev) => ({ ...prev, framework, _splat: item })}
-            >
-              {item}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </main>
-  );
+  return <Article {...data} />;
 }

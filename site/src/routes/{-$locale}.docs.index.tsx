@@ -1,31 +1,25 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { FRAMEWORK_NAMES, FRAMEWORKS } from '@/content/frameworks';
-import { START_PAGE } from '@/content/pages';
+import { createFileRoute } from '@tanstack/react-router';
+import { docs } from '@/content/docs';
+import { loadPage } from '@/content/server';
+import { Article } from '@/docs/article';
+import { pageMeta } from '@/docs/page-meta';
 
 export const Route = createFileRoute('/{-$locale}/docs/')({
+  async loader({ context }) {
+    const data = await loadPage({
+      data: { slugs: [], locale: context.locale },
+    });
+
+    await docs.getPage(data.path)?.preload();
+
+    return data;
+  },
+  head: ({ loaderData }) => pageMeta(loaderData),
   component: OverviewPage,
 });
 
 function OverviewPage() {
-  return (
-    <main>
-      <h1>Overview</h1>
-      <ul>
-        {FRAMEWORKS.map((framework) => (
-          <li key={framework}>
-            <Link
-              to="/{-$locale}/docs/$framework/$"
-              params={(prev) => ({
-                ...prev,
-                framework,
-                _splat: START_PAGE,
-              })}
-            >
-              {FRAMEWORK_NAMES[framework]}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </main>
-  );
+  const data = Route.useLoaderData();
+
+  return <Article {...data} />;
 }
