@@ -1,15 +1,20 @@
-import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
-import { DEFAULT_LOCALE, isLocale, LOCALES } from '@/shared/i18n/config';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import {
+  LOCALES,
+  DEFAULT_LOCALE,
+  isLocale,
+  type Locale,
+} from '@/shared/i18n/config';
 import { siteHref, withoutLocale } from '@/shared/site';
 
 export const Route = createFileRoute('/{-$locale}')({
+  params: {
+    parse: ({ locale }): { locale?: Locale } | false =>
+      locale === undefined || isLocale(locale) ? { locale } : false,
+  },
   beforeLoad({ params, location }) {
     if (params.locale === DEFAULT_LOCALE) {
       throw redirect({ href: withoutLocale(location.pathname) });
-    }
-
-    if (params.locale !== undefined && !isLocale(params.locale)) {
-      throw notFound();
     }
   },
   head({ matches }) {

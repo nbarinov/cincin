@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
-import { isLocale } from '@/shared/i18n/config';
 import { REPO_URL } from '@/shared/site';
 import { Pill } from '@/ui/pill';
 import { SiteHeader } from '@/ui/site-header';
@@ -24,12 +23,7 @@ function NotFoundPage() {
               render={
                 <Link
                   to="/{-$locale}"
-                  params={(prev) => ({
-                    locale:
-                      prev.locale !== undefined && isLocale(prev.locale)
-                        ? prev.locale
-                        : undefined,
-                  })}
+                  params={(prev) => ({ locale: prev.locale })}
                   activeOptions={{ exact: true }}
                 >
                   {t('links.home')}
