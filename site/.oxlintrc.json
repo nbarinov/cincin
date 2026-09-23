@@ -1,6 +1,7 @@
 {
   "$schema": "../node_modules/oxlint/configuration_schema.json",
   "extends": ["../.oxlintrc.json"],
+  "ignorePatterns": ["src/routeTree.gen.ts"],
   "plugins": [
     "unicorn",
     "typescript",
@@ -9,9 +10,20 @@
     "react-perf",
     "jsx-a11y"
   ],
+  "jsPlugins": [
+    {
+      "name": "router",
+      "specifier": "@tanstack/eslint-plugin-router"
+    }
+  ],
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "no-underscore-dangle": ["warn", { "allow": ["_splat"] }]
-  },
-  "ignorePatterns": ["src/routeTree.gen.ts"]
+    "no-underscore-dangle": [
+      "warn",
+      {
+        "allow": ["_splat"]
+      }
+    ],
+    "router/create-route-property-order": "error"
+  }
 }
