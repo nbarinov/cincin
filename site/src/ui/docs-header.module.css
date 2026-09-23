@@ -1,0 +1,21 @@
+.header {
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  block-size: var(--docs-header-height, 3.25rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--page-bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
