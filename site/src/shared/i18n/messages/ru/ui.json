@@ -1,4 +1,7 @@
 {
+  "siteHeader": {
+    "docs": "Документация"
+  },
   "localeSwitcher": {
     "label": "Переключить на {language}"
   },

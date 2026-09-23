@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Документация – cincin",
+    "description": "Как установить cincin, смонтировать Toaster и вызывать стор тостов из React, Preact, Vue, Solid и Angular."
+  }
+}

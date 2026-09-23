@@ -1,4 +1,7 @@
 {
+  "siteHeader": {
+    "docs": "Docs"
+  },
   "localeSwitcher": {
     "label": "Switch to {language}"
   },

@@ -10,7 +10,8 @@
     "jsx-a11y"
   ],
   "rules": {
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "no-underscore-dangle": ["warn", { "allow": ["_splat"] }]
   },
   "ignorePatterns": ["src/routeTree.gen.ts"]
 }
