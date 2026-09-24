@@ -1,13 +1,13 @@
 import { REPO_URL } from '@/shared/site';
-import { Pill } from './pill';
-import { Brand } from './brand';
-import { LocaleSwitcher } from './locale-switcher';
-import { ThemeToggle } from './theme-toggle';
-import styles from './docs-header.module.css';
+import { Pill } from '@/ui/pill';
+import { Brand } from '@/ui/brand';
+import { LocaleSwitcher } from '@/ui/locale-switcher';
+import { ThemeToggle } from '@/ui/theme-toggle';
+import styles from './header.module.css';
 
 function DocsHeader() {
   return (
-    <header className={styles.header}>
+    <div className={styles.header}>
       <Brand />
       <nav className={styles.actions}>
         <Pill
@@ -20,7 +20,7 @@ function DocsHeader() {
         <ThemeToggle />
         <LocaleSwitcher />
       </nav>
-    </header>
+    </div>
   );
 }
 
