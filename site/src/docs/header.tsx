@@ -9,7 +9,7 @@ function DocsHeader() {
   return (
     <div className={styles.header}>
       <Brand />
-      <nav className={styles.actions}>
+      <div className={styles.actions}>
         <Pill
           render={
             <a href={REPO_URL} target="_blank" rel="noreferrer">
@@ -19,7 +19,7 @@ function DocsHeader() {
         />
         <ThemeToggle />
         <LocaleSwitcher />
-      </nav>
+      </div>
     </div>
   );
 }

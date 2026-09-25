@@ -13,7 +13,7 @@ function SiteHeader() {
   return (
     <header className={styles.header}>
       <Brand />
-      <nav className={styles.actions}>
+      <nav className={styles.actions} aria-label={t('label')}>
         <Link
           to="/{-$locale}/docs"
           params={(prev) => ({ locale: prev.locale })}

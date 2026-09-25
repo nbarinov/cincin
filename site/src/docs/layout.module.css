@@ -1,0 +1,61 @@
+.layout {
+  --docs-header-height: 3.25rem;
+
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+  min-block-size: 100svh;
+  isolation: isolate;
+}
+
+.shell {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  inline-size: 100%;
+  max-inline-size: 70rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  padding-block-end: 6rem;
+}
+
+.header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  block-size: var(--docs-header-height);
+}
+
+.aside {
+  padding-block-start: 1.5rem;
+}
+
+.main {
+  min-inline-size: 0;
+  padding-block-start: 1.5rem;
+}
+
+@media (width >= 60rem) {
+  .shell {
+    grid-template-columns: minmax(0, 14.375rem) minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-inline: 1.75rem;
+    padding-block-end: 7.5rem;
+  }
+
+  .aside {
+    box-sizing: border-box;
+    position: sticky;
+    top: var(--docs-header-height);
+    max-block-size: calc(100dvh - var(--docs-header-height));
+    padding: 2rem 0;
+    scrollbar-width: thin;
+    overflow-y: auto;
+  }
+
+  .main {
+    padding-block-start: 2rem;
+  }
+}

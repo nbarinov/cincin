@@ -1,0 +1,103 @@
+.sidebar,
+.frameworks,
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.frameworks,
+.pages,
+.anchors {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heading {
+  margin: 0 0 0.25rem;
+  padding: 0 0.625rem;
+  color: var(--faint);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rule {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* --- items ---------------------------------------------------------- */
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4375rem 0.625rem;
+  border-radius: 0.5rem;
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 150ms;
+}
+
+@media (hover: hover) {
+  .item:hover {
+    background-color: light-dark(#f1f1ec, #1d1d21);
+  }
+}
+
+/* The framework on screen sits on a quiet pill. */
+.frameworks .item[data-status='active'] {
+  background-color: light-dark(#ecece7, #232328);
+}
+
+/* The page on screen carries the amber dot and nothing else, so its
+   label keeps full-contrast ink. */
+.pages .item::before {
+  content: '';
+  flex: none;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.pages .item[data-status='active']::before {
+  background-color: var(--accent);
+}
+
+/* --- anchors -------------------------------------------------------- */
+
+.anchors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  margin: 0.125rem 0 0.375rem 1.1875rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--line);
+}
+
+.anchor {
+  display: block;
+  padding: 0.3125rem 0.5rem;
+  border-radius: 0.4375rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .anchor:hover {
+    color: var(--page-fg);
+  }
+}
+
+.anchor[data-active='true'] {
+  color: var(--page-fg);
+}

@@ -9,6 +9,7 @@
   --line-strong: light-dark(#c9c9c2, #3f3f46);
   --card: light-dark(#fff, #1d1d21);
   --card-shadow: 0 1px 2px light-dark(rgb(60 60 50 / 0.06), rgb(0 0 0 / 0.3));
+  --accent: #e8b04b;
 
   --font-sans-latin: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
   --font-sans-cyrillic: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
