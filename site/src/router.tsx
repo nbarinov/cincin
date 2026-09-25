@@ -5,6 +5,8 @@ function getRouter() {
   return createRouter({
     routeTree,
     scrollRestoration: true,
+    defaultStaleTime: Infinity,
+    defaultPreload: 'intent',
   });
 }
 
