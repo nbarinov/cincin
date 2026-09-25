@@ -1,0 +1,7 @@
+.article {
+  max-width: 45rem;
+}
+
+.article :is(h2, h3) {
+  scroll-margin-top: calc(var(--docs-header-height) + 1rem);
+}
