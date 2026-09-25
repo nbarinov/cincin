@@ -1,10 +1,17 @@
+import { useTranslations } from 'use-intl';
 import { docs } from '@/content/docs';
 import { components } from '@/mdx/components';
 import styles from './article.module.css';
 
-type ArticleProps = { path: string; title: string; translated: boolean };
+type ArticleProps = {
+  path: string;
+  title: string;
+  description?: string | undefined;
+  translated: boolean;
+};
 
-function Article({ path, title, translated }: ArticleProps) {
+function Article({ path, title, description, translated }: ArticleProps) {
+  const t = useTranslations('docs.article');
   const page = docs.getPage(path);
 
   if (page === undefined) {
@@ -15,9 +22,13 @@ function Article({ path, title, translated }: ArticleProps) {
 
   return (
     <article className={styles.article} lang={translated ? undefined : 'en'}>
-      {!translated && <p>This page is not translated yet.</p>}
+      {!translated && <p className={styles.note}>{t('untranslated')}</p>}
 
-      <h1>{title}</h1>
+      <h1 className={styles.title}>{title}</h1>
+
+      {description !== undefined && (
+        <p className={styles.lede}>{description}</p>
+      )}
 
       <MDX components={components} />
     </article>

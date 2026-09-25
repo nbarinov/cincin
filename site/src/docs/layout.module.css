@@ -1,6 +1,10 @@
-.layout {
+:global(html):has(.layout) {
   --docs-header-height: 3.25rem;
 
+  scroll-padding-top: calc(var(--docs-header-height) + 1rem);
+}
+
+.layout {
   display: flex;
   flex-direction: column;
   min-block-size: 100vh;
