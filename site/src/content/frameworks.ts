@@ -15,3 +15,4 @@ function isFramework(value: string): value is Framework {
 }
 
 export { isFramework, FRAMEWORKS, DEFAULT_FRAMEWORK, FRAMEWORK_NAMES };
+export type { Framework };

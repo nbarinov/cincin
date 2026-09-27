@@ -1,4 +1,6 @@
 import type { MDXComponents } from 'mdx/types';
+import { CodePanel } from './code-panel';
+import { Framework } from './framework';
 import {
   Anchor,
   Code,
@@ -17,6 +19,8 @@ const components = {
   ol: OrderedList,
   a: Anchor,
   code: Code,
+  pre: CodePanel,
+  Framework,
 } satisfies MDXComponents;
 
 export { components };

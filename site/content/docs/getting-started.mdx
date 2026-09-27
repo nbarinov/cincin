@@ -7,6 +7,28 @@ Install the adapter for your framework. It pulls the core in with it.
 
 ## Install
 
-```ts
+```ts title="app.tsx"
 toast.success({ title: 'Saved' });
 ```
+
+## Mount the Toaster
+
+Mount it once, anywhere in the tree.
+
+<Framework name="react">
+
+```tsx title="app.tsx"
+import { Toaster } from 'cincin-react';
+```
+
+</Framework>
+
+<Framework name="vue">
+
+```vue title="App.vue"
+<script setup lang="ts">
+import { Toaster } from 'cincin-vue';
+</script>
+```
+
+</Framework>
