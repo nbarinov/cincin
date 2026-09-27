@@ -10,5 +10,8 @@
   },
   "article": {
     "untranslated": "This page is not translated yet."
+  },
+  "toc": {
+    "label": "On this page"
   }
 }

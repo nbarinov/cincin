@@ -7,8 +7,7 @@
 }
 
 .frameworks,
-.pages,
-.anchors {
+.pages {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -69,35 +68,4 @@
 
 .pages .item[data-status='active']::before {
   background-color: var(--accent);
-}
-
-/* --- anchors -------------------------------------------------------- */
-
-.anchors {
-  display: flex;
-  flex-direction: column;
-  gap: 0.0625rem;
-  margin: 0.125rem 0 0.375rem 1.1875rem;
-  padding-left: 0.75rem;
-  border-left: 1px solid var(--line);
-}
-
-.anchor {
-  display: block;
-  padding: 0.3125rem 0.5rem;
-  border-radius: 0.4375rem;
-  color: var(--muted);
-  font-size: 0.8125rem;
-  text-decoration: none;
-  transition: color 150ms;
-}
-
-@media (hover: hover) {
-  .anchor:hover {
-    color: var(--page-fg);
-  }
-}
-
-.anchor[data-active='true'] {
-  color: var(--page-fg);
 }

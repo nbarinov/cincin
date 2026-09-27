@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { getRouteApi, Link, useMatch, useParams } from '@tanstack/react-router';
-import { AnchorProvider, TOCItem, useActiveAnchor } from 'fumadocs-core/toc';
+import { getRouteApi, Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 import { VisuallyHidden } from '@/ui/visually-hidden';
 import {
@@ -9,7 +8,6 @@ import {
   FRAMEWORKS,
 } from '@/content/frameworks';
 import { START_PAGE } from '@/content/pages';
-import type { Anchor } from './load-article';
 import styles from './sidebar.module.css';
 
 const layout = getRouteApi('/{-$locale}/docs');
@@ -64,10 +62,6 @@ function Pages() {
   const t = useTranslations('docs.sidebar');
   const id = React.useId();
   const nav = layout.useLoaderData();
-  const current = useParams({
-    strict: false,
-    select: (params) => params._splat ?? '',
-  });
 
   return (
     <>
@@ -87,7 +81,6 @@ function Pages() {
           return (
             <li key={slug}>
               <PageLink slug={slug}>{item.title}</PageLink>
-              {slug === current && <Anchors />}
             </li>
           );
         })}
@@ -123,55 +116,4 @@ function PageLink({ slug, children }: { slug: string; children: string }) {
       {children}
     </Link>
   );
-}
-
-function Anchors() {
-  const anchors = usePageAnchors();
-
-  if (anchors.length === 0) {
-    return null;
-  }
-
-  return (
-    <AnchorProvider toc={anchors} single>
-      <AnchorList anchors={anchors} />
-    </AnchorProvider>
-  );
-}
-
-function AnchorList({ anchors }: { anchors: Anchor[] }) {
-  const active = useActiveAnchor();
-
-  return (
-    <ul className={styles.anchors}>
-      {anchors.map((item) => (
-        <li key={item.url}>
-          <TOCItem
-            href={item.url}
-            className={styles.anchor}
-            aria-current={item.url === `#${active}` ? 'location' : undefined}
-          >
-            {item.title}
-          </TOCItem>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-// hooks
-
-function usePageAnchors(): Anchor[] {
-  const page = useMatch({
-    from: '/{-$locale}/docs/$framework/$',
-    shouldThrow: false,
-    select: (match) => match.loaderData?.anchors,
-  });
-  const overview = useMatch({
-    from: '/{-$locale}/docs/',
-    shouldThrow: false,
-    select: (match) => match.loaderData?.anchors,
-  });
-
-  return page ?? overview ?? [];
 }

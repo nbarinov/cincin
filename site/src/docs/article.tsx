@@ -1,5 +1,5 @@
 import { useTranslations } from 'use-intl';
-import { docs } from '@/content/docs';
+import { getEntry } from '@/content/docs';
 import { components } from '@/mdx/components';
 import styles from './article.module.css';
 
@@ -12,13 +12,7 @@ type ArticleProps = {
 
 function Article({ path, title, description, translated }: ArticleProps) {
   const t = useTranslations('docs.article');
-  const page = docs.getPage(path);
-
-  if (page === undefined) {
-    throw new Error(`Unknown page: ${path}`);
-  }
-
-  const MDX = page.body;
+  const MDX = getEntry(path).body;
 
   return (
     <article className={styles.article} lang={translated ? undefined : 'en'}>

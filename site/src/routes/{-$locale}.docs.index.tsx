@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Article } from '@/docs/article';
+import { DocsPage } from '@/docs/page';
 import { loadArticle } from '@/docs/load-article';
 import { pageMeta } from '@/docs/page-meta';
 
@@ -12,5 +12,5 @@ export const Route = createFileRoute('/{-$locale}/docs/')({
 function OverviewPage() {
   const data = Route.useLoaderData();
 
-  return <Article {...data} />;
+  return <DocsPage {...data} />;
 }

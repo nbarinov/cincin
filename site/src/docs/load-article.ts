@@ -1,24 +1,26 @@
 import * as React from 'react';
 import type { ReactNode } from 'react';
 import { notFound } from '@tanstack/react-router';
-import { docs } from '@/content/docs';
-import { loadPage } from '@/content/server';
+import { getEntry } from '@/content/docs';
+import { isTranslated, source } from '@/content/source';
 import type { Locale } from '@/shared/i18n/config';
 
 type Anchor = { url: string; title: string; depth: number };
 
 async function loadArticle(slugs: string[], locale: Locale) {
-  const data = await loadPage({ data: { slugs, locale } });
-  const page = docs.getPage(data.path);
+  const page = source.getPage(slugs, locale);
 
   if (page === undefined) {
     throw notFound();
   }
 
-  const { toc } = await page.load();
+  const { toc } = await getEntry(page.path).load();
 
   return {
-    ...data,
+    path: page.path,
+    title: page.data.title,
+    description: page.data.description,
+    translated: isTranslated(page, locale),
     anchors: toc.filter((item) => item.depth === 2).map(toAnchor),
   };
 }

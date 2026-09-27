@@ -1,0 +1,23 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.toc {
+  display: none;
+}
+
+@media (width >= 80rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 11rem);
+    gap: 2.5rem;
+  }
+
+  .toc {
+    display: block;
+    position: sticky;
+    top: var(--docs-header-height);
+    padding-block-start: 0.5rem;
+  }
+}

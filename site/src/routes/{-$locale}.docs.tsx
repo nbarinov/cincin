@@ -1,13 +1,13 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { createTranslator } from 'use-intl';
 import { siteHref } from '@/shared/site';
-import { loadNav } from '@/content/server';
+import { buildNav } from '@/content/nav';
 import { DocsLayout } from '@/docs/layout';
 import { DocsHeader } from '@/docs/header';
 import { Sidebar } from '@/docs/sidebar';
 
 export const Route = createFileRoute('/{-$locale}/docs')({
-  loader: ({ context }) => loadNav({ data: context.locale }),
+  loader: ({ context }) => buildNav(context.locale),
   head({ match, matches }) {
     const { locale, messages } = match.context;
     const pathname = matches.at(-1)?.pathname ?? match.pathname;
