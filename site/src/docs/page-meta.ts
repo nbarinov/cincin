@@ -1,6 +1,6 @@
 import type { AnyRouteMatch } from '@tanstack/react-router';
 
-type PageMeta = { title: string; description?: string | undefined };
+type PageMeta = { title: string; description?: string };
 
 function pageMeta(page: PageMeta | undefined): {
   meta?: AnyRouteMatch['meta'];

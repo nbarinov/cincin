@@ -4,15 +4,9 @@ import { useTranslations } from 'use-intl';
 import type { Anchor } from './load-article';
 import styles from './toc.module.css';
 
-type TocProps = { anchors: Anchor[] };
-
-function Toc({ anchors }: TocProps) {
+function Toc({ anchors }: { anchors: Anchor[] }) {
   const t = useTranslations('docs.toc');
   const id = React.useId();
-
-  if (anchors.length === 0) {
-    return null;
-  }
 
   return (
     <nav className={styles.toc} aria-labelledby={id}>
@@ -30,7 +24,7 @@ export { Toc };
 
 // components
 
-function AnchorList({ anchors }: TocProps) {
+function AnchorList({ anchors }: { anchors: Anchor[] }) {
   const active = useActiveAnchor();
 
   return (

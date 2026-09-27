@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { Article } from '@/docs/article';
 import { DocsPage } from '@/docs/page';
+import { Toc } from '@/docs/toc';
 import { loadArticle } from '@/docs/load-article';
 import { pageMeta } from '@/docs/page-meta';
 
@@ -11,7 +13,11 @@ export const Route = createFileRoute('/{-$locale}/docs/$framework/$')({
 });
 
 function Page() {
-  const data = Route.useLoaderData();
+  const { anchors, ...article } = Route.useLoaderData();
 
-  return <DocsPage {...data} />;
+  return (
+    <DocsPage aside={anchors.length > 0 && <Toc anchors={anchors} />}>
+      <Article {...article} />
+    </DocsPage>
+  );
 }

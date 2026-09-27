@@ -6,7 +6,7 @@ import styles from './article.module.css';
 type ArticleProps = {
   path: string;
   title: string;
-  description?: string | undefined;
+  description?: string;
   translated: boolean;
 };
 
