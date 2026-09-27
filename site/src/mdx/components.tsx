@@ -2,6 +2,14 @@ import type { MDXComponents } from 'mdx/types';
 import { CodePanel } from './code-panel';
 import { Framework } from './framework';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
+import {
   Anchor,
   Code,
   H2,
@@ -20,6 +28,12 @@ const components = {
   a: Anchor,
   code: Code,
   pre: CodePanel,
+  table: Table,
+  thead: TableHead,
+  tbody: TableBody,
+  tr: TableRow,
+  th: TableHeader,
+  td: TableCell,
   Framework,
 } satisfies MDXComponents;
 

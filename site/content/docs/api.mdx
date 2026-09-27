@@ -14,3 +14,11 @@ toast.success({ title: 'Saved' });
 ```ts noCopy
 toast.dismiss();
 ```
+
+## Options
+
+| Option               | Description                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| `closeButton: false` | Hides the cross. The toast still swipes away and still expires.                      |
+| `dismissible: false` | Takes the right to close away: no cross, no swipe. The default for the loading type. |
+| `duration`           | Milliseconds, 4000 by default; Infinity keeps it on screen.                          |
