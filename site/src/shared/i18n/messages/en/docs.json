@@ -17,5 +17,9 @@
   "code": {
     "copy": "Copy the code",
     "copied": "Copied"
+  },
+  "callout": {
+    "note": "Note",
+    "warning": "Warning"
   }
 }

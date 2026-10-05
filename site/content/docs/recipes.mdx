@@ -10,3 +10,9 @@ Prevent the dismiss and re-create the same id to morph the toast in place.
 ```ts
 toast.success({ title: 'Saved' });
 ```
+
+<Callout type="warning">
+
+The check is synchronous, so prevent the dismiss before any await.
+
+</Callout>

@@ -1,4 +1,5 @@
 import type { MDXComponents } from 'mdx/types';
+import { Callout } from './callout';
 import { CodePanel } from './code-panel';
 import {
   CodeBlockTab,
@@ -41,6 +42,7 @@ const components = {
   th: TableHeader,
   td: TableCell,
   Framework,
+  Callout,
   CodeBlockTabs,
   CodeBlockTabsList,
   CodeBlockTabsTrigger,
