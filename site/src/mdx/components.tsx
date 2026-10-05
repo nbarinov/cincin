@@ -1,5 +1,11 @@
 import type { MDXComponents } from 'mdx/types';
 import { CodePanel } from './code-panel';
+import {
+  CodeBlockTab,
+  CodeBlockTabs,
+  CodeBlockTabsList,
+  CodeBlockTabsTrigger,
+} from './code-tabs';
 import { Framework } from './framework';
 import {
   Table,
@@ -35,6 +41,10 @@ const components = {
   th: TableHeader,
   td: TableCell,
   Framework,
+  CodeBlockTabs,
+  CodeBlockTabsList,
+  CodeBlockTabsTrigger,
+  CodeBlockTab,
 } satisfies MDXComponents;
 
 export { components };

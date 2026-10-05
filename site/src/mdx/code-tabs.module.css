@@ -1,0 +1,45 @@
+.tabs {
+  margin: 1rem 0 0;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+}
+
+.tab {
+  position: relative;
+  padding: 0.4375rem 0.8125rem 0.5625rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+@media (hover: hover) {
+  .tab:hover {
+    background-color: light-dark(#f4f4f0, #26262b);
+  }
+}
+
+.tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  right: 0.8125rem;
+  bottom: 0.1875rem;
+  left: 0.8125rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
