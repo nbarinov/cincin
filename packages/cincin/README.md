@@ -161,11 +161,11 @@ fires on the T key under any layout. The grammar is the one
 ## Browser support
 
 The package ships untranspiled modern JS. The newest APIs are
-`AbortSignal.any` (the swipe controller) and ES2023's
-`Array.prototype.toReversed` (the stack layout), with sizes coming
-from `ResizeObserver`: Chrome 116+, Safari 17.4+, Firefox 124+,
-Node 20.3+. Skins may raise the bar further with their CSS: the react
-skin's stylesheet uses `@starting-style` and `light-dark()`, which
-want 2024-class browsers.
+`AbortSignal.any` (the viewport and focus loop bindings, when handed
+a signal) and ES2023's `Array.prototype.toReversed` (the stack
+layout), with sizes coming from `ResizeObserver`: Chrome 116+,
+Safari 17.4+, Firefox 124+, Node 20.3+. Skins may raise the bar
+further with their CSS: the react skin's stylesheet uses
+`@starting-style` and `light-dark()`, which want 2024-class browsers.
 
 Source and issues: [github.com/nbarinov/cincin](https://github.com/nbarinov/cincin)
