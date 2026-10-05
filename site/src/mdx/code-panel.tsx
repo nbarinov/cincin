@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Check, Copy } from 'lucide-react';
-import { useTranslations } from 'use-intl';
+import { useLocale, useTranslations } from 'use-intl';
 import { VisuallyHidden } from '@/ui/visually-hidden';
 import styles from './code-panel.module.css';
 
@@ -37,6 +37,7 @@ type CopyButtonProps = { target: React.RefObject<HTMLElement | null> };
 
 function CopyButton({ target }: CopyButtonProps) {
   const t = useTranslations('docs.code');
+  const locale = useLocale();
   const [copied, setCopied] = React.useState(false);
 
   React.useEffect(() => {
@@ -62,7 +63,9 @@ function CopyButton({ target }: CopyButtonProps) {
     >
       <Copy className={styles.copy} aria-hidden />
       <Check className={styles.check} aria-hidden />
-      <VisuallyHidden>{copied ? t('copied') : t('copy')}</VisuallyHidden>
+      <VisuallyHidden lang={locale}>
+        {copied ? t('copied') : t('copy')}
+      </VisuallyHidden>
     </button>
   );
 }
