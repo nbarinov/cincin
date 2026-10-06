@@ -1,5 +1,10 @@
 'use client';
 
+// The stylesheet travels through the consumer's bundler with the
+// component that draws it, so importing the Toaster brings its skin.
+// Not in the entry: that one only re-exports, and a bundler that
+// trusts `sideEffects` skips it along with its imports.
+import 'cincin-skin/styles.css';
 import type { Toaster as ToasterContract } from 'cincin';
 import type {
   Hotkey,
