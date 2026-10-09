@@ -1,6 +1,6 @@
 {
   "name": "cincin-preact",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "\ud83e\udd42 Preact bindings for cincin: headless hooks, ready-to-use skin",
   "license": "MIT",
   "author": "Nikita Barinov",
