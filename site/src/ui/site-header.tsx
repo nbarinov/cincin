@@ -14,13 +14,15 @@ function SiteHeader() {
     <header className={styles.header}>
       <Brand />
       <nav className={styles.actions} aria-label={t('label')}>
-        <Link
-          to="/{-$locale}/docs"
-          params={(prev) => ({ locale: prev.locale })}
-          className={styles.link}
-        >
-          {t('docs')}
-        </Link>
+        {import.meta.env.DEV && (
+          <Link
+            to="/{-$locale}/docs"
+            params={(prev) => ({ locale: prev.locale })}
+            className={styles.link}
+          >
+            {t('docs')}
+          </Link>
+        )}
         <Pill
           render={
             <a href={REPO_URL} target="_blank" rel="noreferrer">

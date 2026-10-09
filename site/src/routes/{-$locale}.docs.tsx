@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute, notFound, Outlet } from '@tanstack/react-router';
 import { createTranslator } from 'use-intl';
 import { siteHref } from '@/shared/site';
 import { buildNav } from '@/content/nav';
@@ -7,6 +7,11 @@ import { DocsHeader } from '@/docs/header';
 import { Sidebar } from '@/docs/sidebar';
 
 export const Route = createFileRoute('/{-$locale}/docs')({
+  beforeLoad: () => {
+    if (!import.meta.env.DEV) {
+      throw notFound();
+    }
+  },
   loader: ({ context }) => buildNav(context.locale),
   head({ match, matches }) {
     const { locale, messages } = match.context;
