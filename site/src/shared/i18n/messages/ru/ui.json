@@ -4,7 +4,7 @@
     "docs": "Документация"
   },
   "localeSwitcher": {
-    "label": "Переключить на {language}"
+    "label": "Язык"
   },
   "themeToggle": {
     "label": "{next, select, light {Включить светлую тему} dark {Включить тёмную тему} other {Следовать теме системы}}"

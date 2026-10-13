@@ -4,7 +4,7 @@
     "docs": "Docs"
   },
   "localeSwitcher": {
-    "label": "Switch to {language}"
+    "label": "Language"
   },
   "themeToggle": {
     "label": "{next, select, light {Switch to the light theme} dark {Switch to the dark theme} other {Follow the system theme}}"

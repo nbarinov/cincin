@@ -1,34 +1,36 @@
 import { Link } from '@tanstack/react-router';
-import { useLocale, useTranslations } from 'use-intl';
-import { Pill } from './pill';
+import { useTranslations } from 'use-intl';
+import { type Locale, LOCALES, DEFAULT_LOCALE } from '@/shared/i18n/config';
 import { VisuallyHidden } from './visually-hidden';
+import styles from './locale-switcher.module.css';
 
-const NAMES = { en: 'English', ru: 'Русский' };
+const NAMES = { en: 'English', ru: 'Русский' } satisfies Record<Locale, string>;
 
 function LocaleSwitcher() {
-  const locale = useLocale();
   const t = useTranslations('ui.localeSwitcher');
-  const other = locale === 'en' ? 'ru' : 'en';
 
   return (
-    <Pill
-      render={
-        <Link
-          to="."
-          params={(prev) => ({
-            ...prev,
-            locale: other === 'en' ? undefined : other,
-          })}
-        >
-          <VisuallyHidden>
-            {t('label', { language: NAMES[other] })}
-          </VisuallyHidden>
-          <span lang={other} aria-hidden>
-            {NAMES[other]}
-          </span>
-        </Link>
-      }
-    />
+    <ul className={styles.group} aria-label={t('label')}>
+      {LOCALES.map((locale) => (
+        <li key={locale} className={styles.item}>
+          <Link
+            to="."
+            params={(prev) => ({
+              ...prev,
+              locale: locale === DEFAULT_LOCALE ? undefined : locale,
+            })}
+            activeOptions={{ exact: true }}
+            activeProps={{ tabIndex: -1 }}
+            hrefLang={locale}
+            lang={locale}
+            className={styles.link}
+          >
+            {locale}
+            <VisuallyHidden> {NAMES[locale]}</VisuallyHidden>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
