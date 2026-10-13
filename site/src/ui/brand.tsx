@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import styles from './brand.module.css';
 
-function Brand() {
+function Brand({ section }: { section?: string }) {
   return (
     <Link
       to="/{-$locale}"
@@ -10,7 +10,11 @@ function Brand() {
       className={styles.brand}
       lang="en"
     >
-      🥂 cincin
+      <span className={styles.mark} aria-hidden>
+        🥂
+      </span>
+      cincin
+      {section && <span className={styles.section}>{section}</span>}
     </Link>
   );
 }
