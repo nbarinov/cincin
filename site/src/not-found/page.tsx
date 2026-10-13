@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
-import { REPO_URL } from '@/shared/site';
+import { EXAMPLES_URL, REPO_URL } from '@/shared/site';
 import { Pill } from '@/ui/pill';
 import { SiteHeader } from '@/ui/site-header';
 import styles from './page.module.css';
@@ -35,7 +35,7 @@ function NotFoundPage() {
             <Pill
               variant="card"
               render={
-                <a href={`${REPO_URL}/tree/main/examples`}>
+                <a href={EXAMPLES_URL}>
                   {t('links.examples')}
                 </a>
               }

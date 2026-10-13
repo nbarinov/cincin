@@ -1,9 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
-import { REPO_URL } from '@/shared/site';
-import { Pill } from './pill';
 import { Brand } from './brand';
 import { LocaleSwitcher } from './locale-switcher';
+import { ProjectLinks } from './project-links';
 import { ThemeToggle } from './theme-toggle';
 import styles from './site-header.module.css';
 
@@ -23,13 +22,7 @@ function SiteHeader() {
             {t('docs')}
           </Link>
         )}
-        <Pill
-          render={
-            <a href={REPO_URL} target="_blank" rel="noreferrer">
-              GitHub ↗
-            </a>
-          }
-        />
+        <ProjectLinks />
         <ThemeToggle />
         <LocaleSwitcher />
       </nav>

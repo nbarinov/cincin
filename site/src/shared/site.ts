@@ -2,6 +2,7 @@ import { DEFAULT_LOCALE, LOCALES, type Locale } from './i18n/config';
 
 const SITE_URL = 'https://cincin.nbarinov.io';
 const REPO_URL = 'https://github.com/nbarinov/cincin';
+const EXAMPLES_URL = `${REPO_URL}/tree/main/examples`;
 
 function siteHref(pathname: string, locale: Locale): string {
   const bare = withoutLocale(pathname);
@@ -23,4 +24,4 @@ function withoutLocale(pathname: string): string {
   return bare === '' ? '/' : bare;
 }
 
-export { SITE_URL, REPO_URL, siteHref, withoutLocale };
+export { SITE_URL, REPO_URL, EXAMPLES_URL, siteHref, withoutLocale };

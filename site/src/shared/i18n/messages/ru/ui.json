@@ -6,6 +6,9 @@
   "localeSwitcher": {
     "label": "Язык"
   },
+  "projectLinks": {
+    "examples": "Примеры"
+  },
   "themeToggle": {
     "label": "{next, select, light {Включить светлую тему} dark {Включить тёмную тему} other {Следовать теме системы}}"
   }
