@@ -4,7 +4,7 @@
 
 .note {
   margin: 0 0 1rem;
-  color: var(--faint);
+  color: var(--gray-10);
   font-size: 0.84375rem;
   line-height: 1.6;
 }
@@ -19,7 +19,7 @@
 
 .lede {
   margin: 1rem 0 0;
-  color: var(--muted);
+  color: var(--gray-11);
   font-size: 1.03125rem;
   line-height: 1.6;
   text-wrap: pretty;

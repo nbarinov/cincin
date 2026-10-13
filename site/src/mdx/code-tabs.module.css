@@ -7,10 +7,10 @@
   flex-wrap: wrap;
   gap: 0.25rem;
   padding: 0.25rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--gray-6);
   border-radius: 0.75rem;
-  background: var(--card);
-  box-shadow: var(--card-shadow);
+  background: var(--panel);
+  box-shadow: var(--panel-shadow);
 }
 
 .tab {
@@ -41,5 +41,5 @@
   left: 0.8125rem;
   height: 2px;
   border-radius: 2px;
-  background: var(--accent);
+  background: var(--accent-9);
 }

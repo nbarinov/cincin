@@ -2,7 +2,7 @@
   display: block;
   margin: 0.875rem 0 0;
   border-collapse: collapse;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--gray-6);
 }
 
 .head {
@@ -23,7 +23,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 0.25rem;
   padding: 0.6875rem 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--gray-6);
 }
 
 .header,
@@ -34,13 +34,13 @@
 }
 
 .cell:first-child {
-  color: var(--page-fg);
+  color: var(--gray-12);
   font-family: var(--font-mono);
   font-size: 0.78125rem;
 }
 
 .cell {
-  color: var(--muted);
+  color: var(--gray-11);
   font-size: 0.875rem;
   line-height: 1.55;
   text-wrap: pretty;

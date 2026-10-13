@@ -28,7 +28,7 @@
 .lede {
   max-width: 44ch;
   margin: 1.125rem 0 0;
-  color: var(--muted);
+  color: var(--gray-11);
   font-size: 1.03125rem;
   line-height: 1.55;
   text-wrap: pretty;
@@ -42,10 +42,10 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--gray-6);
   border-radius: 0.75rem;
-  background: var(--card);
-  box-shadow: var(--card-shadow);
+  background: var(--panel);
+  box-shadow: var(--panel-shadow);
   list-style: none;
 }
 
@@ -88,7 +88,7 @@
 
 .heading {
   margin: 3.25rem 0 0;
-  color: var(--faint);
+  color: var(--gray-10);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.09em;
@@ -163,7 +163,7 @@
 .footnote {
   max-width: 52ch;
   margin: 1.5rem 0 0;
-  color: var(--faint);
+  color: var(--gray-10);
   font-size: 0.8125rem;
   line-height: 1.6;
   text-wrap: pretty;
@@ -173,7 +173,7 @@
 
 .credits {
   margin: 0 0 2rem;
-  color: var(--faint);
+  color: var(--gray-10);
   font-size: 0.8125rem;
   text-align: center;
 }
@@ -186,6 +186,6 @@
 
 @media (hover: hover) {
   .credits a:hover {
-    color: var(--page-fg);
+    color: var(--gray-12);
   }
 }

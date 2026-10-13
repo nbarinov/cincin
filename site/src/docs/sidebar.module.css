@@ -16,7 +16,7 @@
 .heading {
   margin: 0 0 0.25rem;
   padding: 0 0.625rem;
-  color: var(--faint);
+  color: var(--gray-10);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -26,7 +26,7 @@
 .rule {
   margin: 1rem 0;
   border: 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--gray-6);
 }
 
 /* --- items ---------------------------------------------------------- */
@@ -46,13 +46,13 @@
 
 @media (hover: hover) {
   .item:hover {
-    background-color: light-dark(#f1f1ec, #1d1d21);
+    background-color: var(--gray-3);
   }
 }
 
 /* The framework on screen sits on a quiet pill. */
 .frameworks .item[data-status='active'] {
-  background-color: light-dark(#ecece7, #232328);
+  background-color: var(--gray-5);
 }
 
 /* The page on screen carries the amber dot and nothing else, so its
@@ -67,5 +67,5 @@
 }
 
 .pages .item[data-status='active']::before {
-  background-color: var(--accent);
+  background-color: var(--accent-9);
 }

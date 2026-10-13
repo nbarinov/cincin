@@ -6,8 +6,8 @@
   gap: 1rem;
   block-size: 100%;
   padding-inline: 1.75rem;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--page-bg) 88%, transparent);
+  border-bottom: 1px solid var(--gray-6);
+  background: color-mix(in srgb, var(--gray-1) 88%, transparent);
   backdrop-filter: blur(12px);
 }
 

@@ -6,7 +6,7 @@
 
 .heading {
   margin: 0;
-  color: var(--faint);
+  color: var(--gray-10);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -25,7 +25,7 @@
 .anchor {
   display: block;
   padding: 0.25rem 0;
-  color: var(--muted);
+  color: var(--gray-11);
   font-size: 0.8125rem;
   line-height: 1.4;
   text-decoration: none;
@@ -34,10 +34,10 @@
 
 @media (hover: hover) {
   .anchor:hover {
-    color: var(--page-fg);
+    color: var(--gray-12);
   }
 }
 
 .anchor[data-active='true'] {
-  color: var(--page-fg);
+  color: var(--gray-12);
 }

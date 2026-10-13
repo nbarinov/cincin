@@ -29,7 +29,7 @@
 .lede {
   max-width: 48ch;
   margin: 1rem 0 0;
-  color: var(--muted);
+  color: var(--gray-11);
   font-size: 1.03125rem;
   line-height: 1.6;
   text-wrap: pretty;
@@ -47,8 +47,8 @@
 .report {
   margin: 1.625rem 0 0;
   padding-bottom: 1px;
-  border-bottom: 1px solid var(--line);
-  color: var(--faint);
+  border-bottom: 1px solid var(--gray-6);
+  color: var(--gray-10);
   font-size: 0.84375rem;
   text-decoration: none;
   transition: color 150ms;
@@ -56,6 +56,6 @@
 
 @media (hover: hover) {
   .report:hover {
-    color: var(--page-fg);
+    color: var(--gray-12);
   }
 }

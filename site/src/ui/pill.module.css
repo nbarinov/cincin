@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--gray-6);
   border-radius: 0.5625rem;
   color: inherit;
   font: inherit;
@@ -18,14 +18,14 @@
 .outline {
   padding: 0.4375rem 0.75rem;
   background: transparent;
-  color: var(--muted);
+  color: var(--gray-11);
   font-size: 0.8125rem;
 }
 
 .card {
   padding: 0.5rem 0.875rem;
-  background: var(--card);
-  box-shadow: var(--card-shadow);
+  background: var(--panel);
+  box-shadow: var(--panel-shadow);
   font-size: 0.84375rem;
 }
 
@@ -37,22 +37,22 @@
   padding: 0.5rem 0.875rem;
   border-color: transparent;
   background: transparent;
-  color: var(--faint);
+  color: var(--gray-10);
   font-size: 0.84375rem;
 }
 
 @media (hover: hover) {
   .outline:hover,
   .card:hover {
-    border-color: var(--line-strong);
+    border-color: var(--gray-8);
   }
 
   .outline:hover,
   .quiet:hover {
-    color: var(--page-fg);
+    color: var(--gray-12);
   }
 
   .quiet:hover {
-    border-color: var(--line);
+    border-color: var(--gray-6);
   }
 }

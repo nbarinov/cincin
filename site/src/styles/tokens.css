@@ -1,15 +1,29 @@
 :root {
   color-scheme: light dark;
 
-  --page-bg: light-dark(#f7f7f4, #131316);
-  --page-fg: light-dark(#1d1d1b, #e9e8e4);
-  --muted: light-dark(#6b6b66, #a4a39e);
-  --faint: light-dark(#9b9b94, #7c7c77);
-  --line: light-dark(#e3e3de, #2c2c31);
-  --line-strong: light-dark(#c9c9c2, #3f3f46);
-  --card: light-dark(#fff, #1d1d21);
-  --card-shadow: 0 1px 2px light-dark(rgb(60 60 50 / 0.06), rgb(0 0 0 / 0.3));
-  --accent: #e8b04b;
+  /*
+    Neutral steps follow the Radix scale roles, only the ones in use:
+     1   app background
+     3   hover background of an item that is transparent by default
+     5   selected or pressed background
+     6   quiet border and separator
+     8   border of a hovered control
+     10  faint text, a deliberate stretch: Radix keeps text on 11 and 12
+     11  low contrast text
+     12  high contrast text
+  */
+  --gray-1: light-dark(#f7f7f4, #131316);
+  --gray-3: light-dark(#f1f1ec, #1d1d21);
+  --gray-5: light-dark(#ecece7, #232328);
+  --gray-6: light-dark(#e3e3de, #2c2c31);
+  --gray-8: light-dark(#c9c9c2, #3f3f46);
+  --gray-10: light-dark(#9b9b94, #7c7c77);
+  --gray-11: light-dark(#6b6b66, #a4a39e);
+  --gray-12: light-dark(#1d1d1b, #e9e8e4);
+
+  --panel: light-dark(#fff, #1d1d21);
+  --panel-shadow: 0 1px 2px light-dark(rgb(60 60 50 / 0.06), rgb(0 0 0 / 0.3));
+  --accent-9: #e8b04b;
 
   --font-sans-latin: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
   --font-sans-cyrillic: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;

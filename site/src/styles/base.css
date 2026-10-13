@@ -8,8 +8,8 @@ html {
 body {
   min-height: 100dvh;
   margin: 0;
-  background-color: var(--page-bg);
-  color: var(--page-fg);
+  background-color: var(--gray-1);
+  color: var(--gray-12);
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;

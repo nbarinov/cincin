@@ -16,7 +16,7 @@
 .paragraph,
 .list {
   margin: 0.625rem 0 0;
-  color: var(--muted);
+  color: var(--gray-11);
   font-size: 0.9375rem;
   line-height: 1.6;
 }
@@ -35,7 +35,7 @@
 
 .anchor {
   color: inherit;
-  text-decoration-color: var(--line-strong);
+  text-decoration-color: var(--gray-8);
   text-underline-offset: 0.15em;
 }
 
@@ -48,7 +48,7 @@
 .code:not(pre .code) {
   padding: 0.0625rem 0.3125rem;
   border-radius: 0.25rem;
-  background: light-dark(#ecece7, #232328);
+  background: var(--gray-5);
   font-family: var(--font-mono);
   font-size: 0.875em;
 }
