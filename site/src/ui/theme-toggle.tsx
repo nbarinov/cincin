@@ -3,9 +3,8 @@ import { Monitor, Moon, Sun } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'use-intl';
 import { theme, type Theme } from '@/shared/theme';
-import { Pill } from './pill';
+import { IconButton, type IconButtonProps } from './icon-button';
 import { VisuallyHidden } from './visually-hidden';
-import styles from './theme-toggle.module.css';
 
 type Mode = Theme | 'auto';
 
@@ -16,7 +15,7 @@ const ICON: Record<Mode, LucideIcon> = {
   dark: Moon,
 };
 
-function ThemeToggle() {
+function ThemeToggle({ variant }: Pick<IconButtonProps, 'variant'>) {
   const t = useTranslations('ui.themeToggle');
   const stored = React.useSyncExternalStore(
     theme.subscribe,
@@ -28,14 +27,14 @@ function ThemeToggle() {
   const Icon = ICON[mode];
 
   return (
-    <Pill
+    <IconButton
       type="button"
-      className={styles.toggle}
+      variant={variant}
       onClick={() => theme.apply(next === 'auto' ? null : next)}
     >
-      <Icon className={styles.icon} aria-hidden />
+      <Icon />
       <VisuallyHidden>{t('label', { next })}</VisuallyHidden>
-    </Pill>
+    </IconButton>
   );
 }
 
