@@ -1,5 +1,7 @@
 @layer reset;
 
+@value md from '../styles/breakpoints.module.css';
+
 .iconButton {
   box-sizing: border-box;
   display: inline-grid;
@@ -59,7 +61,7 @@
   block-size: 1em;
 }
 
-@media (width >= 60rem) {
+@media md {
   .iconButton {
     inline-size: 2.25rem;
     block-size: 2.25rem;
