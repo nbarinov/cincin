@@ -49,6 +49,11 @@
   scale: 0.96;
 }
 
+.iconButton:focus-visible {
+  outline: 2px solid var(--gray-12);
+  outline-offset: 2px;
+}
+
 .glyph {
   inline-size: 1em;
   block-size: 1em;
