@@ -22,6 +22,7 @@
   --gray-12: light-dark(#1d1d1b, #e9e8e4);
 
   --panel: light-dark(#fff, #1d1d21);
+  --panel-hover: light-dark(#f1f1ec, #26262b);
   --panel-shadow: 0 1px 2px light-dark(rgb(60 60 50 / 0.06), rgb(0 0 0 / 0.3));
   --accent-9: #e8b04b;
 
