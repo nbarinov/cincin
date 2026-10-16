@@ -3,6 +3,9 @@
     "title": "Docs – cincin",
     "description": "How to install cincin, mount the Toaster and call the toast store from React, Preact, Vue, Solid and Angular."
   },
+  "frameworkSwitcher": {
+    "label": "Framework"
+  },
   "sidebar": {
     "label": "Documentation",
     "framework": "Framework",
