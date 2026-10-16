@@ -1,0 +1,4 @@
+@value xs: (width >= 37.5rem);
+@value sm: (width >= 48rem);
+@value md: (width >= 60rem);
+@value lg: (width >= 80rem);
