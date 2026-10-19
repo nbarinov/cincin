@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as KitRouteImport } from './routes/kit'
 import { Route as Char123LocaleChar125RouteImport } from './routes/{-$locale}'
 import { Route as Char123LocaleChar125IndexRouteImport } from './routes/{-$locale}.index'
 import { Route as Char123LocaleChar125DocsRouteImport } from './routes/{-$locale}.docs'
@@ -17,6 +18,11 @@ import { Route as Char123LocaleChar125DocsFrameworkRouteImport } from './routes/
 import { Route as Char123LocaleChar125DocsFrameworkIndexRouteImport } from './routes/{-$locale}.docs.$framework.index'
 import { Route as Char123LocaleChar125DocsFrameworkSplatRouteImport } from './routes/{-$locale}.docs.$framework.$'
 
+const KitRoute = KitRouteImport.update({
+  id: '/kit',
+  path: '/kit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char123LocaleChar125Route = Char123LocaleChar125RouteImport.update({
   id: '/{-$locale}',
   path: '/{-$locale}',
@@ -60,6 +66,7 @@ const Char123LocaleChar125DocsFrameworkSplatRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/kit': typeof KitRoute
   '/{-$locale}': typeof Char123LocaleChar125RouteWithChildren
   '/{-$locale}/docs': typeof Char123LocaleChar125DocsRouteWithChildren
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/docs/$framework/': typeof Char123LocaleChar125DocsFrameworkIndexRoute
 }
 export interface FileRoutesByTo {
+  '/kit': typeof KitRoute
   '/{-$locale}': typeof Char123LocaleChar125IndexRoute
   '/{-$locale}/docs': typeof Char123LocaleChar125DocsIndexRoute
   '/{-$locale}/docs/$framework/$': typeof Char123LocaleChar125DocsFrameworkSplatRoute
@@ -76,6 +84,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/kit': typeof KitRoute
   '/{-$locale}': typeof Char123LocaleChar125RouteWithChildren
   '/{-$locale}/docs': typeof Char123LocaleChar125DocsRouteWithChildren
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
@@ -87,6 +96,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/kit'
     | '/{-$locale}'
     | '/{-$locale}/docs'
     | '/{-$locale}/'
@@ -96,12 +106,14 @@ export interface FileRouteTypes {
     | '/{-$locale}/docs/$framework/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/kit'
     | '/{-$locale}'
     | '/{-$locale}/docs'
     | '/{-$locale}/docs/$framework/$'
     | '/{-$locale}/docs/$framework'
   id:
     | '__root__'
+    | '/kit'
     | '/{-$locale}'
     | '/{-$locale}/docs'
     | '/{-$locale}/'
@@ -112,11 +124,19 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  KitRoute: typeof KitRoute
   Char123LocaleChar125Route: typeof Char123LocaleChar125RouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/kit': {
+      id: '/kit'
+      path: '/kit'
+      fullPath: '/kit'
+      preLoaderRoute: typeof KitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/{-$locale}': {
       id: '/{-$locale}'
       path: '/{-$locale}'
@@ -218,6 +238,7 @@ const Char123LocaleChar125RouteWithChildren =
   Char123LocaleChar125Route._addFileChildren(Char123LocaleChar125RouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  KitRoute: KitRoute,
   Char123LocaleChar125Route: Char123LocaleChar125RouteWithChildren,
 }
 export const routeTree = rootRouteImport
