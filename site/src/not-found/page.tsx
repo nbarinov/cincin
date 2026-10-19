@@ -34,11 +34,7 @@ function NotFoundPage() {
           <li>
             <Pill
               variant="card"
-              render={
-                <a href={EXAMPLES_URL}>
-                  {t('links.examples')}
-                </a>
-              }
+              render={<a href={EXAMPLES_URL}>{t('links.examples')}</a>}
             />
           </li>
           <li>
