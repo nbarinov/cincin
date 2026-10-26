@@ -1,7 +1,6 @@
 {
   "siteHeader": {
-    "label": "Site",
-    "docs": "Docs"
+    "label": "Site"
   },
   "localeSwitcher": {
     "label": "Language"

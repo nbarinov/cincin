@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router';
 import { useTranslations } from 'use-intl';
 import { Brand } from './brand';
 import { LocaleSwitcher } from './locale-switcher';
@@ -13,15 +12,6 @@ function SiteHeader() {
     <header className={styles.header}>
       <Brand />
       <nav className={styles.actions} aria-label={t('label')}>
-        {import.meta.env.DEV && (
-          <Link
-            to="/{-$locale}/docs"
-            params={(prev) => ({ locale: prev.locale })}
-            className={styles.link}
-          >
-            {t('docs')}
-          </Link>
-        )}
         <ProjectLinks />
         <ThemeToggle />
         <LocaleSwitcher />

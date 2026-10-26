@@ -9,20 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as KitRouteImport } from './routes/kit'
 import { Route as Char123LocaleChar125RouteImport } from './routes/{-$locale}'
 import { Route as Char123LocaleChar125IndexRouteImport } from './routes/{-$locale}.index'
-import { Route as Char123LocaleChar125DocsRouteImport } from './routes/{-$locale}.docs'
-import { Route as Char123LocaleChar125DocsIndexRouteImport } from './routes/{-$locale}.docs.index'
-import { Route as Char123LocaleChar125DocsFrameworkRouteImport } from './routes/{-$locale}.docs.$framework'
-import { Route as Char123LocaleChar125DocsFrameworkIndexRouteImport } from './routes/{-$locale}.docs.$framework.index'
-import { Route as Char123LocaleChar125DocsFrameworkSplatRouteImport } from './routes/{-$locale}.docs.$framework.$'
 
-const KitRoute = KitRouteImport.update({
-  id: '/kit',
-  path: '/kit',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const Char123LocaleChar125Route = Char123LocaleChar125RouteImport.update({
   id: '/{-$locale}',
   path: '/{-$locale}',
@@ -34,109 +23,33 @@ const Char123LocaleChar125IndexRoute =
     path: '/',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
-const Char123LocaleChar125DocsRoute =
-  Char123LocaleChar125DocsRouteImport.update({
-    id: '/docs',
-    path: '/docs',
-    getParentRoute: () => Char123LocaleChar125Route,
-  } as any)
-const Char123LocaleChar125DocsIndexRoute =
-  Char123LocaleChar125DocsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => Char123LocaleChar125DocsRoute,
-  } as any)
-const Char123LocaleChar125DocsFrameworkRoute =
-  Char123LocaleChar125DocsFrameworkRouteImport.update({
-    id: '/$framework',
-    path: '/$framework',
-    getParentRoute: () => Char123LocaleChar125DocsRoute,
-  } as any)
-const Char123LocaleChar125DocsFrameworkIndexRoute =
-  Char123LocaleChar125DocsFrameworkIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => Char123LocaleChar125DocsFrameworkRoute,
-  } as any)
-const Char123LocaleChar125DocsFrameworkSplatRoute =
-  Char123LocaleChar125DocsFrameworkSplatRouteImport.update({
-    id: '/$',
-    path: '/$',
-    getParentRoute: () => Char123LocaleChar125DocsFrameworkRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
-  '/kit': typeof KitRoute
   '/{-$locale}': typeof Char123LocaleChar125RouteWithChildren
-  '/{-$locale}/docs': typeof Char123LocaleChar125DocsRouteWithChildren
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
-  '/{-$locale}/docs/$framework': typeof Char123LocaleChar125DocsFrameworkRouteWithChildren
-  '/{-$locale}/docs/': typeof Char123LocaleChar125DocsIndexRoute
-  '/{-$locale}/docs/$framework/$': typeof Char123LocaleChar125DocsFrameworkSplatRoute
-  '/{-$locale}/docs/$framework/': typeof Char123LocaleChar125DocsFrameworkIndexRoute
 }
 export interface FileRoutesByTo {
-  '/kit': typeof KitRoute
   '/{-$locale}': typeof Char123LocaleChar125IndexRoute
-  '/{-$locale}/docs': typeof Char123LocaleChar125DocsIndexRoute
-  '/{-$locale}/docs/$framework/$': typeof Char123LocaleChar125DocsFrameworkSplatRoute
-  '/{-$locale}/docs/$framework': typeof Char123LocaleChar125DocsFrameworkIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/kit': typeof KitRoute
   '/{-$locale}': typeof Char123LocaleChar125RouteWithChildren
-  '/{-$locale}/docs': typeof Char123LocaleChar125DocsRouteWithChildren
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
-  '/{-$locale}/docs/$framework': typeof Char123LocaleChar125DocsFrameworkRouteWithChildren
-  '/{-$locale}/docs/': typeof Char123LocaleChar125DocsIndexRoute
-  '/{-$locale}/docs/$framework/$': typeof Char123LocaleChar125DocsFrameworkSplatRoute
-  '/{-$locale}/docs/$framework/': typeof Char123LocaleChar125DocsFrameworkIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/kit'
-    | '/{-$locale}'
-    | '/{-$locale}/docs'
-    | '/{-$locale}/'
-    | '/{-$locale}/docs/$framework'
-    | '/{-$locale}/docs/'
-    | '/{-$locale}/docs/$framework/$'
-    | '/{-$locale}/docs/$framework/'
+  fullPaths: '/{-$locale}' | '/{-$locale}/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/kit'
-    | '/{-$locale}'
-    | '/{-$locale}/docs'
-    | '/{-$locale}/docs/$framework/$'
-    | '/{-$locale}/docs/$framework'
-  id:
-    | '__root__'
-    | '/kit'
-    | '/{-$locale}'
-    | '/{-$locale}/docs'
-    | '/{-$locale}/'
-    | '/{-$locale}/docs/$framework'
-    | '/{-$locale}/docs/'
-    | '/{-$locale}/docs/$framework/$'
-    | '/{-$locale}/docs/$framework/'
+  to: '/{-$locale}'
+  id: '__root__' | '/{-$locale}' | '/{-$locale}/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  KitRoute: typeof KitRoute
   Char123LocaleChar125Route: typeof Char123LocaleChar125RouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/kit': {
-      id: '/kit'
-      path: '/kit'
-      fullPath: '/kit'
-      preLoaderRoute: typeof KitRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/{-$locale}': {
       id: '/{-$locale}'
       path: '/{-$locale}'
@@ -151,86 +64,14 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125IndexRouteImport
       parentRoute: typeof Char123LocaleChar125Route
     }
-    '/{-$locale}/docs': {
-      id: '/{-$locale}/docs'
-      path: '/docs'
-      fullPath: '/{-$locale}/docs'
-      preLoaderRoute: typeof Char123LocaleChar125DocsRouteImport
-      parentRoute: typeof Char123LocaleChar125Route
-    }
-    '/{-$locale}/docs/': {
-      id: '/{-$locale}/docs/'
-      path: '/'
-      fullPath: '/{-$locale}/docs/'
-      preLoaderRoute: typeof Char123LocaleChar125DocsIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125DocsRoute
-    }
-    '/{-$locale}/docs/$framework': {
-      id: '/{-$locale}/docs/$framework'
-      path: '/$framework'
-      fullPath: '/{-$locale}/docs/$framework'
-      preLoaderRoute: typeof Char123LocaleChar125DocsFrameworkRouteImport
-      parentRoute: typeof Char123LocaleChar125DocsRoute
-    }
-    '/{-$locale}/docs/$framework/': {
-      id: '/{-$locale}/docs/$framework/'
-      path: '/'
-      fullPath: '/{-$locale}/docs/$framework/'
-      preLoaderRoute: typeof Char123LocaleChar125DocsFrameworkIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125DocsFrameworkRoute
-    }
-    '/{-$locale}/docs/$framework/$': {
-      id: '/{-$locale}/docs/$framework/$'
-      path: '/$'
-      fullPath: '/{-$locale}/docs/$framework/$'
-      preLoaderRoute: typeof Char123LocaleChar125DocsFrameworkSplatRouteImport
-      parentRoute: typeof Char123LocaleChar125DocsFrameworkRoute
-    }
   }
 }
-
-interface Char123LocaleChar125DocsFrameworkRouteChildren {
-  Char123LocaleChar125DocsFrameworkSplatRoute: typeof Char123LocaleChar125DocsFrameworkSplatRoute
-  Char123LocaleChar125DocsFrameworkIndexRoute: typeof Char123LocaleChar125DocsFrameworkIndexRoute
-}
-
-const Char123LocaleChar125DocsFrameworkRouteChildren: Char123LocaleChar125DocsFrameworkRouteChildren =
-  {
-    Char123LocaleChar125DocsFrameworkSplatRoute:
-      Char123LocaleChar125DocsFrameworkSplatRoute,
-    Char123LocaleChar125DocsFrameworkIndexRoute:
-      Char123LocaleChar125DocsFrameworkIndexRoute,
-  }
-
-const Char123LocaleChar125DocsFrameworkRouteWithChildren =
-  Char123LocaleChar125DocsFrameworkRoute._addFileChildren(
-    Char123LocaleChar125DocsFrameworkRouteChildren,
-  )
-
-interface Char123LocaleChar125DocsRouteChildren {
-  Char123LocaleChar125DocsFrameworkRoute: typeof Char123LocaleChar125DocsFrameworkRouteWithChildren
-  Char123LocaleChar125DocsIndexRoute: typeof Char123LocaleChar125DocsIndexRoute
-}
-
-const Char123LocaleChar125DocsRouteChildren: Char123LocaleChar125DocsRouteChildren =
-  {
-    Char123LocaleChar125DocsFrameworkRoute:
-      Char123LocaleChar125DocsFrameworkRouteWithChildren,
-    Char123LocaleChar125DocsIndexRoute: Char123LocaleChar125DocsIndexRoute,
-  }
-
-const Char123LocaleChar125DocsRouteWithChildren =
-  Char123LocaleChar125DocsRoute._addFileChildren(
-    Char123LocaleChar125DocsRouteChildren,
-  )
 
 interface Char123LocaleChar125RouteChildren {
-  Char123LocaleChar125DocsRoute: typeof Char123LocaleChar125DocsRouteWithChildren
   Char123LocaleChar125IndexRoute: typeof Char123LocaleChar125IndexRoute
 }
 
 const Char123LocaleChar125RouteChildren: Char123LocaleChar125RouteChildren = {
-  Char123LocaleChar125DocsRoute: Char123LocaleChar125DocsRouteWithChildren,
   Char123LocaleChar125IndexRoute: Char123LocaleChar125IndexRoute,
 }
 
@@ -238,7 +79,6 @@ const Char123LocaleChar125RouteWithChildren =
   Char123LocaleChar125Route._addFileChildren(Char123LocaleChar125RouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  KitRoute: KitRoute,
   Char123LocaleChar125Route: Char123LocaleChar125RouteWithChildren,
 }
 export const routeTree = rootRouteImport

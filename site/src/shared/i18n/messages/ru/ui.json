@@ -1,7 +1,6 @@
 {
   "siteHeader": {
-    "label": "Сайт",
-    "docs": "Документация"
+    "label": "Сайт"
   },
   "localeSwitcher": {
     "label": "Язык"
