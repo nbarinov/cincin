@@ -14,7 +14,11 @@ class ThemeStore extends Subscribable {
   }
 
   getSnapshot(): Theme | null {
-    return parseTheme(localStorage.getItem(THEME_KEY));
+    try {
+      return parseTheme(localStorage.getItem(THEME_KEY));
+    } catch {
+      return null;
+    }
   }
 
   getServerSnapshot(): Theme | null {
@@ -30,10 +34,14 @@ class ThemeStore extends Subscribable {
   }
 
   apply(next: Theme | null): void {
-    if (next === null) {
-      localStorage.removeItem(THEME_KEY);
-    } else {
-      localStorage.setItem(THEME_KEY, next);
+    try {
+      if (next === null) {
+        localStorage.removeItem(THEME_KEY);
+      } else {
+        localStorage.setItem(THEME_KEY, next);
+      }
+    } catch {
+      return;
     }
 
     this.notify();
