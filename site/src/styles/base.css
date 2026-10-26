@@ -18,10 +18,10 @@ body {
     color 300ms;
 }
 
-body [lang='en'] {
+:where(body [lang='en']) {
   font-family: var(--font-sans-latin);
 }
 
-body [lang='ru'] {
+:where(body [lang='ru']) {
   font-family: var(--font-sans-cyrillic);
 }
