@@ -17,15 +17,23 @@ export const Route = createFileRoute('/{-$locale}')({
       throw redirect({ href: withoutLocale(location.pathname) });
     }
   },
-  head({ matches }) {
+  head({ match, matches }) {
     const pathname = matches.at(-1)?.pathname ?? '/';
 
     return {
-      links: LOCALES.map((locale) => ({
-        rel: 'alternate',
-        hrefLang: locale,
-        href: siteHref(pathname, locale),
-      })),
+      links: [
+        { rel: 'canonical', href: siteHref(pathname, match.context.locale) },
+        ...LOCALES.map((locale) => ({
+          rel: 'alternate',
+          hrefLang: locale,
+          href: siteHref(pathname, locale),
+        })),
+        {
+          rel: 'alternate',
+          hrefLang: 'x-default',
+          href: siteHref(pathname, DEFAULT_LOCALE),
+        },
+      ],
     };
   },
 });
