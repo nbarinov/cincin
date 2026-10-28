@@ -368,8 +368,11 @@
   }
 }
 
+/* A leaving card drops [data-front], so the clamp names it by its
+ * phase too; a leaving front froze its own height as the front height,
+ * which leaves it as it was. */
 [data-cincin-toaster]:not([data-expanded='true'])
-  [data-cincin-toast][data-front='false'] {
+  [data-cincin-toast]:is([data-front='false'], [data-phase='leaving']) {
   height: var(--cincin-front-height, auto);
 }
 
@@ -381,6 +384,14 @@
   [data-cincin-toast][data-front='false']
   [data-cincin-body] {
   opacity: 0;
+}
+
+/* The frozen index tells a leaving back (1 and up) from the front (0):
+ * the back's content stays hidden instead of fading in on the way out. */
+[data-cincin-toaster]:not([data-expanded='true'])
+  [data-cincin-toast][data-phase='leaving']
+  [data-cincin-body] {
+  opacity: calc(1 - min(var(--cincin-toast-index, 0), 1));
 }
 
 [data-cincin-toast][data-hidden='true'] {
@@ -413,8 +424,14 @@
   }
 }
 
+/* The front slides offscreen; a back only tucks its peeking edge
+ * behind the front (keeping its scale), so it never crosses the
+ * front's far edge on the way out. */
 [data-cincin-toast][data-phase='leaving']:not([data-swipe-direction]) {
-  transform: translateY(var(--offscreen));
+  --back: min(var(--cincin-toast-index, 0), 1);
+
+  transform: translateY(calc((1 - var(--back)) * var(--offscreen)))
+    scale(calc(1 - var(--cincin-toast-index, 0) * 0.05));
   opacity: 0;
 }
 
